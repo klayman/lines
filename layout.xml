@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC
+    "-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN"
+    "http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:svg="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+  <meta name="generator" content="Head and Hands" />
+  <title>Layout</title>
+  <link type="text/css" rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <svg:svg id="back"
+    version="1.1"
+    viewBox="0 0 100 100"
+    preserveAspectRatio="none">
+    <svg:radialGradient id="gradient"
+       cx="50%"
+       cy="50%"
+       r="70.71%">
+      <svg:stop id="start" stop-color="#5babf0" offset="0%"   />
+      <svg:stop id="end"   stop-color="#445e7f" offset="100%" />
+    </svg:radialGradient>
+    <svg:rect id="rect"
+       width="100"
+       height="100"
+       x="0"
+       y="0"
+       fill="url(#gradient)" />
+  </svg:svg>
+  <div id="wrapper">
+    <div id="info_bar">
+      <div id="info_block">
+        <svg:svg id="info_balls"
+          version="1.1"
+          viewBox="0 0 150 50">
+          <svg:image x="0" y="0" width="49" height="49" xlink:href="images/blue.png"/>
+          <svg:image x="50" y="0" width="49" height="49" xlink:href="images/purple.png"/>
+          <svg:image x="100" y="0" width="49" height="49" xlink:href="images/green.png"/>
+        </svg:svg>
+      </div> <!--#info_block-->
+      <span id="score">260</span>
+    </div> <!--#info_bar-->
+    <div id="field">
+      <svg:svg id="balls"
+        version="1.1"
+        viewBox="0 0 450 450">
+        <svg:image x="100" y="0" width="49" height="49" xlink:href="images/blue.png"/>
+        <svg:image x="50" y="0" width="49" height="49" xlink:href="images/orange.png"/>
+        <svg:image x="100" y="50" width="49" height="49" xlink:href="images/green.png"/>
+        <svg:image x="50" y="50" width="49" height="49" xlink:href="images/red.png"/>
+        <svg:image x="0" y="0" width="49" height="49" xlink:href="images/red.png"/>
+        <svg:image x="400" y="400" width="49" height="49" xlink:href="images/red.png"/>
+        <svg:image x="400" y="0" width="49" height="49" xlink:href="images/red.png"/>
+        <svg:image x="0" y="400" width="49" height="49" xlink:href="images/red.png"/>
+        <svg:image x="150" y="250" width="49" height="49" xlink:href="images/yellow.png"/>
+        <svg:image x="200" y="250" width="49" height="49" xlink:href="images/cyan.png"/>
+      </svg:svg>
+    </div> <!--#field-->
+    <div id="footer_bar">
+      <a href="http://www.semyonfilippov.net"><span id="logo"><span>Semyon Filippov</span></span></a>
+      <a href=""><span id="options"><span>Options</span></span></a>
+      <a href=""><span id="cc"><span>CreativeCommons</span></span></a>
+      <span id="year">2010</span>
+    </div> <!--#footer_bar-->
+  </div>   <!--#wrapper-->
+</body>
+</html>
