@@ -59,13 +59,13 @@ a {
   bottom: 552px;
   font: 40px "digital-7-it", serif;
   width: 471px;
-  height: 35px;
+  height: 71px;
   overflow: hidden;
   background: url(images/info_bar.png);
 }
 #info_block {
   float: left;
-  width: 75px;
+  width: 150px;
   height: 50px;
   margin: 11px;
   overflow: hidden;
@@ -74,6 +74,12 @@ a {
   float: right;
   width: 150px;
   height: 50px;
+}
+#timer {
+  position: absolute;
+  line-height: 19px;
+  top: 21px;
+  right: 265px;
 }
 #score {
   position: absolute;
@@ -99,35 +105,51 @@ a {
   top: 552px;
   font: 13px/1.5 "Trebuchet MS", serif;
   width: 471px;
-  height: 35px;
+  height: 71px;
   overflow: hidden;
   background: url(images/info_bar.png);
 }
-#logo, #options, #cc {
+#logo, #options, #cc, #help, #mode, #restart, #high_score {
   position: absolute;
-  bottom: 11px;
-  height: 50px;
+  bottom: 13px;
+  height: 46px;
+  opacity: 0.5;
   background: url(images/icons.png);
 }
+#logo:hover, #options:hover, #cc:hover, #help:hover, #mode:hover, #restart:hover, #high_score:hover {
+  opacity: 1;
+}
 #logo {
-  left: 23px;
+  left: 22px;
   width: 17px;
 }
 #options {
   right: 15px;
   width: 50px;
-  background-position: -17px 0;
+  background-position: -57px 0;
 }
 #cc {
-  left: 193px;
+  left: 57px;
   width: 39px;
-  background-position: -66px 0;
+  background-position: -17px 0;
 }
-#year {
-  position: absolute;
-  bottom: 26px;
-  left: 244px;
+#help {
+  right: 78px;
+  width: 22px;
+  background-position: -152px 0;
 }
-#logo span, #options span, #cc span {
-  display: none;
+#mode {
+  right: 170px;
+  width: 37px;
+  background-position: -253px 0; /*-325*/
+}
+#restart {
+  right: 220px;
+  width: 44px;
+  background-position: -108px 0;
+}
+#high_score {
+  right: 117px;
+  width: 40px;
+  background-position: -174px 0;
 }

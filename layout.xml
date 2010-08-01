@@ -42,6 +42,7 @@
           <svg:image x="100" y="0" width="49" height="49" xlink:href="images/green.png"/>
         </svg:svg>
       </div> <!--#info_block-->
+      <span id="timer">10</span>
       <span id="score">260</span>
     </div> <!--#info_bar-->
     <div id="field">
@@ -61,10 +62,13 @@
       </svg:svg>
     </div> <!--#field-->
     <div id="footer_bar">
-      <a href="http://www.semyonfilippov.net"><span id="logo"><span>Semyon Filippov</span></span></a>
-      <a href=""><span id="options"><span>Options</span></span></a>
-      <a href=""><span id="cc"><span>CreativeCommons</span></span></a>
-      <span id="year">2010</span>
+      <a href="http://www.semyonfilippov.net"><span id="logo"></span></a>
+      <a href=""><span id="cc"></span></a>
+      <a href=""><span id="restart"></span></a>
+      <a href=""><span id="mode"></span></a>
+      <a href=""><span id="high_score"></span></a>
+      <a href=""><span id="help"></span></a>
+      <a href=""><span id="options"></span></a>
     </div> <!--#footer_bar-->
   </div>   <!--#wrapper-->
 </body>
