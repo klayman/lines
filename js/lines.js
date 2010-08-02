@@ -7,11 +7,13 @@ with(Lines_game = function(){
 
     /* Constructor */
 
-    // The game field object:
-    this.field = new Field();
-
 }){
     /* Methods */
+
+    prototype.create_field = function( cell_size, border_size, html_id  ){
+        // The game field object:
+        this.field = new Field( cell_size, border_size, html_id );
+    };
 
 }
 
@@ -19,42 +21,33 @@ with(Lines_game = function(){
 
 /* The game field class: */
 
-with(Field = function(){
+with(Field = function( cell_size, border_size, html_id ){
 
     /* Constructor */
 
-    // After call .init() there will be jQuery object
-    // of our field:
-    this.obj = null;
-    // After call .init() there will be SVG object of
-    // our field:
-    this.svg_obj = null;
+    // Saving the jQuery object of field:
+    this.obj = $( "#" + html_id );
+    // Save link to "this" property:
+    var _this = this;
+    $( "#" + html_id ).children().svg(
+        {
+            onLoad: function( svg ){
+                // Saving SVG object of field:
+                _this.svg_obj = svg;
+            }
+        }
+    );
     // Default size of each cell (in px):
-    this.square_size = 50;
+    this.square_size = cell_size;
+    // Default size of cell border (in px):
+    this.border_size = border_size;
     // The array of Ball class objects:
     this.objects_arr = [];
-
+    // Set the event handlers:
+    this.handlers();
 
 }){
     /* Methods */
-
-    prototype.init = function( html_id ){
-        // Save link to "this" property:
-        var _this = this;
-        // Saving the jQuery object of field:
-        this.obj = $( "#" + html_id );
-        // Saving SVG object of field:
-        $( "#" + html_id ).svg(
-            {
-                onLoad: function( svg ){
-                    _this.svg_obj = svg;
-                }
-            }
-        );
-        // Set the event handlers:
-        this.handlers();
-    };
-
 
     prototype.handlers = function(){
         // Save link to "this" property:
@@ -62,12 +55,25 @@ with(Field = function(){
         // Configure click event handler:
         this.obj.click(
             function( e ){
+                // Get the margin of SVG object:
+                var mx = _this.obj.children().css( "margin-left" ).replace( "px", '' );
+                var my = _this.obj.children().css( "margin-top" ).replace( "px", '' );
+                // X and Y coords of cursor about field object:
+                var x = e.pageX - _this.obj.offset().left - mx;
+                var y = e.pageY - _this.obj.offset().top - my;
                 // X and Y numbers of the cell which is under mouse cursor:
-                var nx = Math.ceil( ( e.pageX - $( this ).offset().left ) / _this.square_size  );
-                var ny = Math.ceil( ( e.pageY - $( this ).offset().top ) / _this.square_size  );
+                var nx = Math.ceil( x / ( _this.square_size + _this.border_size ) );
+                var ny = Math.ceil( y / ( _this.square_size + _this.border_size ) );
+
+                // Check the boundary conditions:
+                if( ( x - ( _this.square_size + _this.border_size ) * ( nx - 1 ) > _this.square_size &&
+                      nx < 9 ) ||
+                    ( y - ( _this.square_size + _this.border_size ) * ( ny - 1 ) > _this.square_size &&
+                      ny < 9 ) )
+                    return false;
 
                 // Only demo of adding balls:
-                var ball_obj = new Ball( _this.rand( 1, 7 ), _this.square_size, nx, ny );
+                var ball_obj = new Ball( _this.rand( 1, 7 ), _this.square_size + _this.border_size, nx, ny );
                 ball_obj.draw( _this.svg_obj );
                 _this.objects_arr.push( ball_obj );
 
@@ -76,8 +82,7 @@ with(Field = function(){
     };
 
 
-    // Auxiliary method for generating random numbers
-    // in a certain range:
+    // Auxiliary method for generating random numbers in a certain range:
     prototype.rand = function( m, n ){
         m = parseInt( m );
         n = parseInt( n );
@@ -137,9 +142,7 @@ $( document ).ready(
     function(){
         /* Game initialization after the page loads: */
         var lines = new Lines_game();
-        // Define the ball image (and field cell) size:
-        lines.field.square_size = 50;
-        // Connects an object field to html element:
-        lines.field.init( "balls" );
+        // Create field object:
+        lines.create_field( 48, 2, "field" );
     }
 );
