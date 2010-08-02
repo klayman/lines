@@ -21,35 +21,32 @@ with(Lines_game = function(){
 
 /* The game field class: */
 
+/*
+ * Create field object.
+ * cell_size   : size of each cell on screen (in px)
+ * border_size : width of border line between cells (in px)
+ * html_id     : id of <div> which contains svg
+ **/
 with(Field = function( cell_size, border_size, html_id ){
-    /*
-     * Create field object.
-     * cell_size   : size of each cell on screen (in px)
-     * border_size : width of border line between cells (in px)
-     * html_id     : id of <div> which contains svg
-     * */
 
-    // Saving the jQuery object of field:
-    this.obj = $( "#" + html_id );
-    // Save link to "this" property:
-    var _this = this;
+    this.obj = $( "#" + html_id );  // Saving the jQuery object of field:
+    var _this = this;               // Save link to "this" property:
     $( "#" + html_id ).children().svg(
         {
             onLoad: function( svg ){
-                // Saving SVG object of field:
-                _this.svg_obj = svg;
+                _this.svg_obj = svg;   // Saving SVG object of field:
             }
         }
     );
-    // Default size of each cell (in px):
-    this.square_size = cell_size;
-    // Default size of cell border (in px):
-    this.border_size = border_size;
-    // The 2d array of Ball class objects:
-    this.map = new Array( 9 );
+
+    this.square_size = cell_size;    // Default size of each cell (in px):
+    this.border_size = border_size;  // Default size of cell border (in px):
+
+    this.map = new Array( 9 );       // The 2d array of Ball class objects:
     for( var i = 0; i < 9; i++ )
         this.map[ i ] = new Array( null, null, null, null, null, null, null, null, null );
 
+    // different types of balls block to search for
     this.figures = [
        [ [ 1,1 ],
          [ 1,1 ] ],
@@ -58,14 +55,22 @@ with(Field = function( cell_size, border_size, html_id ){
          [ 1,0,1 ],
          [ 0,1,0 ] ],
     ]
+
+    // current block to remove from field
     this.figure = 1;
 
-    // Set the event handlers:
-    this.handlers();
+    this.handlers();    // Set the event handlers:
 
 }){
-    /* Methods */
+    ////////////////// Methods ////////////////
+
+    /*
+     * Put ball at desired position
+     * nx, ny : position on map ( numbers )
+     * color  : color of ball ( number )
+     */
     prototype.put_ball = function( nx, ny, color ){
+
         if( this.map[ ny ][ nx ] )   // exit if cell is not empty
             return;
 
@@ -74,21 +79,49 @@ with(Field = function( cell_size, border_size, html_id ){
         this.map[ ny ][ nx ] = ball;
     };
 
-    prototype.test_figure = function( nx, ny ){
-        var f = this.figures[ this.figure ];
 
-        if( nx + f[ 0 ].length > 9 || ny + f.length > 9 )
+    /*
+     * Test for existance of current figure type on the map
+     * nx, ny: position on the map to put template to
+     * For example:
+     *
+     *   012345678
+     * 0 .o.......
+     * 1 o.o......
+     * 2 .o.......
+     * 3 ..o......
+     * 5 .o.o.....
+     * 6 ..o....o.
+     * 7 ......o..
+     * 8 .......o.
+     *
+     * test_figrure( 0, 0 ) --> true
+     * test_figrure( 1, 0 ) --> false
+     * test_figrure( 1, 3 ) --> true
+     * test_figrure( 6, 6 ) --> false
+     *
+     * TODO: color test
+     */
+    prototype.test_figure = function( nx, ny ){
+        var f = this.figures[ this.figure ];               // alias for figures...
+
+        if( nx + f[ 0 ].length > 9 || ny + f.length > 9 )  // exit if template is out of map
             return;
 
         for( var i = 0; i < f.length; i++ )
             for( var j = 0; j < f[ 0 ].length; j++ )
             {
-                if( f[ i ][ j ] && ( ! this.map[ ny + i ][ nx + j ] ) )
+                if( f[ i ][ j ] && ( ! this.map[ ny + i ][ nx + j ] ) )   // 1 in figure and none on map...
                     return false;
             }
-        return true;
+        return true;  // all ok, figure exists
     };
 
+    /*
+     * This method find and removes group of balls which is
+     * belong to current figure template ( box, rombs, etc. )
+     * TODO: calculate scores here ?
+     */
     prototype.remove_balls = function() {
         for( var j = 0; j < this.map.length; j++ )
             for( var i = 0; i < this.map[ j ].length; i++ )
@@ -99,15 +132,18 @@ with(Field = function( cell_size, border_size, html_id ){
     prototype.handlers = function(){
         // Save link to "this" property:
         var _this = this;
+
         // Configure click event handler:
         this.obj.click(
             function( e ){
                 // Get the margin of SVG object:
                 var mx = _this.obj.children().css( "margin-left" ).replace( "px", '' );
                 var my = _this.obj.children().css( "margin-top" ).replace( "px", '' );
+
                 // X and Y coords of cursor about field object:
                 var x = e.pageX - _this.obj.offset().left - mx;
                 var y = e.pageY - _this.obj.offset().top - my;
+
                 // X and Y numbers of the cell which is under mouse cursor:
                 var nx = Math.floor( x / ( _this.square_size + _this.border_size ) );
                 var ny = Math.floor( y / ( _this.square_size + _this.border_size ) );
@@ -116,8 +152,9 @@ with(Field = function( cell_size, border_size, html_id ){
                 if( ( x - ( _this.square_size + _this.border_size ) * nx > _this.square_size && nx < 8 ) ||
                     ( y - ( _this.square_size + _this.border_size ) * ny > _this.square_size && ny < 8 ) )
                     return false;
-                _this.put_ball( nx, ny, _this.rand( 1, 7 ) );
-                _this.remove_balls( );
+
+                _this.put_ball( nx, ny, _this.rand( 1, 7 ) );  // put ball to the map
+                _this.remove_balls( );                         // remove balls & calculate scores etc...
             }
         );
     };
@@ -152,6 +189,7 @@ with(Ball = function( img_number, img_size, img_x, img_y ){
     // X and Y coords of the ball (in cells):
     this.x = img_x;
     this.y = img_y;
+
     // The ball image size (in px):
     this.size = img_size;
 
@@ -172,6 +210,7 @@ with(Ball = function( img_number, img_size, img_x, img_y ){
                            }
                       )
                    );
+
         // Animate object:
         this.obj.animate( { svgOpacity: "1.0" }, 500 );
     };
@@ -183,6 +222,7 @@ $( document ).ready(
     function(){
         /* Game initialization after the page loads: */
         lines = new Lines_game();
+
         // Create field object:
         lines.create_field( 48, 2, "field" );
     }
