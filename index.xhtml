@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC
+    "-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN"
+    "http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:svg="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+  <meta name="generator" content="Head and Hands" />
+  <title>Lines</title>
+  <link type="text/css" rel="stylesheet" href="style.css" />
+  <script type="text/javascript" src="js/jquery.js"></script>
+  <script type="text/javascript" src="js/jquery.cookie.js"></script>
+  <script type="text/javascript" src="js/jquery.svg.js"></script>
+  <script type="text/javascript" src="js/jquery.svgdom.js"></script>
+  <script type="text/javascript" src="js/jquery.svganim.js"></script>
+  <script type="text/javascript" src="js/lines.js"></script>
+</head>
+
+<body>
+  <svg:svg id="back"
+    version="1.1"
+    viewBox="0 0 100 100"
+    preserveAspectRatio="none">
+    <svg:radialGradient id="gradient"
+       cx="50%"
+       cy="50%"
+       r="70.71%">
+      <svg:stop id="start" stop-color="#5babf0" offset="0%"   />
+      <svg:stop id="end"   stop-color="#445e7f" offset="100%" />
+    </svg:radialGradient>
+    <svg:rect id="rect"
+       width="100"
+       height="100"
+       x="0"
+       y="0"
+       fill="url(#gradient)" />
+  </svg:svg>
+  <div id="wrapper">
+    <div id="info_bar">
+      <div id="info_block">
+        <svg:svg id="info_balls"
+          version="1.1"
+          viewBox="0 0 150 50">
+        </svg:svg>
+      </div> <!--#info_block-->
+      <span id="timer">0</span>
+      <span id="score">0</span>
+    </div> <!--#info_bar-->
+    <div id="field">
+      <svg:svg id="balls"
+        version="1.1"
+        viewBox="0 0 450 450">
+      </svg:svg>
+    </div> <!--#field-->
+    <div id="footer_bar">
+      <a href="http://www.semyonfilippov.net"><span id="logo"></span></a>
+      <a href=""><span id="cc"></span></a>
+      <a href=""><span id="restart"></span></a>
+      <a href=""><span id="mode"></span></a>
+      <a href=""><span id="high_score"></span></a>
+      <a href=""><span id="help"></span></a>
+      <a href=""><span id="options"></span></a>
+    </div> <!--#footer_bar-->
+  </div>   <!--#wrapper-->
+</body>
+</html>
