@@ -22,8 +22,12 @@ with(Lines_game = function(){
 /* The game field class: */
 
 with(Field = function( cell_size, border_size, html_id ){
-
-    /* Constructor */
+    /*
+     * Create field object.
+     * cell_size   : size of each cell on screen (in px)
+     * border_size : width of border line between cells (in px)
+     * html_id     : id of <div> which contains svg
+     * */
 
     // Saving the jQuery object of field:
     this.obj = $( "#" + html_id );
@@ -41,13 +45,56 @@ with(Field = function( cell_size, border_size, html_id ){
     this.square_size = cell_size;
     // Default size of cell border (in px):
     this.border_size = border_size;
-    // The array of Ball class objects:
-    this.objects_arr = [];
+    // The 2d array of Ball class objects:
+    this.map = new Array( 9 );
+    for( var i = 0; i < 9; i++ )
+        this.map[ i ] = new Array( null, null, null, null, null, null, null, null, null );
+
+    this.figures = [
+       [ [ 1,1 ],
+         [ 1,1 ] ],
+
+       [ [ 0,1,0 ],
+         [ 1,0,1 ],
+         [ 0,1,0 ] ],
+    ]
+    this.figure = 1;
+
     // Set the event handlers:
     this.handlers();
 
 }){
     /* Methods */
+    prototype.put_ball = function( nx, ny, color ){
+        if( this.map[ ny ][ nx ] )   // exit if cell is not empty
+            return;
+
+        var ball = new Ball( color, this.square_size + this.border_size, nx, ny );
+        ball.draw( this.svg_obj );
+        this.map[ ny ][ nx ] = ball;
+    };
+
+    prototype.test_figure = function( nx, ny ){
+        var f = this.figures[ this.figure ];
+
+        if( nx + f[ 0 ].length > 9 || ny + f.length > 9 )
+            return;
+
+        for( var i = 0; i < f.length; i++ )
+            for( var j = 0; j < f[ 0 ].length; j++ )
+            {
+                if( f[ i ][ j ] && ( ! this.map[ ny + i ][ nx + j ] ) )
+                    return false;
+            }
+        return true;
+    };
+
+    prototype.remove_balls = function() {
+        for( var j = 0; j < this.map.length; j++ )
+            for( var i = 0; i < this.map[ j ].length; i++ )
+                if( this.test_figure( i, j ) )
+                    alert( 'remove at (' + i + ',' + j + ')' );
+    };
 
     prototype.handlers = function(){
         // Save link to "this" property:
@@ -62,21 +109,15 @@ with(Field = function( cell_size, border_size, html_id ){
                 var x = e.pageX - _this.obj.offset().left - mx;
                 var y = e.pageY - _this.obj.offset().top - my;
                 // X and Y numbers of the cell which is under mouse cursor:
-                var nx = Math.ceil( x / ( _this.square_size + _this.border_size ) );
-                var ny = Math.ceil( y / ( _this.square_size + _this.border_size ) );
+                var nx = Math.floor( x / ( _this.square_size + _this.border_size ) );
+                var ny = Math.floor( y / ( _this.square_size + _this.border_size ) );
 
                 // Check the boundary conditions:
-                if( ( x - ( _this.square_size + _this.border_size ) * ( nx - 1 ) > _this.square_size &&
-                      nx < 9 ) ||
-                    ( y - ( _this.square_size + _this.border_size ) * ( ny - 1 ) > _this.square_size &&
-                      ny < 9 ) )
+                if( ( x - ( _this.square_size + _this.border_size ) * nx > _this.square_size && nx < 8 ) ||
+                    ( y - ( _this.square_size + _this.border_size ) * ny > _this.square_size && ny < 8 ) )
                     return false;
-
-                // Only demo of adding balls:
-                var ball_obj = new Ball( _this.rand( 1, 7 ), _this.square_size + _this.border_size, nx, ny );
-                ball_obj.draw( _this.svg_obj );
-                _this.objects_arr.push( ball_obj );
-
+                _this.put_ball( nx, ny, _this.rand( 1, 7 ) );
+                _this.remove_balls( );
             }
         );
     };
@@ -126,8 +167,8 @@ with(Ball = function( img_number, img_size, img_x, img_y ){
                            this.size - 1,
                            this.size - 1,
                            'images/' + this.img_name + '.png',
-                           { transform: "translate(" + ( ( this.x - 1 ) * this.size + this.size / 2 ) + ',' +
-                                                       ( ( this.y - 1 ) * this.size + this.size / 2 ) + ")"
+                           { transform: "translate(" + ( this.x * this.size + this.size / 2 ) + ',' +
+                                                       ( this.y * this.size + this.size / 2 ) + ")"
                            }
                       )
                    );
@@ -137,11 +178,11 @@ with(Ball = function( img_number, img_size, img_x, img_y ){
 }
 
 
-
+var lines;
 $( document ).ready(
     function(){
         /* Game initialization after the page loads: */
-        var lines = new Lines_game();
+        lines = new Lines_game();
         // Create field object:
         lines.create_field( 48, 2, "field" );
     }
