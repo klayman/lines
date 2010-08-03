@@ -59,6 +59,9 @@ with(Field = function( cell_size, border_size, html_id ){
     // current block to remove from field
     this.figure = 1;
 
+    // X and Y coords of selected ball (in cells):
+    this.sel_ball = null;
+
     this.handlers();    // Set the event handlers:
 
 }){
@@ -71,8 +74,26 @@ with(Field = function( cell_size, border_size, html_id ){
      */
     prototype.put_ball = function( nx, ny, color ){
 
-        if( this.map[ ny ][ nx ] )   // exit if cell is not empty
+        if( this.map[ ny ][ nx ] ){
+
+            // Select ball and set to it "jumping" effect:
+
+            if( this.sel_ball ){
+
+                if( this.sel_ball.x == nx &&
+                    this.sel_ball.y == ny )
+                    // don't do anything:
+                    return;
+
+                var x = this.sel_ball.x;
+                var y = this.sel_ball.y;
+                this.map[ y ][ x ].jump_stop( x, y );
+            }
+            this.sel_ball = { "x" : nx,
+                              "y" : ny };
+            this.map[ ny ][ nx ].jump( nx, ny );
             return;
+        }
 
         var ball = new Ball( color, this.square_size + this.border_size );
         ball.draw( this.svg_obj, nx, ny, 1 );
@@ -126,7 +147,8 @@ with(Field = function( cell_size, border_size, html_id ){
         for( var j = 0; j < this.map.length; j++ )
             for( var i = 0; i < this.map[ j ].length; i++ )
                 if( this.test_figure( i, j ) )
-                    alert( 'remove at (' + i + ',' + j + ')' );
+                    ;
+                    //alert( 'remove at (' + i + ',' + j + ')' );
     };
 
     prototype.handlers = function(){
@@ -154,7 +176,7 @@ with(Field = function( cell_size, border_size, html_id ){
                     return false;
 
                 _this.put_ball( nx, ny, _this.rand( 1, 7 ) );  // put ball to the map
-                _this.remove_balls( );                         // remove balls & calculate scores etc...
+                _this.remove_balls();                          // remove balls & calculate scores etc...
             }
         );
     };
@@ -170,7 +192,7 @@ with(Field = function( cell_size, border_size, html_id ){
 
 
 
-with(Ball = function( img_number, img_size, img_x, img_y ){
+with(Ball = function( img_number, img_size ){
 
     /* Constructor */
 
@@ -219,13 +241,63 @@ with(Ball = function( img_number, img_size, img_x, img_y ){
                    );
 
         // Animate object:
-        this.obj.animate( { svgTransform:
-                            "matrix(" +
-                                scale + ", 0, 0, " + scale + "," +
-                                ( x * this.size + this.size / 2 ) + ',' +
-                                ( y * this.size + this.size / 2 ) +
-                            ")"
-                          }, 100 );
+        this.animate( x, y, scale, 100 );
+    };
+
+
+    prototype.animate = function( x, y, scale, time, structure ){
+        // Save link to "this" property:
+        var _this = this;
+
+        if( ! structure )
+            // callback - soother:
+            var callback = function(){};
+        else
+            var callback =
+                function(){
+                    var arr = structure[ 0 ];
+                    if( structure.slice( 1, 2 ).length > 0 )
+                        _this.animate( x, y, arr[ 0 ],
+                                             arr[ 1 ],
+                                             structure.slice( 1, structure.length ) );
+                    else
+                        _this.animate( x, y, arr[ 0 ], arr[ 1 ] );
+                }
+        this.obj.animate(
+            { svgTransform:
+                "matrix(" +
+                    scale + ", 0, 0, " + scale + "," +
+                    ( x * this.size + this.size / 2 ) + ',' +
+                    ( y * this.size + this.size / 2 ) +
+                ")"
+            }, time, callback );
+    };
+
+
+    prototype.jump = function( x, y ){
+        // Save link to "this" property:
+        var _this = this;
+        // Callback's parametres:
+        var structure = [ [ 1,    80 ],
+                          [ 1.05, 50 ],
+                          [ 1,    50 ] ]
+
+        _this.animate( x, y, 1.08, 80, structure );
+
+        this.obj.everyTime( 1100,
+            function(){
+                // Animate object:
+                _this.animate( x, y, 1.08, 80, structure );
+            }
+        );
+    };
+
+
+    prototype.jump_stop = function( x, y ){
+        // Stop animation:
+        this.obj.stopTime();
+        // Return default size:
+        this.animate( x, y, 1, 1 );
     };
 }
 
