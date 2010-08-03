@@ -46,18 +46,26 @@ with(Field = function( cell_size, border_size, html_id ){
     for( var i = 0; i < 9; i++ )
         this.map[ i ] = new Array( null, null, null, null, null, null, null, null, null );
 
-    // different types of balls block to search for
+    // search motion's patterns
+    // each motion pattern is an array of numbers which determine
+    // direction of motion:
+    //
+    //     7 0 1
+    //      \|/
+    //     6-*-2
+    //      /|\
+    //     5 4 3
+    //
     this.figures = [
-       [ [ 1,1 ],
-         [ 1,1 ] ],
-
-       [ [ 0,1,0 ],
-         [ 1,0,1 ],
-         [ 0,1,0 ] ],
+       [ [ 0, 6, 4, 2 ] ],   // square
+       [ [ 1, 7, 5, 3 ] ],   // rhomb
+       [ [ 2, 2, 2, 2 ], [ 0, 0, 0, 0 ], [ 1, 1, 1, 1 ], [ 3, 3, 3, 3 ] ],                          // 4-ball line
+       [ [ 2, 2, 2, 2, 2 ], [ 0, 0, 0, 0, 0 ], [ 1, 1, 1, 1, 1 ], [ 3, 3, 3, 3, 3 ] ],              // 5-ball line
+       [ [ 2, 2, 2, 2, 2, 2 ], [ 0, 0, 0, 0, 0, 0 ], [ 1, 1, 1, 1, 1, 1 ], [ 3, 3, 3, 3, 3, 3 ] ],  // 6-ball line
     ]
 
     // current block to remove from field
-    this.figure = 1;
+    this.figure = 2;
 
     // X and Y coords of selected ball (in cells):
     this.sel_ball = null;
@@ -103,8 +111,10 @@ with(Field = function( cell_size, border_size, html_id ){
 
     /*
      * Test for existance of current figure type on the map
-     * nx, ny: position on the map to put template to
+     * nx, ny: coordinates to start motion from
      * For example:
+     *
+     * figure = 1
      *
      *   012345678
      * 0 .o.......
@@ -116,26 +126,36 @@ with(Field = function( cell_size, border_size, html_id ){
      * 7 ......o..
      * 8 .......o.
      *
-     * test_figrure( 0, 0 ) --> true
+     * test_figrure( 0, 0 ) --> false
      * test_figrure( 1, 0 ) --> false
-     * test_figrure( 1, 3 ) --> true
-     * test_figrure( 6, 6 ) --> false
+     * test_figrure( 1, 2 ) --> true
+     * test_figrure( 2, 1 ) --> false
+     * test_figrure( 2, 6 ) --> true
+     * test_figrure( 7, 8 ) --> false
      *
      * TODO: color test
      */
-    prototype.test_figure = function( nx, ny ){
-        var f = this.figures[ this.figure ];               // alias for figures...
+    prototype.test_figure = function( nx, ny, ms, mark ){
+        var x = nx;
+        var y = ny;
 
-        if( nx + f[ 0 ].length > 9 || ny + f.length > 9 )  // exit if template is out of map
-            return;
+        for( var i in ms )
+        {
+            if( ! this.map[ y ][ x ] )
+                return false;
 
-        for( var i = 0; i < f.length; i++ )
-            for( var j = 0; j < f[ 0 ].length; j++ )
-            {
-                if( f[ i ][ j ] && ( ! this.map[ ny + i ][ nx + j ] ) )   // 1 in figure and none on map...
-                    return false;
+            switch( ms[ i ] ) {
+                case 0: y-=1;       break;
+                case 1: y-=1; x+=1; break;
+                case 2: x+=1;       break;
+                case 3: x+=1; y+=1; break;
+                case 4: y+=1;       break;
+                case 5: y+=1; x-=1; break;
+                case 6: x-=1;       break;
+                case 7: x-=1; y-=1; break;
             }
-        return true;  // all ok, figure exists
+        }
+        return true; // all OK, movies good
     };
 
     /*
@@ -144,11 +164,16 @@ with(Field = function( cell_size, border_size, html_id ){
      * TODO: calculate scores here ?
      */
     prototype.remove_balls = function() {
+        var f = this.figures[ this.figure ];  // alias...
+
         for( var j = 0; j < this.map.length; j++ )
             for( var i = 0; i < this.map[ j ].length; i++ )
-                if( this.test_figure( i, j ) )
-                    ;
-                    //alert( 'remove at (' + i + ',' + j + ')' );
+                for( var k in f )
+                    if( this.test_figure( i, j, f[ k ] ) )
+                    {
+                        this.test_figure( i, j, f[ k ], true );  // mark balls for deletion
+                        alert( 'bla' );
+                    }
     };
 
     prototype.handlers = function(){
