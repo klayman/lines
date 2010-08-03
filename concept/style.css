@@ -29,10 +29,20 @@ html, body {
 }
 body {
   color: white;
+  font: 14px/1.5 "Trebuchet MS", serif;
 }
 a {
   text-decoration: none;
   color: inherit;
+}
+h1 {
+  font-size: 20px;
+  text-align: center;
+  margin: 20px 0 -12px 0;
+}
+h2 {
+  font-size: 15px;
+  padding-bottom: 3px;
 }
 @font-face {
   font-family: digital-7-it;
@@ -90,7 +100,7 @@ a {
 #field {
   position: absolute;
   top: 76px;
-  opacity: 1;
+  opacity: 0;
   width: 471px;
   height: 471px;
   background: url(images/field.png);
@@ -100,23 +110,33 @@ a {
   height: 450px;
   margin: 11px;
 }
+#options_page {
+  position: absolute;
+  top: 76px;
+  opacity: 1;
+  width: 471px;
+  height: 471px;
+  background: url(images/square_background.png);
+}
+.options_block {
+  padding: 16px 30px 0 30px;
+}
 #footer_bar {
   position: absolute;
   top: 552px;
-  font: 13px/1.5 "Trebuchet MS", serif;
   width: 471px;
   height: 71px;
   overflow: hidden;
   background: url(images/info_bar.png);
 }
-#logo, #options, #cc, #help, #mode, #restart, #high_score {
+#footer_bar span {
   position: absolute;
   bottom: 13px;
   height: 46px;
   opacity: 0.5;
-  background: url(images/icons.png);
+  background-image: url(images/icons.png);
 }
-#logo:hover, #options:hover, #cc:hover, #help:hover, #mode:hover, #restart:hover, #high_score:hover {
+#footer_bar span:hover {
   opacity: 1;
 }
 #logo {
@@ -152,4 +172,66 @@ a {
   right: 117px;
   width: 40px;
   background-position: -174px 0;
+}
+input[type=checkbox], input[type=radio] {
+  opacity: 0;
+  margin-left: -15px;
+}
+input[type=text] {
+  width: 20px;
+}
+input + label {
+  height: 20px;
+  padding-left: 20px;
+  margin: 0 3px 0 13px;
+  vertical-align: middle;
+  background: url(images/controls.png) no-repeat;
+}
+input[type=checkbox] + label {
+  background-position: 0 0;
+}
+input[type=checkbox] + label:hover {
+  background-position: 0 -20px;
+}
+input[type=checkbox] + label:active {
+  background-position: 0 -40px;
+}
+input[type=checkbox]:disabled + label {
+  background-position: 0 -60px;
+}
+input[type=checkbox]:checked + label {
+  background-position: 0 -80px;
+}
+input[type=checkbox]:checked + label:hover {
+  background-position: 0 -100px;
+}
+input[type=checkbox]:checked + label:active {
+  background-position: 0 -120px;
+}
+input[type=checkbox]:checked:disabled + label {
+  background-position: 0 -140px;
+}
+input[type=radio] + label {
+  background-position: 0 -160px;
+}
+input[type=radio] + label:hover {
+  background-position: 0 -180px;
+}
+input[type=radio] + label:active {
+  background-position: 0 -200px;
+}
+input[type=radio]:disabled + label {
+  background-position: 0 -220px;
+}
+input[type=radio]:checked + label {
+  background-position: 0 -240px;
+}
+input[type=radio]:checked + label:hover {
+  background-position: 0 -260px;
+}
+input[type=radio]:checked + label:active {
+  background-position: 0 -280px;
+}
+input[type=radio]:checked:disabled + label {
+  background-position: 0 -300px;
 }
