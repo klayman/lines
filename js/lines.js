@@ -74,8 +74,8 @@ with(Field = function( cell_size, border_size, html_id ){
         if( this.map[ ny ][ nx ] )   // exit if cell is not empty
             return;
 
-        var ball = new Ball( color, this.square_size + this.border_size, nx, ny );
-        ball.draw( this.svg_obj );
+        var ball = new Ball( color, this.square_size + this.border_size );
+        ball.draw( this.svg_obj, nx, ny, 1 );
         this.map[ ny ][ nx ] = ball;
     };
 
@@ -186,17 +186,13 @@ with(Ball = function( img_number, img_size, img_x, img_y ){
         case 7: this.img_name = 'purple'; break;
     }
 
-    // X and Y coords of the ball (in cells):
-    this.x = img_x;
-    this.y = img_y;
-
     // The ball image size (in px):
     this.size = img_size;
 
 }){
     /* Methods */
 
-    prototype.draw = function( svg_obj ){
+    prototype.draw = function( svg_obj, x, y, scale ){
         // Create jQuery object:
         this.obj = $( svg_obj.image
                       (
@@ -205,14 +201,31 @@ with(Ball = function( img_number, img_size, img_x, img_y ){
                            this.size - 1,
                            this.size - 1,
                            'images/' + this.img_name + '.png',
-                           { transform: "translate(" + ( this.x * this.size + this.size / 2 ) + ',' +
-                                                       ( this.y * this.size + this.size / 2 ) + ")"
+                           { transform:
+        /*  Transformation matrix:
+         *  | sx 0  tx |
+         *  | 0  sy ty | ~ [ sx, 0, 0, sy, tx, ty ];
+         *  | 0  0  1  |
+         *
+         *  sx, sy - scaling object
+         *  tx, ty - translating object
+         */
+                             "matrix( 0, 0, 0, 0," +
+                                ( x * this.size + this.size / 2 ) + ',' +
+                                ( y * this.size + this.size / 2 ) +
+                             ")"
                            }
                       )
                    );
 
         // Animate object:
-        this.obj.animate( { svgOpacity: "1.0" }, 500 );
+        this.obj.animate( { svgTransform:
+                            "matrix(" +
+                                scale + ", 0, 0, " + scale + "," +
+                                ( x * this.size + this.size / 2 ) + ',' +
+                                ( y * this.size + this.size / 2 ) +
+                            ")"
+                          }, 100 );
     };
 }
 
