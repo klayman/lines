@@ -17,8 +17,12 @@ with(Lines_game = function( settings ){
      * footer_bar_id  : id of the settings bar
      * footer_bar_h   : footer bar height (in px)
      * field_id       : id of the game's field DOM element
+     * opt_btn_id     : id of options button
+     * opt_page_id    : id of options page
      **/
     this.settings = settings;
+    // Active page id:
+    this.active_page = this.settings.field_id;
     // Create field object:
     this.create_field();
     // Set the event handlers:
@@ -50,6 +54,24 @@ with(Lines_game = function( settings ){
     };
 
 
+    prototype.page = function( page ){
+        // Save link to "this" property:
+        var _this = this;
+        // Time for animation (in ms):
+        var t = 250;
+
+        if( this.active_page == page )
+            page = this.settings.field_id;
+
+        $( "#" + this.active_page ).fadeOut( t,
+            function(){
+                $( "#" + page ).fadeIn( t );
+                _this.active_page = page;
+            } );
+
+    };
+
+
     prototype.handlers = function(){
         // Save link to "this" property:
         var _this = this;
@@ -62,6 +84,29 @@ with(Lines_game = function( settings ){
                 }
             }
         );
+        var f = function( e ){
+            // w3c standard method:
+            e.stopPropagation();
+        };
+        // Stop click events propagation:
+        $( "#" + this.settings.field_id ).click( f );
+        $( "#" + this.settings.opt_page_id ).click( f );
+        $( "#" + this.settings.footer_bar_id ).click( f );
+        // Set the click handler on the options button:
+        $( "#" + this.settings.opt_btn_id ).click(
+            function(){
+                // Open options page:
+                _this.page( _this.settings.opt_page_id );
+            }
+        );
+        $( "html" ).click(
+            function(){
+                if( _this.active_page != _this.settings.field_id )
+                    // If the current page isn't "field", open it:
+                    _this.page( _this.settings.field_id );
+            }
+        );
+
     };
 
 }
@@ -188,8 +233,8 @@ with(Field = function( cell_size, border_size, html_id ){
         var nx = this.sel_ball.x;
         var ny = this.sel_ball.y;
         path = this.find_path( nx, ny, to_x, to_y );
-        alert( 'from = ' + nx + ',' + ny + ' to = ' + to_x + ',' + to_y );
-        alert( path.join( '|' ) );
+        //alert( 'from = ' + nx + ',' + ny + ' to = ' + to_x + ',' + to_y );
+        //alert( path.join( '|' ) );
         for( i in path )
         {
             // TODO: this is concept code ;)
@@ -465,7 +510,9 @@ $( document ).ready(
                 "info_bar_h"    : 71,
                 "footer_bar_id" : "footer_bar",
                 "footer_bar_h"  : 71,
-                "field_id"      : "field"
+                "field_id"      : "field",
+                "opt_btn_id"    : "options",
+                "opt_page_id"   : "options_page",
             };
         lines = new Lines_game( settings );
         lines.field.put_balls();
