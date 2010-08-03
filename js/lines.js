@@ -3,16 +3,65 @@
 
 /* The game main class: */
 
-with(Lines_game = function(){
+with(Lines_game = function( settings ){
 
     /* Constructor */
 
+    // Save default settings of the game:
+    /*
+     * show_bars      : visible or not info bars up and below the field (boolean)
+     * cell_size      : the field's cell size (in px)
+     * border_size    : the field's cell border size (in px)
+     * info_bar_id    : id of the DOM element with the score bar
+     * info_bar_h     : info bar height (in px)
+     * footer_bar_id  : id of the settings bar
+     * footer_bar_h   : footer bar height (in px)
+     * field_id       : id of the game's field DOM element
+     **/
+    this.settings = settings;
+    // Create field object:
+    this.create_field();
+    // Set the event handlers:
+    this.handlers();
 }){
     /* Methods */
 
-    prototype.create_field = function( cell_size, border_size, html_id  ){
+    prototype.create_field = function(){
         // The game field object:
-        this.field = new Field( cell_size, border_size, html_id );
+        this.field = new Field( this.settings.cell_size, this.settings.border_size,
+                                this.settings.field_id );
+    };
+
+
+    prototype.info_bars = function(){
+        // Time for animation (in ms):
+        var t = 200;
+        if( this.settings.show_bars ){
+            // Hide bars:
+            $( "#" + this.settings.info_bar_id ).animate( { height: "0px" }, t );
+            $( "#" + this.settings.footer_bar_id ).animate( { height: "0px" }, t );
+            this.settings.show_bars = false;
+        }else{
+            // Show bars:
+            $( "#" + this.settings.info_bar_id ).animate( { height: this.settings.info_bar_h + "px" }, t );
+            $( "#" + this.settings.footer_bar_id ).animate( { height: this.settings.footer_bar_h + "px" }, t );
+            this.settings.show_bars = true;
+        }
+    };
+
+
+    prototype.handlers = function(){
+        // Save link to "this" property:
+        var _this = this;
+        // Set the hot keys handlers:
+        $( document ).keyup(
+            function( e ){
+                switch( e.keyCode ){
+                    // Show or hide info bars up and below the field:
+                    case 90: _this.info_bars(); break;
+                }
+            }
+        );
     };
 
 }
@@ -406,10 +455,19 @@ var lines;
 $( document ).ready(
     function(){
         /* Game initialization after the page loads: */
-        lines = new Lines_game();
-
-        // Create field object:
-        lines.create_field( 48, 2, "field" );
+        // Set default game settings:
+        var settings =
+            {
+                "show_bars"     : true,
+                "cell_size"     : 48,
+                "border_size"   : 2,
+                "info_bar_id"   : "info_bar",
+                "info_bar_h"    : 71,
+                "footer_bar_id" : "footer_bar",
+                "footer_bar_h"  : 71,
+                "field_id"      : "field"
+            };
+        lines = new Lines_game( settings );
         lines.field.put_balls();
         lines.field.put_balls();
     }
