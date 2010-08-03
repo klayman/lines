@@ -75,12 +75,86 @@ with(Field = function( cell_size, border_size, html_id ){
 }){
     ////////////////// Methods ////////////////
 
+    prototype.put_balls = function() {
+        for( var i = 0; i < 3; i++ ) {
+            var color = this.rand( 1, 7 );
+            do {
+                var nx = this.rand( 0, 8 );
+                var ny = this.rand( 0, 8 );
+            } while( this.map[ ny ][ nx ] );
+
+            var ball = new Ball( color, this.square_size + this.border_size );
+            ball.draw( this.svg_obj, nx, ny, 1 );
+            this.map[ ny ][ nx ] = ball;
+        };
+    }
+
+    prototype.find_path = function( f_x, f_y, to_x, to_y ) {
+        var stack = Array( );           // stack for multiple purposes
+
+        var arr = new Array( 9 );       // 2d array for back-path
+        for( var i = 0; i < 9; i++ )
+            arr[ i ] = new Array( null, null, null, null, null, null, null, null, null );
+
+
+        stack.push( [ f_x, f_y ] );
+
+        while( stack.length )
+        {
+            var pos = stack.splice( 0,1 )[ 0 ];  // take first element and remove them
+
+            var d = [ [ 1, 0 ], [ -1, 0 ], [ 0, 1 ], [ 0, -1 ] ];   // allowed motions
+            for( var i in d )
+            {
+                var x = pos[ 0 ] + d[ i ][ 0 ];
+                var y = pos[ 1 ] + d[ i ][ 1 ];
+                if( ( x >= 0 ) && ( y >= 0 ) && ( x <= 8 ) && ( y <= 8 ) && !this.map[ y ][ x ] && ! arr[ y ][ x ] )
+                {
+                    arr[ y ][ x ] = pos;    // we go to position ( x, y ) from position pos
+                    stack.push( [ x, y ] ); // add new place...
+                }
+            }
+        }
+
+        if( !arr[ to_y ][ to_x ] )
+            return [];
+
+        var x = to_x;
+        var y = to_y;
+        while( x != f_x || y != f_y )
+        {
+            var pos = arr[ y ][ x ];
+            stack.push( [ x, y ] );
+            x = pos[ 0 ];
+            y = pos[ 1 ];
+        }
+
+        return stack;
+    }
+
+    prototype.move_ball = function( to_x, to_y ) {
+        if( !this.sel_ball )
+            return;
+
+        var nx = this.sel_ball.x;
+        var ny = this.sel_ball.y;
+        path = this.find_path( nx, ny, to_x, to_y );
+        alert( 'from = ' + nx + ',' + ny + ' to = ' + to_x + ',' + to_y );
+        alert( path.join( '|' ) );
+        for( i in path )
+        {
+            // TODO: this is concept code ;)
+            var ball = new Ball( 1, this.square_size + this.border_size );
+            ball.draw( this.svg_obj, path[ i ][ 0 ], path[ i ][ 1 ], 0.3 );
+        }
+    }
+
     /*
      * Put ball at desired position
      * nx, ny : position on map ( numbers )
      * color  : color of ball ( number )
      */
-    prototype.put_ball = function( nx, ny, color ){
+    prototype.select_ball = function( nx, ny ){
 
         if( this.map[ ny ][ nx ] ){
 
@@ -103,9 +177,6 @@ with(Field = function( cell_size, border_size, html_id ){
             return;
         }
 
-        var ball = new Ball( color, this.square_size + this.border_size );
-        ball.draw( this.svg_obj, nx, ny, 1 );
-        this.map[ ny ][ nx ] = ball;
     };
 
 
@@ -141,6 +212,9 @@ with(Field = function( cell_size, border_size, html_id ){
 
         for( var i in ms )
         {
+            if( x < 0 || y < 0 || x > 8 || y > 8 )
+                return false;
+
             if( ! this.map[ y ][ x ] )
                 return false;
 
@@ -200,8 +274,9 @@ with(Field = function( cell_size, border_size, html_id ){
                     ( y - ( _this.square_size + _this.border_size ) * ny > _this.square_size && ny < 8 ) )
                     return false;
 
-                _this.put_ball( nx, ny, _this.rand( 1, 7 ) );  // put ball to the map
-                _this.remove_balls();                          // remove balls & calculate scores etc...
+                _this.select_ball( nx, ny );  // try to select ball on the map
+                _this.move_ball( nx, ny );    // try move selected ball to new position
+                _this.remove_balls();         // remove balls & calculate scores etc...
             }
         );
     };
@@ -335,5 +410,7 @@ $( document ).ready(
 
         // Create field object:
         lines.create_field( 48, 2, "field" );
+        lines.field.put_balls();
+        lines.field.put_balls();
     }
 );
