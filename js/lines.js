@@ -233,14 +233,29 @@ with(Field = function( cell_size, border_size, html_id ){
         var nx = this.sel_ball.x;
         var ny = this.sel_ball.y;
         path = this.find_path( nx, ny, to_x, to_y );
-        //alert( 'from = ' + nx + ',' + ny + ' to = ' + to_x + ',' + to_y );
-        //alert( path.join( '|' ) );
-        for( i in path )
+
+        if( path.length > 0 ){
+            var color_num = this.map[ ny ][ nx ].num;
+            // Remove ball:
+            this.map[ ny ][ nx ].jump_stop( nx, ny, true );
+            this.map[ ny ][ nx ].remove( nx, ny );
+            this.map[ ny ][ nx ] = null;
+            // Add ball at the new position:
+            var ball = new Ball( color_num, this.square_size + this.border_size );
+            this.map[ path[ 0 ][ 1 ] ][ path[ 0 ][ 0 ] ] = ball;
+            ball.draw( this.svg_obj, path[ 0 ][ 0 ], path[ 0 ][ 1 ], 1 );
+            this.sel_ball = null;
+            // Moving sucessfull:
+            return true;
+        }
+        /*for( i in path )
         {
             // TODO: this is concept code ;)
-            var ball = new Ball( 1, this.square_size + this.border_size );
+            var ball = new Ball( 6, this.square_size + this.border_size );
             ball.draw( this.svg_obj, path[ i ][ 0 ], path[ i ][ 1 ], 0.3 );
-        }
+        }*/
+        // Moving faild!
+        return false;
     }
 
     /*
@@ -250,6 +265,7 @@ with(Field = function( cell_size, border_size, html_id ){
      */
     prototype.select_ball = function( nx, ny ){
 
+        //alert( this.map[ ny ][ nx ] );
         if( this.map[ ny ][ nx ] ){
 
             // Select ball and set to it "jumping" effect:
@@ -340,7 +356,7 @@ with(Field = function( cell_size, border_size, html_id ){
                     if( this.test_figure( i, j, f[ k ] ) )
                     {
                         this.test_figure( i, j, f[ k ], true );  // mark balls for deletion
-                        alert( 'bla' );
+                        //alert( 'bla' );
                     }
     };
 
@@ -368,9 +384,11 @@ with(Field = function( cell_size, border_size, html_id ){
                     ( y - ( _this.square_size + _this.border_size ) * ny > _this.square_size && ny < 8 ) )
                     return false;
 
-                _this.select_ball( nx, ny );  // try to select ball on the map
-                _this.move_ball( nx, ny );    // try move selected ball to new position
-                _this.remove_balls();         // remove balls & calculate scores etc...
+                _this.select_ball( nx, ny );     // try to select ball on the map
+                if( _this.move_ball( nx, ny ) ){ // try move selected ball to new position
+                    _this.put_balls();           // put 3 new balls on the field
+                    _this.remove_balls();        // remove balls & calculate scores etc...
+                }
             }
         );
     };
@@ -390,9 +408,12 @@ with(Ball = function( img_number, img_size ){
 
     /* Constructor */
 
+    // Save the ball image number:
+    this.num = img_number;
+
     // Define the image name:
     this.img_name = undefined;
-    switch( img_number ){
+    switch( this.num ){
         case 1: this.img_name = 'red';    break;
         case 2: this.img_name = 'orange'; break;
         case 3: this.img_name = 'yellow'; break;
@@ -439,13 +460,21 @@ with(Ball = function( img_number, img_size ){
     };
 
 
+    prototype.remove = function( x, y ){
+        this.animate( x, y, 0, 100 );
+    };
+
+
     prototype.animate = function( x, y, scale, time, structure ){
         // Save link to "this" property:
         var _this = this;
 
         if( ! structure )
-            // callback - soother:
-            var callback = function(){};
+            var callback = function(){
+                if( scale == 0 )
+                    // Remove the ball jQuery object:
+                    _this.obj.remove();
+            };
         else
             var callback =
                 function(){
@@ -456,7 +485,7 @@ with(Ball = function( img_number, img_size ){
                                              structure.slice( 1, structure.length ) );
                     else
                         _this.animate( x, y, arr[ 0 ], arr[ 1 ] );
-                }
+                };
         this.obj.animate(
             { svgTransform:
                 "matrix(" +
@@ -487,11 +516,12 @@ with(Ball = function( img_number, img_size ){
     };
 
 
-    prototype.jump_stop = function( x, y ){
+    prototype.jump_stop = function( x, y, hard ){
         // Stop animation:
         this.obj.stopTime();
-        // Return default size:
-        this.animate( x, y, 1, 1 );
+        if( ! hard )
+            // Return default size:
+            this.animate( x, y, 1, 0 );
     };
 }
 
@@ -515,7 +545,6 @@ $( document ).ready(
                 "opt_page_id"   : "options_page",
             };
         lines = new Lines_game( settings );
-        lines.field.put_balls();
         lines.field.put_balls();
     }
 );
