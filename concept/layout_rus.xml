@@ -8,15 +8,8 @@
 <head>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
   <meta name="generator" content="Head and Hands" />
-  <title>Lines</title>
+  <title>Layout</title>
   <link type="text/css" rel="stylesheet" href="style.css" />
-  <script type="text/javascript" src="js/jquery.js"></script>
-  <script type="text/javascript" src="js/jquery.cookie.js"></script>
-  <script type="text/javascript" src="js/jquery.timers.js"></script>
-  <script type="text/javascript" src="js/jquery.svg.js"></script>
-  <script type="text/javascript" src="js/jquery.svgdom.js"></script>
-  <script type="text/javascript" src="js/jquery.svganim.js"></script>
-  <script type="text/javascript" src="js/lines.js"></script>
 </head>
 
 <body>
@@ -44,29 +37,35 @@
         <svg:svg id="info_balls"
           version="1.1"
           viewBox="0 0 150 50">
+          <svg:image x="0" y="0" width="49" height="49" xlink:href="images/blue.png"/>
+          <svg:image x="50" y="0" width="49" height="49" xlink:href="images/purple.png"/>
+          <svg:image x="100" y="0" width="49" height="49" xlink:href="images/green.png"/>
         </svg:svg>
       </div> <!--#info_block-->
-      <span id="timer">0</span>
-      <span id="score">0</span>
+      <span id="score">260</span>
+      <span id="timer">10</span>
     </div> <!--#info_bar-->
     <div id="field">
       <svg:svg id="balls"
         version="1.1"
         viewBox="0 0 450 450">
-        <svg:image x="-48" y="-48" width="49" height="49" xlink:href="images/red.png"/>
-        <svg:image x="-48" y="-48" width="49" height="49" xlink:href="images/orange.png"/>
-        <svg:image x="-48" y="-48" width="49" height="49" xlink:href="images/yellow.png"/>
-        <svg:image x="-48" y="-48" width="49" height="49" xlink:href="images/green.png"/>
-        <svg:image x="-48" y="-48" width="49" height="49" xlink:href="images/cyan.png"/>
-        <svg:image x="-48" y="-48" width="49" height="49" xlink:href="images/blue.png"/>
-        <svg:image x="-48" y="-48" width="49" height="49" xlink:href="images/purple.png"/>
+        <svg:image x="100" y="0" width="49" height="49" xlink:href="images/blue.png"/>
+        <svg:image x="50" y="0" width="49" height="49" xlink:href="images/orange.png"/>
+        <svg:image x="100" y="50" width="49" height="49" xlink:href="images/green.png"/>
+        <svg:image x="50" y="50" width="49" height="49" xlink:href="images/red.png"/>
+        <svg:image x="0" y="0" width="49" height="49" xlink:href="images/red.png"/>
+        <svg:image x="400" y="400" width="49" height="49" xlink:href="images/red.png"/>
+        <svg:image x="400" y="0" width="49" height="49" xlink:href="images/red.png"/>
+        <svg:image x="0" y="400" width="49" height="49" xlink:href="images/red.png"/>
+        <svg:image x="150" y="250" width="49" height="49" xlink:href="images/yellow.png"/>
+        <svg:image x="200" y="250" width="49" height="49" xlink:href="images/cyan.png"/>
       </svg:svg>
     </div> <!--#field-->
     <div id="options_page">
       <h1>Настройки</h1>
       <div class="options_block">
         <h2>Language/Язык:</h2>
-        <input id="russian" type="radio" name="language" checked="true"/> <label for="russian">Русский</label>
+        <input id="russian" type="radio" name="language" checked="true"/> <label for="russian">русский</label>
         <input id="english" type="radio" name="language"/> <label for="english">English</label>
       </div> <!--.options_block-->
       <div class="options_block">
@@ -87,19 +86,24 @@
         <h2>Дополнительные опции:</h2>
         <input id="zen" type="checkbox"/> <label for="zen">дзен-режим (Z)</label><br />
         <input id="next" type="checkbox"/> <label for="next">положение следующих шариков (N)</label><br />
-        <input id="undo" type="checkbox" checked="true"/> <label for="undo">отмена последнего действия (ctrl Z, ⌘ Z)</label><br />
+        <input id="undo" type="checkbox" checked="true"/> <label for="undo">отмена последнего действия (shift Z)</label><br />
         <input id="time_constraint" type="checkbox"/> <label for="time_constraint">ограничение по времени <input type="text" value="15"/> сек на ход</label><br />
         <input id="save" type="checkbox" checked="true"/> <label for="save">сохранять игру при выходе</label>
       </div> <!--.options_block-->
+      <div id="buttons">
+        <span class="button">отмена</span>
+        <span id="spacer"></span>
+        <span class="button">oк</span>
+      </div>
     </div> <!--#options_page-->
     <div id="footer_bar">
       <a href="http://www.semyonfilippov.net"><span id="logo"></span></a>
-      <a><span id="cc"></span></a>
-      <a><span id="restart"></span></a>
-      <a><span id="mode"></span></a>
-      <a><span id="high_score"></span></a>
-      <a><span id="help"></span></a>
-      <a><span id="options"></span></a>
+      <a href=""><span id="cc"></span></a>
+      <a href=""><span id="restart"></span></a>
+      <a href=""><span id="mode"></span></a>
+      <a href=""><span id="high_score"></span></a>
+      <a href=""><span id="help"></span></a>
+      <a href=""><span id="options"></span></a>
     </div> <!--#footer_bar-->
   </div>   <!--#wrapper-->
 </body>

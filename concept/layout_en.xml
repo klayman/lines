@@ -42,8 +42,8 @@
           <svg:image x="100" y="0" width="49" height="49" xlink:href="images/green.png"/>
         </svg:svg>
       </div> <!--#info_block-->
-      <span id="timer">10</span>
       <span id="score">260</span>
+      <span id="timer">10</span>
     </div> <!--#info_bar-->
     <div id="field">
       <svg:svg id="balls"
@@ -62,34 +62,39 @@
       </svg:svg>
     </div> <!--#field-->
     <div id="options_page">
-      <h1>Настройки</h1>
+      <h1>Options</h1>
       <div class="options_block">
-        <h2>Language/Язык:</h2>
-        <input id="russian" type="radio" name="language" checked="true"/> <label for="russian">русский</label>
-        <input id="english" type="radio" name="language"/> <label for="english">English</label>
+        <h2>Язык/Language:</h2>
+        <input id="russian" type="radio" name="language"/> <label for="russian">русский</label>
+        <input id="english" type="radio" name="language" checked="true"/> <label for="english">English</label>
       </div> <!--.options_block-->
       <div class="options_block">
-        <h2>Режим по умолчанию:</h2>
+        <h2>Default mode:</h2>
         <input id="lines" type="radio" name="mode" checked="true"/>
-          <label for="lines">линии</label> (минимум<input id="four" type="radio" name="in_line"/><label for="four">4</label><input id="five" type="radio" name="in_line" checked="true"/><label for="five">5</label><input id="six" type="radio" name="in_line"/><label for="six">6</label> в ряд)<br />
-        <input id="rectangles" type="radio" name="mode"/> <label for="rectangles">прямоугольники</label><br />
-        <input id="rings" type="radio" name="mode"/> <label for="rings">ромбы</label><br />
+          <label for="lines">lines</label> (at least<input id="four" type="radio" name="in_line"/><label for="four">4</label><input id="five" type="radio" name="in_line" checked="true"/><label for="five">5</label><input id="six" type="radio" name="in_line"/><label for="six">6</label> in row)<br />
+        <input id="rectangles" type="radio" name="mode"/> <label for="rectangles">rectangles</label><br />
+        <input id="rings" type="radio" name="mode"/> <label for="rings">rings</label><br />
         <input id="blocks" type="radio" name="mode"/>
-          <label for="blocks">блоки</label> (минимум по<input id="six_in_a_block" type="radio" name="in_block" disabled="true"/><label for="six_in_a_block">6</label><input id="seven" type="radio" name="in_block" checked="true" disabled="true"/><label for="seven">7</label><input id="eight" type="radio" name="in_block" disabled="true"/><label for="eight">8</label>)
+          <label for="blocks">blocks</label> (at least in<input id="six_in_a_block" type="radio" name="in_block" disabled="true"/><label for="six_in_a_block">6</label><input id="seven" type="radio" name="in_block" checked="true" disabled="true"/><label for="seven">7</label><input id="eight" type="radio" name="in_block" disabled="true"/><label for="eight">8</label>)
       </div> <!--.options_block-->
       <div class="options_block">
-        <h2>Вид шариков:</h2>
-        <input id="glossy" type="radio" name="ball_type"/> <label for="glossy">глянцевые</label>
-        <input id="matte" type="radio" name="ball_type" checked="true"/> <label for="matte">матовые</label>
+        <h2>Balls style:</h2>
+        <input id="glossy" type="radio" name="ball_type"/> <label for="glossy">glossy</label>
+        <input id="matte" type="radio" name="ball_type" checked="true"/> <label for="matte">matte</label>
       </div> <!--.options_block-->
       <div class="options_block">
-        <h2>Дополнительные опции:</h2>
-        <input id="zen" type="checkbox"/> <label for="zen">дзен-режим (Z)</label><br />
-        <input id="next" type="checkbox"/> <label for="next">положение следующих шариков (N)</label><br />
-        <input id="undo" type="checkbox" checked="true"/> <label for="undo">отмена последнего действия (ctrl Z, ⌘ Z)</label><br />
-        <input id="time_constraint" type="checkbox"/> <label for="time_constraint">ограничение по времени <input type="text" value="15"/> сек на ход</label><br />
-        <input id="save" type="checkbox" checked="true"/> <label for="save">сохранять игру при выходе</label>
+        <h2>More options:</h2>
+        <input id="zen" type="checkbox"/> <label for="zen">zen-mode (Z)</label><br />
+        <input id="next" type="checkbox"/> <label for="next">next balls preview (N)</label><br />
+        <input id="undo" type="checkbox" checked="true"/> <label for="undo">undo (shift Z)</label><br />
+        <input id="time_constraint" type="checkbox"/> <label for="time_constraint">time constraint <input type="text" value="15"/> seconds per turn</label><br />
+        <input id="save" type="checkbox" checked="true"/> <label for="save">save on exit</label>
       </div> <!--.options_block-->
+      <div id="buttons">
+        <span class="button">cancel</span>
+        <span id="spacer"></span>
+        <span class="button">ok</span>
+      </div>
     </div> <!--#options_page-->
     <div id="footer_bar">
       <a href="http://www.semyonfilippov.net"><span id="logo"></span></a>
