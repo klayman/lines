@@ -23,6 +23,8 @@ with(Lines_game = function( settings ){
     this.settings = settings;
     // Active page id:
     this.active_page = this.settings.field_id;
+    // Create info bar object:
+    this.create_info_bar();
     // Create field object:
     this.create_field();
     // Set the event handlers:
@@ -33,7 +35,13 @@ with(Lines_game = function( settings ){
     prototype.create_field = function(){
         // The game field object:
         this.field = new Field( this.settings.cell_size, this.settings.border_size,
-                                this.settings.field_id );
+                                this.settings.field_id, this.info_bar );
+    };
+
+
+    prototype.create_info_bar = function(){
+        // The game field object:
+        this.info_bar = new Info_bar( this.settings.info_bar_id );
     };
 
 
@@ -113,6 +121,56 @@ with(Lines_game = function( settings ){
 
 
 
+/* The game info bar class: */
+
+with(Info_bar = function( html_id ){
+
+    /* Constructor: */
+
+    this.obj = $( "#" + html_id );  // Saving the jQuery object of info bar
+
+    var _this = this;               // Save link to "this" property
+    $( "#" + html_id ).children( "div" ).children().svg(
+        {
+            onLoad: function( svg ){
+                _this.svg_obj = svg;   // Saving SVG object of field
+            }
+        }
+    );
+
+    // Array of the Ball class objects
+    this.balls = [];
+
+}){
+    /* Methods */
+
+
+    /*
+     * Remove all balls from the own SVG object:
+     */
+    prototype.remove_balls = function(){
+        for( var i in this.balls )
+            this.balls[ i ].obj.remove();
+        this.balls = [];
+    };
+
+    /*
+     * Draw balls on the own SVG object:
+     * arr   : array of colors of balls
+     * size  : size of the field cell (in px)
+     */
+    prototype.put_balls = function( arr, size ){
+        for( var i in arr ){
+            var color = arr[ i ];
+            var ball = new Ball( color, size );
+            ball.draw( this.svg_obj, i * 1, 0, 1 );
+            this.balls.push( ball );
+        }
+    };
+}
+
+
+
 /* The game field class: */
 
 /*
@@ -121,22 +179,22 @@ with(Lines_game = function( settings ){
  * border_size : width of border line between cells (in px)
  * html_id     : id of <div> which contains svg
  **/
-with(Field = function( cell_size, border_size, html_id ){
+with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
 
-    this.obj = $( "#" + html_id );  // Saving the jQuery object of field:
-    var _this = this;               // Save link to "this" property:
+    this.obj = $( "#" + html_id );  // Saving the jQuery object of field
+    var _this = this;               // Save link to "this" property
     $( "#" + html_id ).children().svg(
         {
             onLoad: function( svg ){
-                _this.svg_obj = svg;   // Saving SVG object of field:
+                _this.svg_obj = svg;   // Saving SVG object of field
             }
         }
     );
 
-    this.square_size = cell_size;    // Default size of each cell (in px):
-    this.border_size = border_size;  // Default size of cell border (in px):
+    this.square_size = cell_size;    // Default size of each cell (in px)
+    this.border_size = border_size;  // Default size of cell border (in px)
 
-    this.map = new Array( 9 );       // The 2d array of Ball class objects:
+    this.map = new Array( 9 );       // The 2d array of Ball class objects
     for( var i = 0; i < 9; i++ )
         this.map[ i ] = new Array( null, null, null, null, null, null, null, null, null );
 
@@ -164,24 +222,63 @@ with(Field = function( cell_size, border_size, html_id ){
     // X and Y coords of selected ball (in cells):
     this.sel_ball = null;
 
+    // Link to the Info_bar class object:
+    this.info_bar_obj = info_bar_obj;
+
+    // Put 3 first balls on the field:
+    this.put_balls( this.gen_next_balls() );
+
+    // Array of "next" colors of balls, which will appear at the field in the next turn:
+    this.next_balls = this.gen_next_balls();
+    // Update info bar balls:
+    this.update_info_bar();
+
     this.handlers();    // Set the event handlers:
 
 }){
     ////////////////// Methods ////////////////
 
-    prototype.put_balls = function() {
+    /*
+     * Generate 3 new colors of balls and return them in array:
+     */
+    prototype.gen_next_balls = function() {
+        var arr = [];
         for( var i = 0; i < 3; i++ ) {
             var color = this.rand( 1, 7 );
+            arr.push( color );
+        }
+        return arr;
+    };
+
+
+    /*
+     * Update the Info_bar class objec balls:
+     */
+    prototype.update_info_bar = function(){
+        // Remove old "next" balls from the info bar:
+        this.info_bar_obj.remove_balls();
+        // Put new "next" balls on the info bar:
+        this.info_bar_obj.put_balls( this.next_balls, this.square_size + this.border_size );
+    };
+
+
+    /*
+     * Draw balls on the own SVG object:
+     * arr : array of colors of balls
+     */
+    prototype.put_balls = function( arr ){
+        for( var i in arr ){
+            var color = arr[ i ];
             do {
                 var nx = this.rand( 0, 8 );
                 var ny = this.rand( 0, 8 );
             } while( this.map[ ny ][ nx ] );
-
             var ball = new Ball( color, this.square_size + this.border_size );
-            ball.draw( this.svg_obj, nx, ny, 1 );
             this.map[ ny ][ nx ] = ball;
-        };
-    }
+            ball.draw( this.svg_obj, nx, ny, 1 );
+        }
+    };
+
 
     prototype.find_path = function( f_x, f_y, to_x, to_y ) {
         var stack = Array( );           // stack for multiple purposes
@@ -227,8 +324,8 @@ with(Field = function( cell_size, border_size, html_id ){
     }
 
     prototype.move_ball = function( to_x, to_y ) {
-        if( !this.sel_ball )
-            return;
+        if( ! this.sel_ball )
+            return false;
 
         var nx = this.sel_ball.x;
         var ny = this.sel_ball.y;
@@ -259,13 +356,11 @@ with(Field = function( cell_size, border_size, html_id ){
     }
 
     /*
-     * Put ball at desired position
-     * nx, ny : position on map ( numbers )
-     * color  : color of ball ( number )
+     * Try to select ball on the field
+     * nx, ny : position on the field ( numbers )
      */
     prototype.select_ball = function( nx, ny ){
 
-        //alert( this.map[ ny ][ nx ] );
         if( this.map[ ny ][ nx ] ){
 
             // Select ball and set to it "jumping" effect:
@@ -386,15 +481,21 @@ with(Field = function( cell_size, border_size, html_id ){
 
                 _this.select_ball( nx, ny );     // try to select ball on the map
                 if( _this.move_ball( nx, ny ) ){ // try move selected ball to new position
-                    _this.put_balls();           // put 3 new balls on the field
-                    _this.remove_balls();        // remove balls & calculate scores etc...
+
+                    _this.put_balls( _this.next_balls );         // put 3 new balls on the field
+                    _this.next_balls = _this.gen_next_balls();   // generate 3 new "next" balls
+                    _this.update_info_bar();                     // update info bar "next" balls
+                    _this.remove_balls();                        // remove balls & calculate scores etc...
+
                 }
             }
         );
     };
 
 
-    // Auxiliary method for generating random numbers in a certain range:
+    /*
+     * Auxiliary method for generating random numbers in a certain range:
+     */
     prototype.rand = function( m, n ){
         m = parseInt( m );
         n = parseInt( n );
@@ -521,9 +622,10 @@ with(Ball = function( img_number, img_size ){
         this.obj.stopTime();
         if( ! hard )
             // Return default size:
-            this.animate( x, y, 1, 0 );
+            this.animate( x, y, 1, 1 );
     };
 }
+
 
 
 var lines;
@@ -545,6 +647,5 @@ $( document ).ready(
                 "opt_page_id"   : "options_page",
             };
         lines = new Lines_game( settings );
-        lines.field.put_balls();
     }
 );
