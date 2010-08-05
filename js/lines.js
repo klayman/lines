@@ -163,7 +163,7 @@ with(Info_bar = function( html_id ){
         for( var i in arr ){
             var color = arr[ i ];
             var ball = new Ball( this.svg_obj, color, size );
-            ball.popup( i * 1, 0 );
+            ball.popup( i * 1, 0, 1 );
             this.balls.push( ball );
         }
     };
@@ -275,7 +275,7 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
             } while( this.map[ ny ][ nx ] );
             var ball = new Ball( this.svg_obj, color, this.square_size + this.border_size );
             this.map[ ny ][ nx ] = ball;
-            ball.popup( nx, ny );
+            ball.popup( nx, ny, 1 );
         }
     };
 
@@ -323,7 +323,7 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
         return stack;
     }
 
-    prototype.move_ball = function( to_x, to_y ) {
+    prototype.move_ball = function( to_x, to_y, callback ) {
         if( ! this.sel_ball )
             return false;
 
@@ -341,19 +341,16 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
 
             this.map[ to_y ][ to_x ] = new_ball;
 
-            old_ball.remove( );
-            new_ball.popup( to_x, to_y );
-
+            old_ball.remove();
             this.sel_ball = null;
-            // Moving sucessfull:
-            return true;
+
+            var after_move = function( _this ){
+                // Moving sucessfull:
+                callback( _this );
+            };
+
+            new_ball.popup( to_x, to_y, 1, after_move, this );
         }
-        /*for( i in path )
-        {
-            // TODO: this is concept code ;)
-            var ball = new Ball( 6, this.square_size + this.border_size );
-            ball.draw( this.svg_obj, path[ i ][ 0 ], path[ i ][ 1 ], 0.3 );
-        }*/
         // Moving faild!
         return false;
     }
@@ -514,13 +511,18 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
             return cnt;
         }
 
+        var cnt = 0;  // count of removed balls
         for( var j = 0; j < this.map.length; j++ )
             for( var i = 0; i < this.map[ j ].length; i++ )
                 if( this.map[ j ][ i ] && this.map[ j ][ i ].marked )
                 {
                     cnt = remove_group( i, j, this );
-                    alert( 'removed ' + cnt + ' balls' );
                 }
+
+        if( cnt > 0 )
+            return true;
+
+        return false;
 
     };
 
@@ -549,14 +551,16 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
                     return false;
 
                 _this.select_ball( nx, ny );     // try to select ball on the map
-                if( _this.move_ball( nx, ny ) ){ // try move selected ball to new position
 
-                    _this.put_balls( _this.next_balls );         // put 3 new balls on the field
-                    _this.next_balls = _this.gen_next_balls();   // generate 3 new "next" balls
-                    _this.update_info_bar();                     // update info bar "next" balls
-                    _this.remove_balls();                        // remove balls & calculate scores etc...
+                var callback = function( _this ){
+                    if( ! _this.remove_balls() ){                // find and remove groups of balls
+                        _this.put_balls( _this.next_balls );         // put 3 new balls on the field
+                        _this.next_balls = _this.gen_next_balls();   // generate 3 new "next" balls
+                        _this.update_info_bar();                     // update info bar "next" balls
+                    }
+                };
 
-                }
+                _this.move_ball( nx, ny, callback );  // try move selected ball to new position
             }
         );
     };
@@ -651,19 +655,18 @@ with(Ball = function( svg_obj, img_number, img_size ){
     /*
      * Destroy internal SVG object.
      */
-    prototype.erase = function( ){
+    prototype.erase = function(){
         if( this.obj )
-            this.obj.remove();  // destroy SVG object
+            this.obj.remove();  // remove SVG object
     }
 
 
     /*
      * Popup ball with animation at position ( nx, ny )
      */
-    prototype.popup = function( nx, ny ){
-        this.erase();                            // delete old SVG object
-        this.draw( nx, ny, 0 );                  // create new SVG object with zero size
-        this.animate( [ [ nx, ny, 1, 100 ] ] );  // ... and animate to desired size
+    prototype.popup = function( nx, ny, scale, callback, clbk_param ){
+        this.draw( nx, ny, 0 );                      // create new SVG object with zero size
+        this.animate( [ [ nx, ny, scale, 100 ] ], callback, clbk_param );  // ... and animate to desired size
     };
 
 
@@ -671,7 +674,7 @@ with(Ball = function( svg_obj, img_number, img_size ){
      * Remove ball with animation.
      * After animation SVG object will be destroyed.
      */
-    prototype.remove = function( ){
+    prototype.remove = function(){
         var _this = this;
         callback = function() { _this.erase(); }
 
@@ -682,8 +685,9 @@ with(Ball = function( svg_obj, img_number, img_size ){
 
     /*
      * Very flexible method to animate existing SVG ball object.
-     * structure : array of structures [ new_x, new_y, new_scale, time ]
-     * callback  : callback to call after all animation steps.
+     * structure  : array of structures [ new_x, new_y, new_scale, time ]
+     * callback   : callback to call after all animation steps.
+     * clbk_param : callback function parameter
      *
      * For example:
      *
@@ -693,13 +697,21 @@ with(Ball = function( svg_obj, img_number, img_size ){
      * 2 step : animate to x = 2, y = 2, scale = 1.1 during 200 ms
      * after this alert will be shown.
      */
-    prototype.animate = function( structure, callback ){
+    prototype.animate = function( structure, callback, clbk_param ){
         var _this = this;  // save link to this...
 
         // ... send part of structure to next animation step
-        var func = function(){ _this.animate( structure.slice( 1 ) ); };
+        var func = function(){
+            _this.animate( structure.slice( 1 ) );
+        };
         if( structure.length == 1 )  // we on the last step,
-            func = callback;         // ...at the end of animation call this callback
+            if( callback ){
+                func = function(){
+                    callback( clbk_param );  // ...at the end of animation call this callback
+                };
+            }else
+                func = function(){};
+
 
         var arr = structure[ 0 ]; // take parameters for animation
 
