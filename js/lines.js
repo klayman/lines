@@ -162,8 +162,8 @@ with(Info_bar = function( html_id ){
     prototype.put_balls = function( arr, size ){
         for( var i in arr ){
             var color = arr[ i ];
-            var ball = new Ball( color, size );
-            ball.draw( this.svg_obj, i * 1, 0, 1 );
+            var ball = new Ball( this.svg_obj, color, size );
+            ball.popup( i * 1, 0 );
             this.balls.push( ball );
         }
     };
@@ -273,9 +273,9 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
                 var nx = this.rand( 0, 8 );
                 var ny = this.rand( 0, 8 );
             } while( this.map[ ny ][ nx ] );
-            var ball = new Ball( color, this.square_size + this.border_size );
+            var ball = new Ball( this.svg_obj, color, this.square_size + this.border_size );
             this.map[ ny ][ nx ] = ball;
-            ball.draw( this.svg_obj, nx, ny, 1 );
+            ball.popup( nx, ny );
         }
     };
 
@@ -332,15 +332,18 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
         path = this.find_path( nx, ny, to_x, to_y );
 
         if( path.length > 0 ){
-            var color_num = this.map[ ny ][ nx ].num;
-            // Remove ball:
-            this.map[ ny ][ nx ].jump_stop( nx, ny, true );
-            this.map[ ny ][ nx ].remove( nx, ny );
+            var old_ball = this.map[ ny ][ nx ];
             this.map[ ny ][ nx ] = null;
-            // Add ball at the new position:
-            var ball = new Ball( color_num, this.square_size + this.border_size );
-            this.map[ path[ 0 ][ 1 ] ][ path[ 0 ][ 0 ] ] = ball;
-            ball.draw( this.svg_obj, path[ 0 ][ 0 ], path[ 0 ][ 1 ], 1 );
+
+            // we must create new ball, bacause of two parallel animations:
+            // hiding old ball & popupping new ball
+            var new_ball = new Ball( this.svg_obj, old_ball.num, this.square_size + this.border_size );
+
+            this.map[ to_y ][ to_x ] = new_ball;
+
+            old_ball.remove( );
+            new_ball.popup( to_x, to_y );
+
             this.sel_ball = null;
             // Moving sucessfull:
             return true;
@@ -374,11 +377,11 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
 
                 var x = this.sel_ball.x;
                 var y = this.sel_ball.y;
-                this.map[ y ][ x ].jump_stop( x, y );
+                this.map[ y ][ x ].jump_stop();
             }
             this.sel_ball = { "x" : nx,
                               "y" : ny };
-            this.map[ ny ][ nx ].jump( nx, ny );
+            this.map[ ny ][ nx ].jump();
             return;
         }
 
@@ -505,9 +508,11 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
 
 
 
-with(Ball = function( img_number, img_size ){
+with(Ball = function( svg_obj, img_number, img_size ){
 
     /* Constructor */
+
+    this.svg_obj = svg_obj;
 
     // Save the ball image number:
     this.num = img_number;
@@ -526,29 +531,45 @@ with(Ball = function( img_number, img_size ){
 
     // The ball image size (in px):
     this.size = img_size;
-
 }){
     /* Methods */
 
-    prototype.draw = function( svg_obj, x, y, scale ){
-        // Create jQuery object:
-        this.obj = $( svg_obj.image
-                      (
-                           ( - this.size / 2 ),
+    /*
+     * This method create new SVG object and place it on the screen.
+     * If SVG already exist then it will be destroyed first so you can
+     * call draw multiple times to immediately place ball at new position
+     * without animation.
+     */
+    prototype.draw = function( x, y, scale ){
+        this.erase();  // first erase old SVG object
+
+        /*
+         * Create jQuery object:
+         * Here some magic... Image is created with its center at ( 0, 0 ) and
+         * then moved through transform matrix to exact position.
+         * This is due to draw position ( first two arguments of svg_obj.image ) is not
+         * stored to transform matrix. I.e. object always created with this
+         * transform matrix:
+         * [ sx  0   tx ]  sx = sy = 1
+         * [ 0   sy  ty ]  tx = ty = 0
+         * [ 0   0   1  ]
+         */
+        this.obj = $( this.svg_obj.image(
+                           ( - this.size / 2 ),  // image center equal to coordinates origin ( 0, 0 )
                            ( - this.size / 2 ),
                            this.size - 1,
                            this.size - 1,
                            'images/' + this.img_name + '.png',
                            { transform:
-        /*  Transformation matrix:
-         *  | sx 0  tx |
-         *  | 0  sy ty | ~ [ sx, 0, 0, sy, tx, ty ];
-         *  | 0  0  1  |
-         *
-         *  sx, sy - scaling object
-         *  tx, ty - translating object
-         */
-                             "matrix( 0, 0, 0, 0," +
+                             /*  Transformation matrix:
+                              *  | sx 0  tx |
+                              *  | 0  sy ty | ~ [ sx, 0, 0, sy, tx, ty ];
+                              *  | 0  0  1  |
+                              *
+                              *  sx, sy - scaling object
+                              *  tx, ty - translating object
+                              */
+                             "matrix( " + scale +", 0, 0, " + scale + "," +
                                 ( x * this.size + this.size / 2 ) + ',' +
                                 ( y * this.size + this.size / 2 ) +
                              ")"
@@ -556,73 +577,111 @@ with(Ball = function( img_number, img_size ){
                       )
                    );
 
-        // Animate object:
-        this.animate( x, y, scale, 100 );
+        this.x = x;
+        this.y = y;
     };
 
 
-    prototype.remove = function( x, y ){
-        this.animate( x, y, 0, 100 );
+    /*
+     * Destroy internal SVG object.
+     */
+    prototype.erase = function( ){
+        if( this.obj )
+            this.obj.remove();  // destroy SVG object
+    }
+
+
+    /*
+     * Popup ball with animation at position ( nx, ny )
+     */
+    prototype.popup = function( nx, ny ){
+        this.erase();                            // delete old SVG object
+        this.draw( nx, ny, 0 );                  // create new SVG object with zero size
+        this.animate( [ [ nx, ny, 1, 100 ] ] );  // ... and animate to desired size
     };
 
 
-    prototype.animate = function( x, y, scale, time, structure ){
-        // Save link to "this" property:
+    /*
+     * Remove ball with animation.
+     * After animation SVG object will be destroyed.
+     */
+    prototype.remove = function( ){
         var _this = this;
+        callback = function() { _this.erase(); }
 
-        if( ! structure )
-            var callback = function(){
-                if( scale == 0 )
-                    // Remove the ball jQuery object:
-                    _this.obj.remove();
-            };
-        else
-            var callback =
-                function(){
-                    var arr = structure[ 0 ];
-                    if( structure.slice( 1, 2 ).length > 0 )
-                        _this.animate( x, y, arr[ 0 ],
-                                             arr[ 1 ],
-                                             structure.slice( 1, structure.length ) );
-                    else
-                        _this.animate( x, y, arr[ 0 ], arr[ 1 ] );
-                };
+        this.jump_stop( true ); // hard stop of jumping animation
+        this.animate( [ [ this.x, this.y, 0, 100 ] ], callback );  // animate to zero scale
+    };
+
+
+    /*
+     * Very flexible method to animate existing SVG ball object.
+     * structure : array of structures [ new_x, new_y, new_scale, time ]
+     * callback  : callback to call after all animation steps.
+     *
+     * For example:
+     *
+     * this.animate( [ [ 1, 1, 1, 100 ], [ 2, 2, 1.1, 200 ] ], function() { alert( 'bla' ) } );
+     *
+     * 1 step : animate from current position and scale to x = 1, y = 1, scale = 1 during 100 ms
+     * 2 step : animate to x = 2, y = 2, scale = 1.1 during 200 ms
+     * after this alert will be shown.
+     */
+    prototype.animate = function( structure, callback ){
+        var _this = this;  // save link to this...
+
+        // ... send part of structure to next animation step
+        var func = function(){ _this.animate( structure.slice( 1 ) ); };
+        if( structure.length == 1 )  // we on the last step,
+            func = callback;         // ...at the end of animation call this callback
+
+        var arr = structure[ 0 ]; // take parameters for animation
+
         this.obj.animate(
             { svgTransform:
                 "matrix(" +
-                    scale + ", 0, 0, " + scale + "," +
-                    ( x * this.size + this.size / 2 ) + ',' +
-                    ( y * this.size + this.size / 2 ) +
+                    arr[ 2 ] + ", 0, 0, " + arr[ 2 ] + "," +
+                    ( arr[ 0 ] * this.size + this.size / 2 ) + ',' +
+                    ( arr[ 1 ] * this.size + this.size / 2 ) +
                 ")"
-            }, time, callback );
+            }, arr[ 3 ], func );  // animate and go to next step or call callback
     };
 
 
-    prototype.jump = function( x, y ){
-        // Save link to "this" property:
+    /*
+     * Animate jumping :)
+     * For stop this animation call jump_stop.
+     * Inside hard usage of animate method...
+     */
+    prototype.jump = function( ){
+        // animation parameters...
+        var structure = [ [ this.x, this.y, 1.08, 80 ],
+                          [ this.x, this.y, 1,    80 ],
+                          [ this.x, this.y, 1.05, 50 ],
+                          [ this.x, this.y, 1,    50 ] ]
+
+        this.animate( structure ); // animate this immediately
+
         var _this = this;
-        // Callback's parametres:
-        var structure = [ [ 1,    80 ],
-                          [ 1.05, 50 ],
-                          [ 1,    50 ] ]
-
-        _this.animate( x, y, 1.08, 80, structure );
-
         this.obj.everyTime( 1100,
             function(){
-                // Animate object:
-                _this.animate( x, y, 1.08, 80, structure );
+                _this.animate( structure );  // do animation cycle every 1100 ms
             }
         );
     };
 
 
-    prototype.jump_stop = function( x, y, hard ){
+    /*
+     * Stop jumping animation.
+     * hard : if true do not revert to scale = 1.0, otherwise
+     *        animate to standard scale.
+     */
+    prototype.jump_stop = function( hard ){
         // Stop animation:
         this.obj.stopTime();
         if( ! hard )
             // Return default size:
-            this.animate( x, y, 1, 1 );
+            this.animate( [ [ this.x, this.y, 1, 1 ] ] );
     };
 }
 
