@@ -150,7 +150,7 @@ with(Info_bar = function( html_id ){
      */
     prototype.remove_balls = function(){
         for( var i in this.balls )
-            this.balls[ i ].obj.remove();
+            this.balls[ i ].erase();
         this.balls = [];
     };
 
@@ -389,11 +389,12 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
 
 
     /*
-     * Test for existance of current figure type on the map
-     * nx, ny: coordinates to start motion from
-     * For example:
+     * Test for existance of figure on the map
+     * nx, ny : coordinates to start motion from
+     * ms     : motions which describe figure
+     * mark   : if true mark balls on the path
      *
-     * figure = 1
+     * For example:
      *
      *   012345678
      * 0 .o.......
@@ -405,40 +406,58 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
      * 7 ......o..
      * 8 .......o.
      *
-     * test_figrure( 0, 0 ) --> false
-     * test_figrure( 1, 0 ) --> false
-     * test_figrure( 1, 2 ) --> true
-     * test_figrure( 2, 1 ) --> false
-     * test_figrure( 2, 6 ) --> true
-     * test_figrure( 7, 8 ) --> false
+     * test_figrure( 0, 0, [ 1, 7, 5, 3 ] ) --> false
+     * test_figrure( 1, 0, [ 1, 7, 5, 3 ] ) --> false
+     * test_figrure( 1, 2, [ 1, 7, 5, 3 ] ) --> true
+     * test_figrure( 2, 1, [ 1, 7, 5, 3 ] ) --> false
+     * test_figrure( 2, 6, [ 1, 7, 5, 3 ] ) --> true
+     * test_figrure( 7, 8, [ 1, 7, 5, 3 ] ) --> false
      *
      * TODO: color test
      */
     prototype.test_figure = function( nx, ny, ms, mark ){
         var x = nx;
         var y = ny;
+        var num = this.map[ y ][ x ].num;  // save color of ball (number)
 
         for( var i in ms )
         {
             if( x < 0 || y < 0 || x > 8 || y > 8 )
                 return false;
 
-            if( ! this.map[ y ][ x ] )
+            if( ! this.map[ y ][ x ] || this.map[ y ][ x ].num != num )  // broken path or wrong color
                 return false;
 
-            switch( ms[ i ] ) {
-                case 0: y-=1;       break;
-                case 1: y-=1; x+=1; break;
-                case 2: x+=1;       break;
-                case 3: x+=1; y+=1; break;
-                case 4: y+=1;       break;
-                case 5: y+=1; x-=1; break;
-                case 6: x-=1;       break;
-                case 7: x-=1; y-=1; break;
-            }
+            if( mark )
+                this.map[ y ][ x ].marked = true;
+
+            var res = this.move_xy( x, y, ms[ i ] );
+            x = res[ 0 ];
+            y = res[ 1 ];
         }
-        return true; // all OK, movies good
+        return true; // all OK, movies are good
     };
+
+    /*
+     * This is tool-function, which return new coordinates.
+     * x,y : old coordinates
+     * mov : motion direction ( number )
+     */
+    prototype.move_xy = function( x, y, mov ) {
+        var nx = x;
+        var ny = y;
+        switch( mov ) {
+            case 0: ny-=1;        break;
+            case 1: ny-=1; nx+=1; break;
+            case 2: nx+=1;        break;
+            case 3: nx+=1; ny+=1; break;
+            case 4: ny+=1;        break;
+            case 5: ny+=1; nx-=1; break;
+            case 6: nx-=1;        break;
+            case 7: nx-=1; ny-=1; break;
+        }
+        return [ nx, ny ]; // return new coords
+    }
 
     /*
      * This method find and removes group of balls which is
@@ -450,12 +469,59 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
 
         for( var j = 0; j < this.map.length; j++ )
             for( var i = 0; i < this.map[ j ].length; i++ )
-                for( var k in f )
-                    if( this.test_figure( i, j, f[ k ] ) )
-                    {
-                        this.test_figure( i, j, f[ k ], true );  // mark balls for deletion
-                        //alert( 'bla' );
-                    }
+                if( this.map[ j ][ i ] )
+                    for( var k in f )
+                        if( this.test_figure( i, j, f[ k ] ) )
+                            this.test_figure( i, j, f[ k ], true );  // mark balls for deletion
+
+        function remove_group( nx, ny, _this ) {
+            var stack = Array( );   // stack for siblings
+            var cnt = 0;            // count of removed balls
+
+            stack.push( [ nx, ny ] );
+            while( stack.length )
+            {
+                var pos  = stack.splice( 0,1 )[ 0 ];         // take first element and remove them
+                var ball = _this.map[ pos[ 1 ] ][ pos[ 0 ] ];
+
+                if( !ball )  // ball may be sheduled for deletion in stack more than one time
+                    continue;
+
+                ball.remove();                               // animate & destroy SVG
+                _this.map[ pos[ 1 ] ][ pos[ 0 ] ] = null;    // remove from map
+                cnt++;                                       // count it...
+
+                var use = {};
+                for( var k in f )                     // try all templates
+                    for( var m in f[ k ] )            // ... and each motion direction from template
+                        if( !use[ f[ k ][ m ] ] )     // ... use each motion only once
+                        {
+                            use[ f[ k ][ m ] ] = true;
+                            for( var t = 0; t <= 1; t++ ) // test forward / backward pairs
+                            {
+                                var mov = ( f[ k ][ m ] + t * 4 ) % 8;   // by 4 we rotate f[ k ][ m ] at 180 degree
+                                var res = _this.move_xy( pos[ 0 ], pos[ 1 ], mov );
+
+                                if( res[ 0 ] >= 0 && res[ 1 ] >= 0 && res[ 0 ] <= 8 && res[ 1 ] <= 8 )  // test boundaries
+                                {
+                                    var tmp = _this.map[ res[ 1 ] ][ res[ 0 ] ];
+                                    if( tmp && tmp.marked )    // we found marked ball..
+                                        stack.push( res );     // add its position to search from for new balls
+                                }
+                            }
+                        }
+            }
+            return cnt;
+        }
+
+        for( var j = 0; j < this.map.length; j++ )
+            for( var i = 0; i < this.map[ j ].length; i++ )
+                if( this.map[ j ][ i ] && this.map[ j ][ i ].marked )
+                {
+                    cnt = remove_group( i, j, this );
+                    alert( 'removed ' + cnt + ' balls' );
+                }
+
     };
 
     prototype.handlers = function(){
