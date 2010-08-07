@@ -21,8 +21,8 @@
        cx="50%"
        cy="50%"
        r="70.71%">
-      <svg:stop id="start" stop-color="#5babf0" offset="0%"   />
-      <svg:stop id="end"   stop-color="#445e7f" offset="100%" />
+      <svg:stop id="start" stop-color="#66a9ee" offset="0%"   />
+      <svg:stop id="end"   stop-color="#2f5899" offset="100%" />
     </svg:radialGradient>
     <svg:rect id="rect"
        width="100"

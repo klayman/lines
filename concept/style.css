@@ -103,7 +103,7 @@ h2 {
 #field {
   position: absolute;
   top: 76px;
-  opacity: 0;
+  opacity: 1;
   width: 471px;
   height: 471px;
   background: url(images/field.png);
@@ -116,7 +116,7 @@ h2 {
 #options_page {
   position: absolute;
   top: 76px;
-  opacity: 1;
+  opacity: 0;
   width: 471px;
   height: 471px;
   background: url(images/square_background.png);
