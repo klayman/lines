@@ -66,7 +66,7 @@
       <h1>Настройки</h1>
       <div class="options_block">
         <h2>Language/Язык:</h2>
-        <input id="russian" type="radio" name="language" checked="true"/> <label for="russian">Русский</label>
+        <input id="russian" type="radio" name="language" checked="true"/> <label for="russian">русский</label>
         <input id="english" type="radio" name="language"/> <label for="english">English</label>
       </div> <!--.options_block-->
       <div class="options_block">
@@ -87,10 +87,15 @@
         <h2>Дополнительные опции:</h2>
         <input id="zen" type="checkbox"/> <label for="zen">дзен-режим (Z)</label><br />
         <input id="next" type="checkbox"/> <label for="next">положение следующих шариков (N)</label><br />
-        <input id="undo" type="checkbox" checked="true"/> <label for="undo">отмена последнего действия (ctrl Z, ⌘ Z)</label><br />
+        <input id="undo" type="checkbox" checked="true"/> <label for="undo">отмена последнего действия (shift + Z)</label><br />
         <input id="time_constraint" type="checkbox"/> <label for="time_constraint">ограничение по времени <input type="text" value="15"/> сек на ход</label><br />
         <input id="save" type="checkbox" checked="true"/> <label for="save">сохранять игру при выходе</label>
       </div> <!--.options_block-->
+      <div id="buttons">
+        <span class="button">отмена</span>
+        <span id="spacer"></span>
+        <span class="button">oк</span>
+      </div>
     </div> <!--#options_page-->
     <div id="footer_bar">
       <a href="http://www.semyonfilippov.net"><span id="logo"></span></a>

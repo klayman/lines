@@ -8,18 +8,6 @@ with(Lines_game = function( settings ){
     /* Constructor */
 
     // Save default settings of the game:
-    /*
-     * show_bars      : visible or not info bars up and below the field (boolean)
-     * cell_size      : the field's cell size (in px)
-     * border_size    : the field's cell border size (in px)
-     * info_bar_id    : id of the DOM element with the score bar
-     * info_bar_h     : info bar height (in px)
-     * footer_bar_id  : id of the settings bar
-     * footer_bar_h   : footer bar height (in px)
-     * field_id       : id of the game's field DOM element
-     * opt_btn_id     : id of options button
-     * opt_page_id    : id of options page
-     **/
     this.settings = settings;
     // Active page id:
     this.active_page = this.settings.field_id;
@@ -27,10 +15,17 @@ with(Lines_game = function( settings ){
     this.create_info_bar();
     // Create field object:
     this.create_field();
+    // Create button objects:
+    this.init_buttons();
     // Set the event handlers:
     this.handlers();
 }){
     /* Methods */
+
+    prototype.create_info_bar = function(){
+        // The game field object:
+        this.info_bar = new Info_bar( this.settings.info_bar_id );
+    };
 
     prototype.create_field = function(){
         // The game field object:
@@ -38,12 +33,48 @@ with(Lines_game = function( settings ){
                                 this.settings.field_id, this.info_bar );
     };
 
+    prototype.init_buttons = function(){
+        // Button, which opens "option" page:
+        this.options_btn = new Button(
+            this.settings.opt_btn_id, // html id
+            "click",                  // Event name
+            function( event ){        // Event handler
+                var _this = event.data._this;
+                _this.page( _this.settings.opt_page_id ); // Open "options" page
+            },
+            { _this : this }       // A map of data that will be passed to the event handler.
+        );
+        // "at least N balls in row" radio group:
+        this.opt_row_n_rd = new Radio_group(
+            this.settings.opt_row_n_name
+        );
+        // "at least N balls in block" radio group:
+        this.opt_blk_n_rd = new Radio_group(
+            this.settings.opt_blk_n_name
+        );
+        // Game "mode" radio group:
+        this.opt_mode_rd = new Radio_group(
+            this.settings.opt_mode_name,
+            "change",
+            function( event ){
+                var _this = event.data._this;
+                switch( _this.opt_mode_rd.sel_id() ){
 
-    prototype.create_info_bar = function(){
-        // The game field object:
-        this.info_bar = new Info_bar( this.settings.info_bar_id );
+                    case "lines":  _this.opt_row_n_rd.enable();
+                                   _this.opt_blk_n_rd.disable();
+                                   break;
+
+                    case "blocks": _this.opt_blk_n_rd.enable();
+                                   _this.opt_row_n_rd.disable();
+                                   break;
+
+                    default:       _this.opt_row_n_rd.disable();
+                                   _this.opt_blk_n_rd.disable();
+                }
+            },
+            { _this : this }
+        );
     };
-
 
     prototype.info_bars = function(){
         // Time for animation (in ms):
@@ -61,7 +92,6 @@ with(Lines_game = function( settings ){
         }
     };
 
-
     prototype.page = function( page ){
         // Save link to "this" property:
         var _this = this;
@@ -78,7 +108,6 @@ with(Lines_game = function( settings ){
             } );
 
     };
-
 
     prototype.handlers = function(){
         // Save link to "this" property:
@@ -100,13 +129,6 @@ with(Lines_game = function( settings ){
         $( "#" + this.settings.field_id ).click( f );
         $( "#" + this.settings.opt_page_id ).click( f );
         $( "#" + this.settings.footer_bar_id ).click( f );
-        // Set the click handler on the options button:
-        $( "#" + this.settings.opt_btn_id ).click(
-            function(){
-                // Open options page:
-                _this.page( _this.settings.opt_page_id );
-            }
-        );
         $( "html" ).click(
             function(){
                 if( _this.active_page != _this.settings.field_id )
@@ -117,6 +139,75 @@ with(Lines_game = function( settings ){
 
     };
 
+}
+
+
+
+/* The game radio group class: */
+
+/*
+ * html_name   : name of radio group
+ * [ evt ]     : event name (example: "click")
+ * [ func ]    : handler function
+ * [ f_param ] : data for the handler function
+ **/
+with(Radio_group = function( html_name, evt, func, f_param ){
+
+    /* Constructor: */
+
+    this.obj = $( "input[name='" + html_name + "']" );
+    if( evt )
+        this.bind( evt, func, f_param );
+}){
+
+    prototype.bind = function( evt, func, f_param ){
+        this.obj.bind(
+            evt,       // Event name (example: "click")
+            f_param,   // A map of data that will be passed to the event handler.
+            func       // A function to execute each time the event is triggered.
+        );
+    };
+
+    prototype.sel_id = function(){
+        return this.obj.filter( ":checked" ).attr( "id" ); // Return id of the selected element of radio group
+    };
+
+    prototype.disable = function(){
+        this.obj.attr( "disabled", true );  // Disable radio group
+    };
+
+    prototype.enable = function(){
+        this.obj.removeAttr( "disabled" );  // Enable radio group
+    };
+}
+
+
+
+/* The game button class: */
+
+/*
+ * Links html object to the event handler.
+ * html_id     : id of html object
+ * [ evt ]     : event name (example: "click")
+ * [ func ]    : handler function
+ * [ f_param ] : data for the handler function
+ **/
+with(Button = function( html_id, evt, func, f_param ){
+
+    /* Constructor: */
+
+    this.obj = $( "#" + html_id );
+    if( evt )
+        this.bind( evt, func, f_param );
+}){
+
+    prototype.bind = function( evt, func, f_param ){
+        this.obj.bind(
+            evt,       // Event name (example: "click")
+            f_param,   // A map of data that will be passed to the event handler.
+            func       // A function to execute each time the event is triggered.
+        );
+    };
 }
 
 
@@ -217,7 +308,7 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
     ]
 
     // current block to remove from field
-    this.figure = 2;
+    this.figure = 3;
 
     // X and Y coords of selected ball (in cells):
     this.sel_ball = null;
@@ -770,6 +861,21 @@ $( document ).ready(
     function(){
         /* Game initialization after the page loads: */
         // Set default game settings:
+        /*
+         * show_bars      : visible or not info bars up and below the field (boolean)
+         * cell_size      : the field's cell size (in px)
+         * border_size    : the field's cell border size (in px)
+         * info_bar_id    : id of the DOM element with the score bar
+         * info_bar_h     : info bar height (in px)
+         * footer_bar_id  : id of the settings bar
+         * footer_bar_h   : footer bar height (in px)
+         * field_id       : id of the game's field DOM element
+         * opt_btn_id     : id of options button
+         * opt_page_id    : id of options page
+         * opt_mode_name  : name of "game mode" radio group
+         * opt_row_n_name : name of "at least N balls in row" radio group
+         * opt_blk_n_name : name of "at least N balls in block" radio group
+         **/
         var settings =
             {
                 "show_bars"     : true,
@@ -782,6 +888,9 @@ $( document ).ready(
                 "field_id"      : "field",
                 "opt_btn_id"    : "options",
                 "opt_page_id"   : "options_page",
+                "opt_mode_name" : "mode",
+                "opt_row_n_name": "in_line",
+                "opt_blk_n_name": "in_block"
             };
         lines = new Lines_game( settings );
     }
