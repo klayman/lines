@@ -154,14 +154,30 @@ h2 {
   overflow: hidden;
   background: url(images/info_bar.png);
 }
-#footer_bar span {
+#footer_bar:hover {
+  overflow: visible;
+}
+#footer_bar span.footer_icons {
   position: absolute;
   bottom: 13px;
   height: 46px;
   opacity: 0.5;
   background-image: url(images/icons.png);
 }
-#footer_bar span:hover {
+#footer_bar span.footer_icons:hover {
+  opacity: 1;
+}
+span.tooltip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 70px;
+  width: 500px;
+  text-align: center;
+  margin: auto;
+  opacity: 0;
+}
+span.footer_icons:hover span.tooltip {
   opacity: 1;
 }
 #logo {
