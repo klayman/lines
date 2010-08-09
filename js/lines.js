@@ -644,8 +644,9 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
                 _this.select_ball( nx, ny );     // try to select ball on the map
 
                 var callback = function( _this ){
-                    if( ! _this.remove_balls() ){                // find and remove groups of balls
+                    if( ! _this.remove_balls() ){                    // find and remove groups of balls
                         _this.put_balls( _this.next_balls );         // put 3 new balls on the field
+                        _this.remove_balls();                        // put_balls can create new true figres...  TODO: do not add scores
                         _this.next_balls = _this.gen_next_balls();   // generate 3 new "next" balls
                         _this.update_info_bar();                     // update info bar "next" balls
                     }
