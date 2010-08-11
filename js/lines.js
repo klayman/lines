@@ -24,7 +24,7 @@ with(Lines_game = function( settings ){
 
     prototype.create_info_bar = function(){
         // The game field object:
-        this.info_bar = new Info_bar( this.settings.info_bar_id );
+        this.info_bar = new Info_bar( this.settings.info_bar_id, this.settings.score_id );
     };
 
     prototype.create_field = function(){
@@ -214,11 +214,12 @@ with(Button = function( html_id, evt, func, f_param ){
 
 /* The game info bar class: */
 
-with(Info_bar = function( html_id ){
+with(Info_bar = function( html_id, score_id ){
 
     /* Constructor: */
 
     this.obj = $( "#" + html_id );  // Saving the jQuery object of info bar
+    this.obj_score = $( "#" + score_id );
 
     var _this = this;               // Save link to "this" property
     $( "#" + html_id ).children( "div" ).children().svg(
@@ -235,6 +236,12 @@ with(Info_bar = function( html_id ){
 }){
     /* Methods */
 
+    /*
+     * Set new score value
+     */
+    prototype.set_score = function( score ){
+        this.obj_score.text( score );
+    };
 
     /*
      * Remove all balls from the own SVG object:
@@ -308,10 +315,12 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
     ]
 
     // current block to remove from field
-    this.figure = 3;
+    this.figure = 1;
 
     // X and Y coords of selected ball (in cells):
     this.sel_ball = null;
+
+    this.score = 0;
 
     // Link to the Info_bar class object:
     this.info_bar_obj = info_bar_obj;
@@ -323,6 +332,7 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
     this.next_balls = this.gen_next_balls();
     // Update info bar balls:
     this.update_info_bar();
+
 
     this.handlers();    // Set the event handlers:
 
@@ -606,15 +616,9 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
         for( var j = 0; j < this.map.length; j++ )
             for( var i = 0; i < this.map[ j ].length; i++ )
                 if( this.map[ j ][ i ] && this.map[ j ][ i ].marked )
-                {
-                    cnt = remove_group( i, j, this );
-                }
+                    cnt += remove_group( i, j, this );
 
-        if( cnt > 0 )
-            return true;
-
-        return false;
-
+        return cnt;
     };
 
     prototype.handlers = function(){
@@ -644,7 +648,12 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
                 _this.select_ball( nx, ny );     // try to select ball on the map
 
                 var callback = function( _this ){
-                    if( ! _this.remove_balls() ){                    // find and remove groups of balls
+                    var cnt = _this.remove_balls();                  // find and remove groups of balls
+                    if( cnt ){
+                        var cnt_min = _this.figures[ _this.figure ][ 0 ].length;
+                        _this.score += ( cnt - cnt_min + 1 ) * cnt;
+                        _this.info_bar_obj.set_score( _this.score );
+                    } else {
                         _this.put_balls( _this.next_balls );         // put 3 new balls on the field
                         _this.remove_balls();                        // put_balls can create new true figres...  TODO: do not add scores
                         _this.next_balls = _this.gen_next_balls();   // generate 3 new "next" balls
@@ -884,6 +893,7 @@ $( document ).ready(
                 "border_size"   : 2,
                 "info_bar_id"   : "info_bar",
                 "info_bar_h"    : 71,
+                "score_id"      : "score",
                 "footer_bar_id" : "footer_bar",
                 "footer_bar_h"  : 71,
                 "field_id"      : "field",
