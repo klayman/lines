@@ -618,6 +618,11 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
                 if( this.map[ j ][ i ] && this.map[ j ][ i ].marked )
                     cnt += remove_group( i, j, this );
 
+        // calculate new scores...
+        var cnt_min = this.figures[ this.figure ][ 0 ].length;
+        this.score += ( cnt - cnt_min + 1 ) * cnt;
+        this.info_bar_obj.set_score( this.score );
+
         return cnt;
     };
 
@@ -648,12 +653,7 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
                 _this.select_ball( nx, ny );     // try to select ball on the map
 
                 var callback = function( _this ){
-                    var cnt = _this.remove_balls();                  // find and remove groups of balls
-                    if( cnt ){
-                        var cnt_min = _this.figures[ _this.figure ][ 0 ].length;
-                        _this.score += ( cnt - cnt_min + 1 ) * cnt;
-                        _this.info_bar_obj.set_score( _this.score );
-                    } else {
+                    if( ! _this.remove_balls() ) {                   // user does not build new figure...
                         _this.put_balls( _this.next_balls );         // put 3 new balls on the field
                         _this.remove_balls();                        // put_balls can create new true figres...  TODO: do not add scores
                         _this.next_balls = _this.gen_next_balls();   // generate 3 new "next" balls
