@@ -44,6 +44,15 @@ h2 {
   font-size: 15px;
   padding-bottom: 3px;
 }
+p {
+  padding-top: 15px;
+}
+ul {
+  list-style-type: none;
+}
+li {
+  padding: 15px 0 0 110px;
+}
 @font-face {
   font-family: digital-7-it;
   src: url(digital-7-it.ttf);
@@ -100,26 +109,30 @@ h2 {
   height: 30px;
   line-height: 20px;
 }
-#field {
-  position: absolute;
-  top: 76px;
-  opacity: 1;
-  width: 471px;
-  height: 471px;
-  background: url(images/field.png);
-}
 #balls {
   width: 450px;
   height: 450px;
   margin: 11px;
 }
-#options_page {
+#field, #options_page, #help_page, #scores_page {
   position: absolute;
   top: 76px;
-  opacity: 0;
   width: 471px;
   height: 471px;
   background: url(images/square_background.png);
+}
+#field {
+  opacity: 1;
+  background: url(images/field.png);
+}
+#options_page {
+  opacity: 0;
+}
+#help_page {
+  opacity: 0;
+}
+#scores_page {
+  opacity: 0;
 }
 .options_block {
   padding: 13px 30px 0 30px;
@@ -146,6 +159,54 @@ h2 {
   display: table-cell;
   width: 15px;
 }
+.help_block {
+  position: absolute;
+  top: 50px;
+  left: 30px;
+  text-align: justify;
+  width: 400px;
+  height: 400px;
+  padding: 0 10px;
+  overflow: auto;
+}
+#li_lines {
+  background: url(images/lines_mode.png) no-repeat 0 30px;
+}
+#li_rectangles {
+  background: url(images/rectangles_mode.png) no-repeat 0 10px;
+}
+#li_rings {
+  background: url(images/rings_mode.png) no-repeat  0 25px;
+}
+#li_blocks {
+  background: url(images/blocks_mode.png) no-repeat 0 30px;
+}
+.scores_block {
+  display: table;
+  position: absolute;
+  top: 70px;
+  left: 30px;
+  width: 411px;
+}
+p.tr {
+  display: table-row;
+  height: 40px;
+}
+span.th {
+  display: table-cell;
+  text-align: center;
+  font-weight: bold;
+  font-size: 15px;
+}
+span.td {
+  display: table-cell;
+  text-align: center;
+  vertical-align: top;
+}
+span.digital {
+  font: 25px "digital-7-it", serif;
+  line-height: 13px;
+}
 #footer_bar {
   position: absolute;
   top: 552px;
@@ -169,12 +230,11 @@ h2 {
 }
 span.tooltip {
   position: absolute;
-  left: 0;
-  right: 0;
+  left: 50%;
   top: 70px;
   width: 500px;
   text-align: center;
-  margin: auto;
+  margin-left: -250px;
   opacity: 0;
 }
 span.footer_icons:hover span.tooltip {

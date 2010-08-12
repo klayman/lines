@@ -21,8 +21,8 @@
        cx="50%"
        cy="50%"
        r="70.71%">
-      <svg:stop id="start" stop-color="#66a9ee" offset="0%"   />
-      <svg:stop id="end"   stop-color="#2f5899" offset="100%" />
+      <svg:stop id="start" stop-color="#b5b5b5" offset="0%"   />
+      <svg:stop id="end"   stop-color="#5f5f5f" offset="100%" />
     </svg:radialGradient>
     <svg:rect id="rect"
        width="100"
@@ -79,8 +79,7 @@
       </div> <!--.options_block-->
       <div class="options_block">
         <h2>Вид шариков:</h2>
-        <input id="glossy" type="radio" name="ball_type"/> <label for="glossy">глянцевые</label>
-        <input id="matte" type="radio" name="ball_type" checked="checked"/> <label for="matte">матовые</label>
+        <input id="glossy" type="radio" name="ball_type"/> <label for="glossy">глянцевые</label><input id="matte" type="radio" name="ball_type" checked="checked"/> <label for="matte">матовые</label>
       </div> <!--.options_block-->
       <div class="options_block">
         <h2>Дополнительные опции:</h2>
@@ -96,9 +95,46 @@
         <span class="button">oк</span>
       </div>
     </div> <!--#options_page-->
+    <div id="help_page">
+      <h1>Помощь</h1>
+      <div class="help_block">
+        <p>Игра проходит на поле размером 9×9 клеток. За каждый ход на случайных клетках поля добавляются три шарика из семи возможных цветов. Цель игры — продержаться как можно дольше, убирая фигуры шаров одинакового цвета. Конкретный вид фигуры определяется режимом игры. Для того, чтобы собрать фигуру, игрок каждый ход может перемещать один шарик, если между начальной и конечной клеткой можно проложить путь, не занятый другими шариками.</p>
+        
+        <p>За каждую собранную фигуру игроку начисляются очки по формуле (<i>n-n</i><sub>min</sub>+1)‧<i>n</i>, где <i>n</i> — количество шариков в убранной фигуре, <i>n</i><sub>min</sub> — минимальное количество шариков в фигуре при данном режиме игры. После перемещения шарика, завершающего фигуру, новые три шарика не добавляются до следующего хода.</p>
+        
+        <p>Режимы игры:<ul>
+          <li id="li_lines"><b>Линии</b><br />
+            Классический режим, в котором фигурой является вертикальная, горизонтальная или диагональная прямая. Минимальное количество шариков в фигуре по умолчанию — 5, но в настройках можно выбрать 4 или 6.
+          </li>
+          <li id="li_rectangles"><b>Прямоугольники</b><br />
+            Минимальной фигурой является квадрат 2×2. За один ход можно убрать 4 или 6 шариков.
+          </li>
+          <li id="li_rings"><b>Ромбы</b><br />
+            В фигуре минимум 4 шарика, расположенных в вершинах квадрата, повернутого на 45 градусов. Максимально возможное количество шариков в фигуре — 9.
+          </li>
+          <li id="li_blocks"><b>Блоки</b><br />
+            Блок представляет собой фигуру произвольной формы, составленную из шариков, клетки которых имеют общую грань. Минимальное количество шариков в блоке определяется в настройках (по умолчанию — 7).
+          </li>
+        </ul></p>
+      </div> <!--.help_block-->
+    </div> <!--#help_page-->
+    <div id="scores_page">
+      <h1>Лучшие результаты. Линии — 5 в ряд</h1>
+      <div class="scores_block">
+        <p class="tr"><span class="th">Место</span><span class="th">Игрок</span><span class="th">Очки</span><span class="th">Дата</span></p>
+        <p class="tr"><span class="td digital">1</span><span class="td">Test player 1</span><span class="td digital">1000</span><span class="td">12.08.2010</span></p>
+        <p class="tr"><span class="td digital">2</span><span class="td">Test player 2</span><span class="td digital">900</span><span class="td">12.08.2010</span></p>
+        <p class="tr"><span class="td digital">3</span><span class="td">Test player 3</span><span class="td digital">800</span><span class="td">12.08.2010</span></p>
+        <p class="tr"><span class="td digital">4</span><span class="td">Test player 4</span><span class="td digital">700</span><span class="td">12.08.2010</span></p>
+        <p class="tr"><span class="td digital">5</span><span class="td">Test player 5</span><span class="td digital">600</span><span class="td">12.08.2010</span></p>
+        <p class="tr"><span class="td digital">6</span><span class="td">Test player 6</span><span class="td digital">500</span><span class="td">12.08.2010</span></p>
+        <p class="tr"><span class="td digital">7</span><span class="td">Test player 7</span><span class="td digital">400</span><span class="td">12.08.2010</span></p>
+        <p class="tr"><span class="td digital">8</span><span class="td">Test player 8</span><span class="td digital">300</span><span class="td">12.08.2010</span></p>
+      </div> <!--.scores_block-->
+    </div> <!--#scores_page-->
     <div id="footer_bar">
       <a href="http://www.semyonfilippov.net"><span id="logo" class="footer_icons"> <span class="tooltip">Страница в галерее</span> </span></a>
-      <a><span id="cc" class="footer_icons"> <span class="tooltip">CreativeCommons</span> </span></a>
+      <a><span id="cc" class="footer_icons"> <span class="tooltip">Creative Commons</span> </span></a>
       <a><span id="restart" class="footer_icons"> <span class="tooltip">Новая игра</span> </span></a>
       <a><span id="mode" class="footer_icons"> <span class="tooltip">Сменить режим</span> </span></a>
       <a><span id="high_score" class="footer_icons"> <span class="tooltip">Таблица рекордов</span> </span></a>
