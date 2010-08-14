@@ -74,6 +74,16 @@ with(Lines_game = function( settings ){
             },
             { _this : this }
         );
+        // Button, which opens "help" page:
+        this.help_btn = new Button(
+            this.settings.hlp_btn_id,
+            "click",
+            function( event ){
+                var _this = event.data._this;
+                _this.page( _this.settings.hlp_page_id ); // Open "help" page
+            },
+            { _this : this }
+        );
     };
 
     prototype.info_bars = function(){
@@ -885,6 +895,8 @@ $( document ).ready(
          * opt_mode_name  : name of "game mode" radio group
          * opt_row_n_name : name of "at least N balls in row" radio group
          * opt_blk_n_name : name of "at least N balls in block" radio group
+         * hlp_btn_id     : id of help button
+         * hlp_page_id    : id of help page
          **/
         var settings =
             {
@@ -901,7 +913,9 @@ $( document ).ready(
                 "opt_page_id"   : "options_page",
                 "opt_mode_name" : "mode",
                 "opt_row_n_name": "in_line",
-                "opt_blk_n_name": "in_block"
+                "opt_blk_n_name": "in_block",
+                "hlp_btn_id"    : "help",
+                "hlp_page_id"   : "help_page"
             };
         lines = new Lines_game( settings );
     }
