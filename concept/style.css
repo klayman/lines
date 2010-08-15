@@ -274,6 +274,14 @@ span.footer_icons:hover span.tooltip {
   width: 40px;
   background-position: -174px 0;
 }
+#decor {
+  position: absolute;
+  right: -255px;
+  bottom: -70px;
+  width: 960px;
+  height: 761px;
+  background: url(images/decor.png);
+}
 input[type=checkbox], input[type=radio] {
   opacity: 0;
 }
