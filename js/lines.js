@@ -3,14 +3,15 @@
 
 /* The game main class: */
 
-with(Lines_game = function( settings ){
+with(Lines_game = function( settings, html_inf ){
 
     /* Constructor */
 
-    // Save default settings of the game:
+    // Save default settings of the game and html ids to link to
     this.settings = settings;
+    this.html_inf = html_inf;
     // Active page id:
-    this.active_page = this.settings.field_id;
+    this.active_page = this.html_inf.field_id;
     // Create info bar object:
     this.create_info_bar();
     // Create field object:
@@ -24,37 +25,37 @@ with(Lines_game = function( settings ){
 
     prototype.create_info_bar = function(){
         // The game field object:
-        this.info_bar = new Info_bar( this.settings.info_bar_id, this.settings.score_id );
+        this.info_bar = new Info_bar( this.html_inf.info_bar_id, this.html_inf.score_id );
     };
 
     prototype.create_field = function(){
         // The game field object:
         this.field = new Field( this.settings.cell_size, this.settings.border_size,
-                                this.settings.field_id, this.info_bar );
+                                this.html_inf.field_id, this.info_bar );
     };
 
     prototype.init_buttons = function(){
         // Button, which opens "option" page:
         this.options_btn = new Button(
-            this.settings.opt_btn_id, // html id
+            this.html_inf.opt_btn_id, // html id
             "click",                  // Event name
             function( event ){        // Event handler
                 var _this = event.data._this;
-                _this.page( _this.settings.opt_page_id ); // Open "options" page
+                _this.page( _this.html_inf.opt_page_id ); // Open "options" page
             },
             { _this : this }       // A map of data that will be passed to the event handler.
         );
         // "at least N balls in row" radio group:
         this.opt_row_n_rd = new Radio_group(
-            this.settings.opt_row_n_name
+            this.html_inf.opt_row_n_name
         );
         // "at least N balls in block" radio group:
         this.opt_blk_n_rd = new Radio_group(
-            this.settings.opt_blk_n_name
+            this.html_inf.opt_blk_n_name
         );
         // Game "mode" radio group:
         this.opt_mode_rd = new Radio_group(
-            this.settings.opt_mode_name,
+            this.html_inf.opt_mode_name,
             "change",
             function( event ){
                 var _this = event.data._this;
@@ -91,13 +92,13 @@ with(Lines_game = function( settings ){
         var t = 200;
         if( this.settings.show_bars ){
             // Hide bars:
-            $( "#" + this.settings.info_bar_id ).animate( { height: "0px" }, t );
-            $( "#" + this.settings.footer_bar_id ).animate( { height: "0px" }, t );
+            $( "#" + this.html_inf.info_bar_id ).animate( { height: "0px" }, t );
+            $( "#" + this.html_inf.footer_bar_id ).animate( { height: "0px" }, t );
             this.settings.show_bars = false;
         }else{
             // Show bars:
-            $( "#" + this.settings.info_bar_id ).animate( { height: this.settings.info_bar_h + "px" }, t );
-            $( "#" + this.settings.footer_bar_id ).animate( { height: this.settings.footer_bar_h + "px" }, t );
+            $( "#" + this.html_inf.info_bar_id ).animate( { height: this.settings.info_bar_h + "px" }, t );
+            $( "#" + this.html_inf.footer_bar_id ).animate( { height: this.settings.footer_bar_h + "px" }, t );
             this.settings.show_bars = true;
         }
     };
@@ -109,7 +110,7 @@ with(Lines_game = function( settings ){
         var t = 250;
 
         if( this.active_page == page )
-            page = this.settings.field_id;
+            page = this.html_inf.field_id;
 
         $( "#" + this.active_page ).fadeOut( t,
             function(){
@@ -136,14 +137,14 @@ with(Lines_game = function( settings ){
             e.stopPropagation();
         };
         // Stop click events propagation:
-        $( "#" + this.settings.field_id ).click( f );
-        $( "#" + this.settings.opt_page_id ).click( f );
-        $( "#" + this.settings.footer_bar_id ).click( f );
+        $( "#" + this.html_inf.field_id ).click( f );
+        $( "#" + this.html_inf.opt_page_id ).click( f );
+        $( "#" + this.html_inf.footer_bar_id ).click( f );
         $( "html" ).click(
             function(){
-                if( _this.active_page != _this.settings.field_id )
+                if( _this.active_page != _this.html_inf.field_id )
                     // If the current page isn't "field", open it:
-                    _this.page( _this.settings.field_id );
+                    _this.page( _this.html_inf.field_id );
             }
         );
 
@@ -885,10 +886,11 @@ $( document ).ready(
          * show_bars      : visible or not info bars up and below the field (boolean)
          * cell_size      : the field's cell size (in px)
          * border_size    : the field's cell border size (in px)
-         * info_bar_id    : id of the DOM element with the score bar
          * info_bar_h     : info bar height (in px)
-         * footer_bar_id  : id of the settings bar
          * footer_bar_h   : footer bar height (in px)
+         *
+         * info_bar_id    : id of the DOM element with the score bar
+         * footer_bar_id  : id of the settings bar
          * field_id       : id of the game's field DOM element
          * opt_btn_id     : id of options button
          * opt_page_id    : id of options page
@@ -903,11 +905,14 @@ $( document ).ready(
                 "show_bars"     : true,
                 "cell_size"     : 48,
                 "border_size"   : 2,
-                "info_bar_id"   : "info_bar",
                 "info_bar_h"    : 71,
+                "footer_bar_h"  : 71
+            };
+        var html_inf =
+            {
+                "info_bar_id"   : "info_bar",
                 "score_id"      : "score",
                 "footer_bar_id" : "footer_bar",
-                "footer_bar_h"  : 71,
                 "field_id"      : "field",
                 "opt_btn_id"    : "options",
                 "opt_page_id"   : "options_page",
@@ -917,6 +922,6 @@ $( document ).ready(
                 "hlp_btn_id"    : "help",
                 "hlp_page_id"   : "help_page"
             };
-        lines = new Lines_game( settings );
+        lines = new Lines_game( settings, html_inf );
     }
 );
