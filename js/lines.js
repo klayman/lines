@@ -16,8 +16,8 @@ with(Lines_game = function( settings, html_inf ){
     this.create_info_bar();
     // Create field object:
     this.create_field();
-    // Create button objects:
-    this.init_buttons();
+    // Create button and other GUI objects:
+    this.init_gui();
     // Set the event handlers:
     this.handlers();
 }){
@@ -34,54 +34,57 @@ with(Lines_game = function( settings, html_inf ){
                                 this.html_inf.field_id, this.info_bar );
     };
 
-    prototype.init_buttons = function(){
+    prototype.init_gui = function(){
+        this.gui = {};  // array of gui elements
+
         // Button, which opens "option" page:
-        this.options_btn = new Button(
-            this.html_inf.opt_btn_id, // html id
+        this.gui[ 'btn_opts' ] = new Button(
+            this.html_inf.btn_id, // html id
             "click",                  // Event name
             function( event ){        // Event handler
                 var _this = event.data._this;
-                _this.page( _this.html_inf.opt_page_id ); // Open "options" page
+                _this.page( _this.html_inf.page_id ); // Open "options" page
             },
             { _this : this }       // A map of data that will be passed to the event handler.
         );
+
         // "at least N balls in row" radio group:
-        this.opt_row_n_rd = new Radio_group(
-            this.html_inf.opt_row_n_name
+        this.gui[ 'radio_n_in_row' ] = new Radio_group(
+            this.html_inf.row_n_name
         );
         // "at least N balls in block" radio group:
-        this.opt_blk_n_rd = new Radio_group(
-            this.html_inf.opt_blk_n_name
+        this.gui[ 'radio_n_in_block' ] = new Radio_group(
+            this.html_inf.blk_n_name
         );
         // Game "mode" radio group:
-        this.opt_mode_rd = new Radio_group(
-            this.html_inf.opt_mode_name,
+        this.gui[ 'radio_game_mode' ] = new Radio_group(
+            this.html_inf.mode_name,
             "change",
             function( event ){
                 var _this = event.data._this;
-                switch( _this.opt_mode_rd.sel_id() ){
+                switch( _this.gui[ 'radio_game_mode' ].sel_id() ){
 
-                    case "lines":  _this.opt_row_n_rd.enable();
-                                   _this.opt_blk_n_rd.disable();
+                    case "lines":  _this.gui[ 'radio_n_in_row'   ].enable();
+                                   _this.gui[ 'radio_n_in_block' ].disable();
                                    break;
 
-                    case "blocks": _this.opt_blk_n_rd.enable();
-                                   _this.opt_row_n_rd.disable();
+                    case "blocks": _this.gui[ 'radio_n_in_row'   ].disable();
+                                   _this.gui[ 'radio_n_in_block' ].enable();
                                    break;
 
-                    default:       _this.opt_row_n_rd.disable();
-                                   _this.opt_blk_n_rd.disable();
+                    default:       _this.gui[ 'radio_n_in_row'   ].disable();
+                                   _this.gui[ 'radio_n_in_block' ].disable();
                 }
             },
             { _this : this }
         );
         // Button, which opens "help" page:
-        this.help_btn = new Button(
-            this.settings.hlp_btn_id,
+        this.gui[ 'btn_help' ] = new Button(
+            this.html_inf.hlp_btn_id,
             "click",
             function( event ){
                 var _this = event.data._this;
-                _this.page( _this.settings.hlp_page_id ); // Open "help" page
+                _this.page( _this.html_inf.hlp_page_id ); // Open "help" page
             },
             { _this : this }
         );
@@ -117,7 +120,6 @@ with(Lines_game = function( settings, html_inf ){
                 $( "#" + page ).fadeIn( t );
                 _this.active_page = page;
             } );
-
     };
 
     prototype.handlers = function(){
@@ -138,7 +140,7 @@ with(Lines_game = function( settings, html_inf ){
         };
         // Stop click events propagation:
         $( "#" + this.html_inf.field_id ).click( f );
-        $( "#" + this.html_inf.opt_page_id ).click( f );
+        $( "#" + this.html_inf.page_id ).click( f );
         $( "#" + this.html_inf.footer_bar_id ).click( f );
         $( "html" ).click(
             function(){
@@ -147,7 +149,6 @@ with(Lines_game = function( settings, html_inf ){
                     _this.page( _this.html_inf.field_id );
             }
         );
-
     };
 
 }
@@ -892,11 +893,11 @@ $( document ).ready(
          * info_bar_id    : id of the DOM element with the score bar
          * footer_bar_id  : id of the settings bar
          * field_id       : id of the game's field DOM element
-         * opt_btn_id     : id of options button
-         * opt_page_id    : id of options page
-         * opt_mode_name  : name of "game mode" radio group
-         * opt_row_n_name : name of "at least N balls in row" radio group
-         * opt_blk_n_name : name of "at least N balls in block" radio group
+         * btn_id         : id of options button
+         * page_id        : id of options page
+         * mode_name      : name of "game mode" radio group
+         * row_n_name     : name of "at least N balls in row" radio group
+         * blk_n_name     : name of "at least N balls in block" radio group
          * hlp_btn_id     : id of help button
          * hlp_page_id    : id of help page
          **/
@@ -908,20 +909,22 @@ $( document ).ready(
                 "info_bar_h"    : 71,
                 "footer_bar_h"  : 71
             };
+
         var html_inf =
             {
                 "info_bar_id"   : "info_bar",
                 "score_id"      : "score",
                 "footer_bar_id" : "footer_bar",
                 "field_id"      : "field",
-                "opt_btn_id"    : "options",
-                "opt_page_id"   : "options_page",
-                "opt_mode_name" : "mode",
-                "opt_row_n_name": "in_line",
-                "opt_blk_n_name": "in_block",
+                "btn_id"        : "options",
+                "page_id"       : "options_page",
+                "mode_name"     : "mode",
+                "row_n_name"    : "in_line",
+                "blk_n_name"    : "in_block",
                 "hlp_btn_id"    : "help",
                 "hlp_page_id"   : "help_page"
             };
+
         lines = new Lines_game( settings, html_inf );
     }
 );
