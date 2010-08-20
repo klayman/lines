@@ -397,10 +397,10 @@ with(Field = function( cell_size, border_size, html_id, balls_type, info_bar_obj
        [ [ 2, 2, 2, 2 ], [ 0, 0, 0, 0 ], [ 1, 1, 1, 1 ], [ 3, 3, 3, 3 ] ],                          // 4-ball line
        [ [ 2, 2, 2, 2, 2 ], [ 0, 0, 0, 0, 0 ], [ 1, 1, 1, 1, 1 ], [ 3, 3, 3, 3, 3 ] ],              // 5-ball line
        [ [ 2, 2, 2, 2, 2, 2 ], [ 0, 0, 0, 0, 0, 0 ], [ 1, 1, 1, 1, 1, 1 ], [ 3, 3, 3, 3, 3, 3 ] ],  // 6-ball line
-    ]
+    ];
 
     // current block to remove from field
-    this.figure = 1;
+    this.figure = 5;
 
     // X and Y coords of selected ball (in cells):
     this.sel_ball = null;
@@ -589,16 +589,16 @@ with(Field = function( cell_size, border_size, html_id, balls_type, info_bar_obj
      * 7 ......o..
      * 8 .......o.
      *
-     * test_figrure( 0, 0, [ 1, 7, 5, 3 ] ) --> false
-     * test_figrure( 1, 0, [ 1, 7, 5, 3 ] ) --> false
-     * test_figrure( 1, 2, [ 1, 7, 5, 3 ] ) --> true
-     * test_figrure( 2, 1, [ 1, 7, 5, 3 ] ) --> false
-     * test_figrure( 2, 6, [ 1, 7, 5, 3 ] ) --> true
-     * test_figrure( 7, 8, [ 1, 7, 5, 3 ] ) --> false
+     * test_path( 0, 0, [ 1, 7, 5, 3 ] ) --> false
+     * test_path( 1, 0, [ 1, 7, 5, 3 ] ) --> false
+     * test_path( 1, 2, [ 1, 7, 5, 3 ] ) --> true
+     * test_path( 2, 1, [ 1, 7, 5, 3 ] ) --> false
+     * test_path( 2, 6, [ 1, 7, 5, 3 ] ) --> true
+     * test_path( 7, 8, [ 1, 7, 5, 3 ] ) --> false
      *
      * TODO: color test
      */
-    prototype.test_figure = function( nx, ny, ms, mark ){
+    prototype.test_path = function( nx, ny, ms, mark ){
         var x = nx;
         var y = ny;
         var num = this.map[ y ][ x ].num;  // save color of ball (number)
@@ -644,17 +644,17 @@ with(Field = function( cell_size, border_size, html_id, balls_type, info_bar_obj
 
     /*
      * This method find and removes group of balls which is
-     * belong to current figure template ( box, rombs, etc. )
+     * belong to current figure path ( box, rombs, etc. )
      */
-    prototype.remove_balls = function() {
+    prototype.remove_path = function() {
         var f = this.figures[ this.figure ];  // alias...
 
         for( var j = 0; j < this.map.length; j++ )
             for( var i = 0; i < this.map[ j ].length; i++ )
                 if( this.map[ j ][ i ] )
                     for( var k in f )
-                        if( this.test_figure( i, j, f[ k ] ) )
-                            this.test_figure( i, j, f[ k ], true );  // mark balls for deletion
+                        if( this.test_path( i, j, f[ k ] ) )
+                            this.test_path( i, j, f[ k ], true );  // mark balls for deletion
 
         function remove_group( nx, ny, _this ) {
             var stack = Array( );   // stack for siblings
@@ -702,12 +702,85 @@ with(Field = function( cell_size, border_size, html_id, balls_type, info_bar_obj
                 if( this.map[ j ][ i ] && this.map[ j ][ i ].marked )
                     cnt += remove_group( i, j, this );
 
-        // calculate new scores...
         var cnt_min = this.figures[ this.figure ][ 0 ].length;
-        this.score += ( cnt - cnt_min + 1 ) * cnt;
-        this.info_bar_obj.set_score( this.score );
+
+        return ( cnt - cnt_min + 1 ) * cnt;  // return scores for removed path
+    };
+
+
+    /*
+     * count balls in each block and can del balls
+     */
+    prototype.test_block = function( nx, ny, del ) {
+        var num = this.map[ ny ][ nx ].num;  // save color of ball (number)
+        var stack = Array();                 // ball's siblings
+        var cnt = 0;                         // count of balls in block
+
+        stack.push( [ nx, ny ] );
+        this.map[ ny ][ nx ].marked = true;  // don't add this ball as sibling
+        while( stack.length )
+        {
+            var pos = stack.splice( 0,1 )[ 0 ];  // take first element and remove them
+            cnt++;                               // increase coount of balls in group
+            if( del )
+            {
+                this.map[ pos[ 1 ] ][ pos[ 0 ] ].remove();  // animate & destroy SVG
+                this.map[ pos[ 1 ] ][ pos[ 0 ] ] = null;    // ... and remove from map
+            }
+
+            for( var dy = -1; dy <= 1; dy++ )
+                for( var dx = -1; dx <= 1; dx++ )
+                {
+                    var x = pos[ 0 ] + dx;
+                    var y = pos[ 1 ] + dy;
+                    if( Math.abs( dx ) ^ Math.abs( dy )  &&    // logical XOR ( only one direction { up, down, left, right } is allowed )
+                        x >= 0 && x <= 8 && y >= 0 && y <= 8 ) // boundary conditions
+                    {
+                        var tmp = this.map[ y ][ x ];
+                        if( tmp && tmp.num == num && !tmp.marked )  // ... same color && not added early
+                        {
+                            tmp.marked = true;
+                            stack.push( [ x, y ] );
+                        }
+                    }
+                }
+        }
+
+        // after all remove all marks from balls
+        for( var j = 0; j < this.map.length; j++ )
+            for( var i = 0; i < this.map[ j ].length; i++ )
+                if( this.map[ j ][ i ] )
+                    this.map[ j ][ i ].marked = false;
 
         return cnt;
+    };
+
+    /*
+     * same as remove_path, but group of balls will be
+     * founded by another algorithm.
+     */
+    prototype.remove_block = function() {
+        var cnt = 0;
+        var cnt_min = this.figure;  // minimal count of balls in block
+        for( var j = 0; j < this.map.length; j++ )
+            for( var i = 0; i < this.map[ j ].length; i++ )
+                if( this.map[ j ][ i ] && ( this.test_block( i, j ) >= cnt_min ) )
+                    cnt += this.test_block( i, j, true );
+
+        return ( cnt - cnt_min + 1 ) * cnt;  // return scores for removed block
+    };
+
+    /*
+     * this method combine abilities of remove_block / remove_path with
+     * updating scores in GUI element.
+     */
+    prototype.remove_balls = function() {
+        if( this.figure > 4 )
+            this.score += this.remove_block();
+        else
+            this.score += this.remove_path();
+
+        this.info_bar_obj.set_score( this.score );
     };
 
 
