@@ -775,12 +775,16 @@ with(Field = function( cell_size, border_size, html_id, balls_type, info_bar_obj
      * updating scores in GUI element.
      */
     prototype.remove_balls = function() {
+        var score = 0;
         if( this.figure > 4 )
-            this.score += this.remove_block();
+            score += this.remove_block();
         else
-            this.score += this.remove_path();
+            score += this.remove_path();
 
+        this.score += score;
         this.info_bar_obj.set_score( this.score );
+
+        return score;
     };
 
 
