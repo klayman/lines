@@ -134,7 +134,7 @@
     </div> <!--#scores_page-->
     <div id="footer_bar">
       <a href="http://www.semyonfilippov.net"><span id="logo" class="footer_icons"> <span class="tooltip">Страница в галерее</span> </span></a>
-      <a><span id="cc" class="footer_icons"> <span class="tooltip">Creative Commons</span> </span></a>
+      <a rel="license" href="http://creativecommons.org/licenses/by-nd/3.0/"><span id="cc" class="footer_icons"> <span class="tooltip">Creative Commons</span> </span></a>
       <a><span id="restart" class="footer_icons"> <span class="tooltip">Новая игра</span> </span></a>
       <a><span id="mode" class="footer_icons"> <span class="tooltip">Сменить режим</span> </span></a>
       <a><span id="high_score" class="footer_icons"> <span class="tooltip">Таблица рекордов</span> </span></a>

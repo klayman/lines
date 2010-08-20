@@ -135,7 +135,7 @@
     </div> <!--#scores_page-->
     <div id="footer_bar">
       <a href="http://www.semyonfilippov.net"><span id="logo" class="footer_icons"> <span class="tooltip">Gallery entry</span> </span></a>
-      <a><span id="cc" class="footer_icons"> <span class="tooltip">Creative Commons</span> </span></a>
+      <a rel="license" href="http://creativecommons.org/licenses/by-nd/3.0/"><span id="cc" class="footer_icons"> <span class="tooltip">Creative Commons</span> </span></a>
       <a><span id="restart" class="footer_icons"> <span class="tooltip">Restart game</span> </span></a>
       <a><span id="mode" class="footer_icons"> <span class="tooltip">Change mode</span> </span></a>
       <a><span id="high_score" class="footer_icons"> <span class="tooltip">Show High scores</span> </span></a>
