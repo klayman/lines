@@ -87,6 +87,17 @@ with(Lines_game = function( settings, html_inf ){
         this.gui[ 'radio_balls_type' ] = new Radio_group(
             this.html_inf.balls_type
         );
+        // "Zen mode" checkbox:
+        this.gui[ 'zen_mode' ] = new Button(
+            this.html_inf.zen_mode_id,
+            "click",
+            function( event ){
+                var _this = event.data._this;
+                _this.info_bars();
+                _this.settings2cookie();
+            },
+            { _this : this }
+        );
         // "Cancel settings" button:
         this.gui[ 'btn_cancel' ] = new Button(
             this.html_inf.cancel_btn_id,
@@ -105,6 +116,7 @@ with(Lines_game = function( settings, html_inf ){
             function( event ){
                 var _this = event.data._this;
                 _this.save_settings();
+                _this.page( _this.html_inf.field_id );
             },
             { _this : this }
         );
@@ -148,16 +160,16 @@ with(Lines_game = function( settings, html_inf ){
     prototype.info_bars = function(){
         // Time for animation (in ms):
         var t = 200;
-        if( this.settings.show_bars ){
-            // Hide bars:
-            $( "#" + this.html_inf.info_bar_id ).animate( { height: "0px" }, t );
-            $( "#" + this.html_inf.footer_bar_id ).animate( { height: "0px" }, t );
-            this.settings.show_bars = false;
-        }else{
+        if( this.settings.zen_mode ){
             // Show bars:
             $( "#" + this.html_inf.info_bar_id ).animate( { height: this.settings.info_bar_h + "px" }, t );
             $( "#" + this.html_inf.footer_bar_id ).animate( { height: this.settings.footer_bar_h + "px" }, t );
-            this.settings.show_bars = true;
+            this.settings.zen_mode = false;
+        }else{
+            // Hide bars:
+            $( "#" + this.html_inf.info_bar_id ).animate( { height: "0px" }, t );
+            $( "#" + this.html_inf.footer_bar_id ).animate( { height: "0px" }, t );
+            this.settings.zen_mode = true;
         }
     };
 
@@ -185,7 +197,10 @@ with(Lines_game = function( settings, html_inf ){
             function( e ){
                 switch( e.keyCode ){
                     // Show or hide info bars up and below the field:
-                    case 90: _this.info_bars(); break;
+                    case 90: _this.gui[ "zen_mode" ].obj.click(); break;
+                    case 27: if( _this.settings.zen_mode )
+                                 _this.gui[ "zen_mode" ].obj.click();
+                             break;
                 }
             }
         );
@@ -278,6 +293,13 @@ with(Button = function( html_id, evt, func, f_param ){
             f_param,   // A map of data that will be passed to the event handler.
             func       // A function to execute each time the event is triggered.
         );
+    };
+
+    prototype.if_checked = function(){
+        // Return true, if the checkbox is on:
+        if( this.obj.filter( ":checked" ).length > 0 )
+            return true;
+        return false;
     };
 }
 
@@ -596,7 +618,6 @@ with(Field = function( cell_size, border_size, html_id, balls_type, info_bar_obj
      * test_path( 2, 6, [ 1, 7, 5, 3 ] ) --> true
      * test_path( 7, 8, [ 1, 7, 5, 3 ] ) --> false
      *
-     * TODO: color test
      */
     prototype.test_path = function( nx, ny, ms, mark ){
         var x = nx;
@@ -721,7 +742,7 @@ with(Field = function( cell_size, border_size, html_id, balls_type, info_bar_obj
         while( stack.length )
         {
             var pos = stack.splice( 0,1 )[ 0 ];  // take first element and remove them
-            cnt++;                               // increase coount of balls in group
+            cnt++;                               // increase count of balls in group
             if( del )
             {
                 this.map[ pos[ 1 ] ][ pos[ 0 ] ].remove();  // animate & destroy SVG
@@ -830,7 +851,7 @@ with(Field = function( cell_size, border_size, html_id, balls_type, info_bar_obj
                 var callback = function( _this ){
                     if( ! _this.remove_balls() ) {                   // user does not build new figure...
                         _this.put_balls( _this.next_balls );         // put 3 new balls on the field
-                        _this.remove_balls();                        // put_balls can create new true figres...  TODO: do not add scores
+                        _this.remove_balls();                        // put_balls can create new true figres...
                         _this.next_balls = _this.gen_next_balls();   // generate 3 new "next" balls
                         _this.update_info_bar();                     // update info bar "next" balls
                     }
@@ -1062,12 +1083,12 @@ $( document ).ready(
         /* Game initialization after the page loads: */
         // Set default game settings:
         /*
-         * show_bars      : visible or not info bars up and below the field (boolean)
          * cell_size      : the field's cell size (in px)
          * border_size    : the field's cell border size (in px)
          * info_bar_h     : info bar height (in px)
          * footer_bar_h   : footer bar height (in px)
          * balls_type     : type of the game balls (one of the 'matte' and 'glossy')
+         * zen_mode       : zen mode enabled or not (boolean)
          *
          * info_bar_id    : id of the DOM element with the score bar
          * footer_bar_id  : id of the settings bar
@@ -1078,6 +1099,7 @@ $( document ).ready(
          * row_n_name     : name of the "at least N balls in row" radio group
          * blk_n_name     : name of the "at least N balls in block" radio group
          * balls_type     : name of the "balls type" radio group
+         * zen_mode_id    : id of the "zen mode" checkbox
          * save_btn_id    : id of the save settings button
          * cancel_btn_id  : id of the cancel settings button
          * hlp_btn_id     : id of the help button
@@ -1085,12 +1107,12 @@ $( document ).ready(
          **/
         var settings =
             {
-                "show_bars"     : true,
                 "cell_size"     : 48,
                 "border_size"   : 2,
                 "info_bar_h"    : 71,
                 "footer_bar_h"  : 71,
-                "balls_type"    : "matte"
+                "balls_type"    : "matte",
+                "zen_mode"      : false
             };
 
         // If there is a cookie "settings" - get game settings from it:
@@ -1109,6 +1131,7 @@ $( document ).ready(
                 "row_n_name"    : "in_line",
                 "blk_n_name"    : "in_block",
                 "balls_type"    : "ball_type",
+                "zen_mode_id"   : "zen",
                 "save_btn_id"   : "save_button",
                 "cancel_btn_id" : "cancel_button",
                 "hlp_btn_id"    : "help",
