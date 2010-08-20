@@ -25,13 +25,15 @@ with(Lines_game = function( settings, html_inf ){
 
     prototype.create_info_bar = function(){
         // The game field object:
-        this.info_bar = new Info_bar( this.html_inf.info_bar_id, this.html_inf.score_id );
+        this.info_bar = new Info_bar( this.html_inf.info_bar_id, this.html_inf.score_id,
+                                      this.settings.balls_type );
     };
 
     prototype.create_field = function(){
         // The game field object:
         this.field = new Field( this.settings.cell_size, this.settings.border_size,
-                                this.html_inf.field_id, this.info_bar );
+                                this.html_inf.field_id, this.settings.balls_type,
+                                this.info_bar );
     };
 
     prototype.init_gui = function(){
@@ -78,6 +80,30 @@ with(Lines_game = function( settings, html_inf ){
             },
             { _this : this }
         );
+        // "Balls type" radio group:
+        this.gui[ 'radio_balls_type' ] = new Radio_group(
+            this.html_inf.balls_type
+        );
+        // "Cancel settings" button:
+        this.gui[ 'btn_cancel' ] = new Button(
+            this.html_inf.cancel_btn_id,
+            "click",
+            function( event ){
+                var _this = event.data._this;
+                _this.cancel_settings();
+            },
+            { _this : this }
+        );
+        // "Save settings" button:
+        this.gui[ 'btn_save' ] = new Button(
+            this.html_inf.save_btn_id,
+            "click",
+            function( event ){
+                var _this = event.data._this;
+                _this.save_settings();
+            },
+            { _this : this }
+        );
         // Button, which opens "help" page:
         this.gui[ 'btn_help' ] = new Button(
             this.html_inf.hlp_btn_id,
@@ -88,6 +114,18 @@ with(Lines_game = function( settings, html_inf ){
             },
             { _this : this }
         );
+    };
+
+    prototype.save_settings = function(){
+        // If necessary, change the balls type:
+        if( this.gui[ 'radio_balls_type' ].sel_id() != this.settings.balls_type ){
+            this.settings.balls_type = this.gui[ 'radio_balls_type' ].sel_id();
+            this.info_bar.change_balls_type( this.settings.balls_type );
+            this.field.change_balls_type( this.settings.balls_type );
+        }
+    };
+
+    prototype.cancel_settings = function(){
     };
 
     prototype.info_bars = function(){
@@ -226,7 +264,7 @@ with(Button = function( html_id, evt, func, f_param ){
 
 /* The game info bar class: */
 
-with(Info_bar = function( html_id, score_id ){
+with(Info_bar = function( html_id, score_id, balls_type ){
 
     /* Constructor: */
 
@@ -244,6 +282,8 @@ with(Info_bar = function( html_id, score_id ){
 
     // Array of the Ball class objects
     this.balls = [];
+    // Type of the balls. One of the 'glossy' and 'matte':
+    this.balls_type = balls_type;
 
 }){
     /* Methods */
@@ -265,6 +305,16 @@ with(Info_bar = function( html_id, score_id ){
     };
 
     /*
+     * Change balls type:
+     */
+    prototype.change_balls_type = function( new_type ){
+        for( var i in this.balls )
+            this.balls[ i ].change_type( new_type );
+
+        this.balls_type = new_type;
+    };
+
+    /*
      * Draw balls on the own SVG object:
      * arr   : array of colors of balls
      * size  : size of the field cell (in px)
@@ -272,7 +322,7 @@ with(Info_bar = function( html_id, score_id ){
     prototype.put_balls = function( arr, size ){
         for( var i in arr ){
             var color = arr[ i ];
-            var ball = new Ball( this.svg_obj, color, size );
+            var ball = new Ball( this.svg_obj, color, size, this.balls_type );
             ball.popup( i * 1, 0, 1 );
             this.balls.push( ball );
         }
@@ -289,7 +339,7 @@ with(Info_bar = function( html_id, score_id ){
  * border_size : width of border line between cells (in px)
  * html_id     : id of <div> which contains svg
  **/
-with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
+with(Field = function( cell_size, border_size, html_id, balls_type, info_bar_obj ){
 
     this.obj = $( "#" + html_id );  // Saving the jQuery object of field
     var _this = this;               // Save link to "this" property
@@ -307,6 +357,8 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
     this.map = new Array( 9 );       // The 2d array of Ball class objects
     for( var i = 0; i < 9; i++ )
         this.map[ i ] = new Array( null, null, null, null, null, null, null, null, null );
+
+    this.balls_type = balls_type;  // Balls type. One of the 'glossy' and 'matte'
 
     // search motion's patterns
     // each motion pattern is an array of numbers which determine
@@ -386,7 +438,7 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
                 var nx = this.rand( 0, 8 );
                 var ny = this.rand( 0, 8 );
             } while( this.map[ ny ][ nx ] );
-            var ball = new Ball( this.svg_obj, color, this.square_size + this.border_size );
+            var ball = new Ball( this.svg_obj, color, this.square_size + this.border_size, this.balls_type );
             this.map[ ny ][ nx ] = ball;
             ball.popup( nx, ny, 1 );
         }
@@ -448,9 +500,9 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
             var old_ball = this.map[ ny ][ nx ];
             this.map[ ny ][ nx ] = null;
 
-            // we must create new ball, bacause of two parallel animations:
+            // we must create new ball, because of two parallel animations:
             // hiding old ball & popupping new ball
-            var new_ball = new Ball( this.svg_obj, old_ball.num, this.square_size + this.border_size );
+            var new_ball = new Ball( this.svg_obj, old_ball.num, this.square_size + this.border_size, this.balls_type );
 
             this.map[ to_y ][ to_x ] = new_ball;
 
@@ -572,7 +624,6 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
     /*
      * This method find and removes group of balls which is
      * belong to current figure template ( box, rombs, etc. )
-     * TODO: calculate scores here ?
      */
     prototype.remove_balls = function() {
         var f = this.figures[ this.figure ];  // alias...
@@ -638,6 +689,20 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
         return cnt;
     };
 
+
+    /*
+     * Change balls type:
+     */
+    prototype.change_balls_type = function( new_type ){
+        for( var i in this.map )
+            for( var j in this.map[ i ] )
+                if( this.map[ i ][ j ] )
+                    this.map[ i ][ j ].change_type( new_type );
+
+        this.balls_type = new_type;
+    };
+
+
     prototype.handlers = function(){
         // Save link to "this" property:
         var _this = this;
@@ -691,7 +756,7 @@ with(Field = function( cell_size, border_size, html_id, info_bar_obj ){
 
 
 
-with(Ball = function( svg_obj, img_number, img_size ){
+with(Ball = function( svg_obj, img_number, img_size, type ){
 
     /* Constructor */
 
@@ -711,6 +776,10 @@ with(Ball = function( svg_obj, img_number, img_size ){
         case 6: this.img_name = 'blue';   break;
         case 7: this.img_name = 'purple'; break;
     }
+
+    this.prefix = '';
+    if( type == "glossy" )
+        this.prefix = "_glossy";
 
     // The ball image size (in px):
     this.size = img_size;
@@ -742,7 +811,7 @@ with(Ball = function( svg_obj, img_number, img_size ){
                            ( - this.size / 2 ),
                            this.size - 1,
                            this.size - 1,
-                           'images/' + this.img_name + '.png',
+                           'images/' + this.img_name + this.prefix + '.png',
                            { transform:
                              /*  Transformation matrix:
                               *  | sx 0  tx |
@@ -762,6 +831,17 @@ with(Ball = function( svg_obj, img_number, img_size ){
 
         this.x = x;
         this.y = y;
+    };
+
+
+    prototype.change_type = function( new_type ){
+
+        if( new_type == "glossy" )
+            this.prefix = "_glossy";
+        else
+            this.prefix = "";
+
+        this.obj.attr( "href", 'images/' + this.img_name + this.prefix + '.png' );
     };
 
 
@@ -889,17 +969,21 @@ $( document ).ready(
          * border_size    : the field's cell border size (in px)
          * info_bar_h     : info bar height (in px)
          * footer_bar_h   : footer bar height (in px)
+         * balls_type     : type of the game balls (one of the 'matte' and 'glossy')
          *
          * info_bar_id    : id of the DOM element with the score bar
          * footer_bar_id  : id of the settings bar
          * field_id       : id of the game's field DOM element
-         * btn_id         : id of options button
-         * page_id        : id of options page
-         * mode_name      : name of "game mode" radio group
-         * row_n_name     : name of "at least N balls in row" radio group
-         * blk_n_name     : name of "at least N balls in block" radio group
-         * hlp_btn_id     : id of help button
-         * hlp_page_id    : id of help page
+         * btn_id         : id of the options button
+         * page_id        : id of the options page
+         * mode_name      : name of the "game mode" radio group
+         * row_n_name     : name of the "at least N balls in row" radio group
+         * blk_n_name     : name of the "at least N balls in block" radio group
+         * balls_type     : name of the "balls type" radio group
+         * save_btn_id    : id of the save settings button
+         * cancel_btn_id  : id of the cancel settings button
+         * hlp_btn_id     : id of the help button
+         * hlp_page_id    : id of the help page
          **/
         var settings =
             {
@@ -907,7 +991,8 @@ $( document ).ready(
                 "cell_size"     : 48,
                 "border_size"   : 2,
                 "info_bar_h"    : 71,
-                "footer_bar_h"  : 71
+                "footer_bar_h"  : 71,
+                "balls_type"    : "matte"
             };
 
         var html_inf =
@@ -921,6 +1006,9 @@ $( document ).ready(
                 "mode_name"     : "mode",
                 "row_n_name"    : "in_line",
                 "blk_n_name"    : "in_block",
+                "balls_type"    : "ball_type",
+                "save_btn_id"   : "save_button",
+                "cancel_btn_id" : "cancel_button",
                 "hlp_btn_id"    : "help",
                 "hlp_page_id"   : "help_page"
             };
