@@ -18,6 +18,8 @@ with(Lines_game = function( settings, html_inf ){
     this.create_field();
     // Create button and other GUI objects:
     this.init_gui();
+    // Change html objects according to the settings:
+    this.restore_settings();
     // Set the event handlers:
     this.handlers();
 }){
@@ -45,6 +47,7 @@ with(Lines_game = function( settings, html_inf ){
             "click",                  // Event name
             function( event ){        // Event handler
                 var _this = event.data._this;
+                _this.restore_settings();             // Restore game settings
                 _this.page( _this.html_inf.page_id ); // Open "options" page
             },
             { _this : this }       // A map of data that will be passed to the event handler.
@@ -64,7 +67,7 @@ with(Lines_game = function( settings, html_inf ){
             "change",
             function( event ){
                 var _this = event.data._this;
-                switch( _this.gui[ 'radio_game_mode' ].sel_id() ){
+                switch( _this.gui[ 'radio_game_mode' ].get_id() ){
 
                     case "lines":  _this.gui[ 'radio_n_in_row'   ].enable();
                                    _this.gui[ 'radio_n_in_block' ].disable();
@@ -90,7 +93,8 @@ with(Lines_game = function( settings, html_inf ){
             "click",
             function( event ){
                 var _this = event.data._this;
-                _this.cancel_settings();
+                _this.restore_settings();
+                _this.page( _this.html_inf.field_id );
             },
             { _this : this }
         );
@@ -110,6 +114,7 @@ with(Lines_game = function( settings, html_inf ){
             "click",
             function( event ){
                 var _this = event.data._this;
+                _this.restore_settings();
                 _this.page( _this.html_inf.hlp_page_id ); // Open "help" page
             },
             { _this : this }
@@ -118,14 +123,26 @@ with(Lines_game = function( settings, html_inf ){
 
     prototype.save_settings = function(){
         // If necessary, change the balls type:
-        if( this.gui[ 'radio_balls_type' ].sel_id() != this.settings.balls_type ){
-            this.settings.balls_type = this.gui[ 'radio_balls_type' ].sel_id();
+        if( this.gui[ 'radio_balls_type' ].get_id() != this.settings.balls_type ){
+            this.settings.balls_type = this.gui[ 'radio_balls_type' ].get_id();
             this.info_bar.change_balls_type( this.settings.balls_type );
             this.field.change_balls_type( this.settings.balls_type );
         }
+        this.settings2cookie();
     };
 
-    prototype.cancel_settings = function(){
+    prototype.settings2cookie = function(){
+        var str = "{";
+        for( var i in this.settings ){
+            var str_val = ( typeof this.settings[ i ] == "string" ) ? '"' + this.settings[ i ] + '"' : this.settings[ i ].toString();
+            str += '"' + i + '":' + str_val + ',';
+        }
+        str = str.substr( 0, str.length - 1 ) + "}";
+        $.cookie( "settings", str, { expires : 365 } );
+    };
+
+    prototype.restore_settings = function(){
+        this.gui[ 'radio_balls_type' ].set_id( this.settings.balls_type );
     };
 
     prototype.info_bars = function(){
@@ -183,8 +200,8 @@ with(Lines_game = function( settings, html_inf ){
         $( "html" ).click(
             function(){
                 if( _this.active_page != _this.html_inf.field_id )
-                    // If the current page isn't "field", open it:
-                    _this.page( _this.html_inf.field_id );
+                    // If the current page isn't "field", restore game settings and open it:
+                    _this.gui[ "btn_cancel" ].obj.click();
             }
         );
     };
@@ -218,8 +235,12 @@ with(Radio_group = function( html_name, evt, func, f_param ){
         );
     };
 
-    prototype.sel_id = function(){
-        return this.obj.filter( ":checked" ).attr( "id" ); // Return id of the selected element of radio group
+    prototype.get_id = function(){
+        return this.obj.filter( ":checked" ).attr( "id" );  // Return id of the selected element of radio group
+    };
+
+    prototype.set_id = function( html_id ){
+        this.obj.filter( "#" + html_id ).click().change();  // Set the element with id = html_id to selected
     };
 
     prototype.disable = function(){
@@ -994,6 +1015,10 @@ $( document ).ready(
                 "footer_bar_h"  : 71,
                 "balls_type"    : "matte"
             };
+
+        // If there is a cookie "settings" - get game settings from it:
+        if( $.cookie( "settings" ) )
+            settings = eval( "(" + $.cookie( "settings" ) + ")" );
 
         var html_inf =
             {
