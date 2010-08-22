@@ -296,6 +296,7 @@ with(Lines_game = function( settings, html_inf ){
         // Stop click events propagation:
         $( "#" + this.html_inf.field_id ).click( f );
         $( "#" + this.html_inf.opt_page_id ).click( f );
+        $( "#" + this.html_inf.hlp_page_id ).click( f );
         $( "#" + this.html_inf.footer_bar_id ).click( f );
         $( "html" ).click(
             function(){
