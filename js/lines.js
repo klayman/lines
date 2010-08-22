@@ -34,8 +34,8 @@ with(Lines_game = function( settings, html_inf ){
     prototype.create_field = function(){
         // The game field object:
         this.field = new Field( this.settings.cell_size, this.settings.border_size,
-                                this.html_inf.field_id, this.settings.balls_type,
-                                this.info_bar );
+                                this.html_inf.field_id, this.settings.mode,
+                                this.settings.balls_type, this.info_bar );
     };
 
     prototype.init_gui = function(){
@@ -137,9 +137,10 @@ with(Lines_game = function( settings, html_inf ){
             "click",
             function( event ){
                 var _this = event.data._this;
+                _this.field.figure = _this.settings.mode;
                 if( _this.field.game_started )
-                    if( ! confirm( "Вы уверены, что хотите начать новую игру?" ) )
-                        return false;
+                    if( ! confirm( "Вы уверены?" ) )
+                        return;
                 var callback_f =
                 function( _this ){
                     _this.field.clear();
@@ -159,6 +160,43 @@ with(Lines_game = function( settings, html_inf ){
     };
 
     prototype.save_settings = function(){
+        // Define the selected game mode:
+        var selected_mode = false;
+        switch( this.gui[ 'radio_game_mode' ].get_id() ){
+
+            case "lines":       switch( this.gui[ 'radio_n_in_row' ].get_id() ){
+                                    case "four": selected_mode = 2; break;
+                                    case "five": selected_mode = 3; break;
+                                    case "six" : selected_mode = 4; break;
+                                }
+                                break;
+
+            case "rectangles":  selected_mode = 0;
+                                break;
+
+            case "rings":       selected_mode = 1;
+                                break;
+
+            case "blocks":      switch( this.gui[ 'radio_n_in_block' ].get_id() ){
+                                    case "six_in_a_block": selected_mode = 6; break;
+                                    case "seven"         : selected_mode = 7; break;
+                                    case "eight"         : selected_mode = 8; break;
+                                }
+                                break;
+
+        }
+        if( selected_mode != this.settings.mode ){
+            this.settings.mode = selected_mode;
+            if( this.field.game_started &&
+                confirm( 'Применить новый режим игры? "Ок" - Будет начата новая игра, "Отмена" - режим будет применен '+
+                         'для следующей игры.' ) ){
+                    this.field.game_started = false;
+                    this.gui[ "btn_new_game" ].obj.click();
+                    return;
+                }
+            if( ! this.field.game_started )
+                this.field.figure = selected_mode;
+        }
         // If necessary, change the balls type:
         if( this.gui[ 'radio_balls_type' ].get_id() != this.settings.balls_type ){
             this.settings.balls_type = this.gui[ 'radio_balls_type' ].get_id();
@@ -180,6 +218,20 @@ with(Lines_game = function( settings, html_inf ){
 
     prototype.restore_settings = function(){
         this.gui[ 'radio_balls_type' ].set_id( this.settings.balls_type );
+
+        var mode_obj = this.gui[ "radio_game_mode" ];
+        var lines_sub = this.gui[ "radio_n_in_row" ];
+        var block_sub = this.gui[ "radio_n_in_block" ];
+        switch( this.settings.mode ){
+            case 0: mode_obj.set_id( "rectangles" ); break;
+            case 1: mode_obj.set_id( "rings" );      break;
+            case 2: mode_obj.set_id( "lines" ); lines_sub.set_id( "four" ); break;
+            case 3: mode_obj.set_id( "lines" ); lines_sub.set_id( "five" ); break;
+            case 4: mode_obj.set_id( "lines" ); lines_sub.set_id( "six" );  break;
+            case 6: mode_obj.set_id( "blocks" ); block_sub.set_id( "six_in_a_block" ); break;
+            case 7: mode_obj.set_id( "blocks" ); block_sub.set_id( "seven" );          break;
+            case 8: mode_obj.set_id( "blocks" ); block_sub.set_id( "eight" );          break;
+        }
     };
 
     prototype.info_bars = function(){
@@ -433,7 +485,7 @@ with(Info_bar = function( html_id, score_id, balls_type ){
  * border_size : width of border line between cells (in px)
  * html_id     : id of <div> which contains svg
  **/
-with(Field = function( cell_size, border_size, html_id, balls_type, info_bar_obj ){
+with(Field = function( cell_size, border_size, html_id, figure_num, balls_type, info_bar_obj ){
 
     this.obj = $( "#" + html_id );  // Saving the jQuery object of field
     var _this = this;               // Save link to "this" property
@@ -473,7 +525,7 @@ with(Field = function( cell_size, border_size, html_id, balls_type, info_bar_obj
     ];
 
     // current block to remove from field
-    this.figure = 5;
+    this.figure = figure_num;
 
     // X and Y coords of selected ball (in cells):
     this.sel_ball = null;
@@ -1157,6 +1209,7 @@ $( document ).ready(
          * footer_bar_h   : footer bar height (in px)
          * balls_type     : type of the game balls (one of the 'matte' and 'glossy')
          * zen_mode       : zen mode enabled or not (boolean)
+         * mode           : game mode (number from 0 to 8)
          *
          * info_bar_id    : id of the DOM element with the score bar
          * footer_bar_id  : id of the settings bar
@@ -1180,7 +1233,8 @@ $( document ).ready(
                 "info_bar_h"    : 71,
                 "footer_bar_h"  : 71,
                 "balls_type"    : "matte",
-                "zen_mode"      : false
+                "zen_mode"      : false,
+                "mode"          : 3
             };
 
         // If there is a cookie "settings" - get game settings from it:
