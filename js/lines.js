@@ -43,12 +43,12 @@ with(Lines_game = function( settings, html_inf ){
 
         // Button, which opens "option" page:
         this.gui[ 'btn_opts' ] = new Button(
-            this.html_inf.btn_id, // html id
+            this.html_inf.opt_btn_id, // html id
             "click",                  // Event name
             function( event ){        // Event handler
                 var _this = event.data._this;
                 _this.restore_settings();             // Restore game settings
-                _this.page( _this.html_inf.page_id ); // Open "options" page
+                _this.open_page( _this.html_inf.opt_page_id ); // Open "options" page
             },
             { _this : this }       // A map of data that will be passed to the event handler.
         );
@@ -105,7 +105,7 @@ with(Lines_game = function( settings, html_inf ){
             function( event ){
                 var _this = event.data._this;
                 _this.restore_settings();
-                _this.page( _this.html_inf.field_id );
+                _this.open_page( _this.html_inf.field_id );
             },
             { _this : this }
         );
@@ -116,7 +116,7 @@ with(Lines_game = function( settings, html_inf ){
             function( event ){
                 var _this = event.data._this;
                 _this.save_settings();
-                _this.page( _this.html_inf.field_id );
+                _this.open_page( _this.html_inf.field_id );
             },
             { _this : this }
         );
@@ -127,7 +127,32 @@ with(Lines_game = function( settings, html_inf ){
             function( event ){
                 var _this = event.data._this;
                 _this.restore_settings();
-                _this.page( _this.html_inf.hlp_page_id ); // Open "help" page
+                _this.open_page( _this.html_inf.hlp_page_id ); // Open "help" page
+            },
+            { _this : this }
+        );
+        // Button, which start new game:
+        this.gui[ 'btn_new_game' ] = new Button(
+            this.html_inf.restart_btn_id,
+            "click",
+            function( event ){
+                var _this = event.data._this;
+                if( _this.field.game_started )
+                    if( ! confirm( "Вы уверены, что хотите начать новую игру?" ) )
+                        return false;
+                var callback_f =
+                function( _this ){
+                    _this.field.clear();
+                    _this.field.next_balls = _this.field.gen_next_balls();
+                    _this.field.update_info_bar();
+                    _this.field.game_started = false;
+                    _this.info_bar.set_score( 0 );
+                }
+                if( _this.active_page != _this.html_inf.field_id ){
+                    _this.open_page( _this.html_inf.field_id, callback_f );
+                    return true;
+                }
+                callback_f( _this );
             },
             { _this : this }
         );
@@ -173,7 +198,7 @@ with(Lines_game = function( settings, html_inf ){
         }
     };
 
-    prototype.page = function( page ){
+    prototype.open_page = function( page, callback ){
         // Save link to "this" property:
         var _this = this;
         // Time for animation (in ms):
@@ -182,11 +207,19 @@ with(Lines_game = function( settings, html_inf ){
         if( this.active_page == page )
             page = this.html_inf.field_id;
 
+        if( ! callback )
+            callback = function(){};
+
         $( "#" + this.active_page ).fadeOut( t,
             function(){
-                $( "#" + page ).fadeIn( t );
-                _this.active_page = page;
-            } );
+                $( "#" + page ).fadeIn( t,
+                    function(){
+                        callback( _this );
+                        _this.active_page = page;
+                    }
+                );
+            }
+        );
     };
 
     prototype.handlers = function(){
@@ -210,7 +243,7 @@ with(Lines_game = function( settings, html_inf ){
         };
         // Stop click events propagation:
         $( "#" + this.html_inf.field_id ).click( f );
-        $( "#" + this.html_inf.page_id ).click( f );
+        $( "#" + this.html_inf.opt_page_id ).click( f );
         $( "#" + this.html_inf.footer_bar_id ).click( f );
         $( "html" ).click(
             function(){
@@ -439,7 +472,8 @@ with(Field = function( cell_size, border_size, html_id, balls_type, info_bar_obj
     this.next_balls = this.gen_next_balls();
     // Update info bar balls:
     this.update_info_bar();
-
+    // Did the game start?
+    this.game_started = false;
 
     this.handlers();    // Set the event handlers:
 
@@ -485,6 +519,22 @@ with(Field = function( cell_size, border_size, html_id, balls_type, info_bar_obj
             this.map[ ny ][ nx ] = ball;
             ball.popup( nx, ny, 1 );
         }
+    };
+
+
+    /*
+     * Remove all balls from the field and put 3 new
+     */
+    prototype.clear = function(){
+        for( var i in this.map )
+            for( var j in this.map[ i ] )
+                if( this.map[ i ][ j ] ){
+                    this.map[ i ][ j ].jump_stop( true );
+                    this.map[ i ][ j ].remove();
+                    this.map[ i ][ j ] = null;
+                }
+        this.sel_ball = null;
+        this.put_balls( this.gen_next_balls() );
     };
 
 
@@ -558,6 +608,8 @@ with(Field = function( cell_size, border_size, html_id, balls_type, info_bar_obj
             };
 
             new_ball.popup( to_x, to_y, 1, after_move, this );
+
+            return true;
         }
         // Moving faild!
         return false;
@@ -857,7 +909,8 @@ with(Field = function( cell_size, border_size, html_id, balls_type, info_bar_obj
                     }
                 };
 
-                _this.move_ball( nx, ny, callback );  // try move selected ball to new position
+                if( _this.move_ball( nx, ny, callback ) )  // try move selected ball to new position
+                    _this.game_started = true;
             }
         );
     };
@@ -1093,8 +1146,8 @@ $( document ).ready(
          * info_bar_id    : id of the DOM element with the score bar
          * footer_bar_id  : id of the settings bar
          * field_id       : id of the game's field DOM element
-         * btn_id         : id of the options button
-         * page_id        : id of the options page
+         * opt_btn_id     : id of the options button
+         * opt_page_id    : id of the options page
          * mode_name      : name of the "game mode" radio group
          * row_n_name     : name of the "at least N balls in row" radio group
          * blk_n_name     : name of the "at least N balls in block" radio group
@@ -1121,21 +1174,22 @@ $( document ).ready(
 
         var html_inf =
             {
-                "info_bar_id"   : "info_bar",
-                "score_id"      : "score",
-                "footer_bar_id" : "footer_bar",
-                "field_id"      : "field",
-                "btn_id"        : "options",
-                "page_id"       : "options_page",
-                "mode_name"     : "mode",
-                "row_n_name"    : "in_line",
-                "blk_n_name"    : "in_block",
-                "balls_type"    : "ball_type",
-                "zen_mode_id"   : "zen",
-                "save_btn_id"   : "save_button",
-                "cancel_btn_id" : "cancel_button",
-                "hlp_btn_id"    : "help",
-                "hlp_page_id"   : "help_page"
+                "info_bar_id"    : "info_bar",
+                "score_id"       : "score",
+                "footer_bar_id"  : "footer_bar",
+                "field_id"       : "field",
+                "opt_btn_id"     : "options",
+                "opt_page_id"    : "options_page",
+                "mode_name"      : "mode",
+                "row_n_name"     : "in_line",
+                "blk_n_name"     : "in_block",
+                "balls_type"     : "ball_type",
+                "zen_mode_id"    : "zen",
+                "save_btn_id"    : "save_button",
+                "cancel_btn_id"  : "cancel_button",
+                "hlp_btn_id"     : "help",
+                "hlp_page_id"    : "help_page",
+                "restart_btn_id" : "restart"
             };
 
         lines = new Lines_game( settings, html_inf );
