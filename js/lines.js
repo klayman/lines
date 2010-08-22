@@ -146,7 +146,7 @@ with(Lines_game = function( settings, html_inf ){
                     _this.field.next_balls = _this.field.gen_next_balls();
                     _this.field.update_info_bar();
                     _this.field.game_started = false;
-                    _this.info_bar.set_score( 0 );
+                    _this.info_bar.score2zero( 0 );
                 }
                 if( _this.active_page != _this.html_inf.field_id ){
                     _this.open_page( _this.html_inf.field_id, callback_f );
@@ -360,6 +360,8 @@ with(Info_bar = function( html_id, score_id, balls_type ){
     this.balls = [];
     // Type of the balls. One of the 'glossy' and 'matte':
     this.balls_type = balls_type;
+    // Game score:
+    this.score = 0;
 
 }){
     /* Methods */
@@ -369,6 +371,22 @@ with(Info_bar = function( html_id, score_id, balls_type ){
      */
     prototype.set_score = function( score ){
         this.obj_score.text( score );
+    };
+
+    /*
+     * Plus score and set it to bar
+     */
+    prototype.plus_score = function( score ){
+        this.score += score;
+        this.set_score( this.score );
+    };
+
+    /*
+     * Set game score to zero
+     */
+    prototype.score2zero = function(){
+        this.score = 0;
+        this.set_score( 0 );
     };
 
     /*
@@ -459,8 +477,6 @@ with(Field = function( cell_size, border_size, html_id, balls_type, info_bar_obj
 
     // X and Y coords of selected ball (in cells):
     this.sel_ball = null;
-
-    this.score = 0;
 
     // Link to the Info_bar class object:
     this.info_bar_obj = info_bar_obj;
@@ -854,8 +870,7 @@ with(Field = function( cell_size, border_size, html_id, balls_type, info_bar_obj
         else
             score += this.remove_path();
 
-        this.score += score;
-        this.info_bar_obj.set_score( this.score );
+        this.info_bar_obj.plus_score( score );
 
         return score;
     };
