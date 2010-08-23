@@ -27,15 +27,15 @@ with(Lines_game = function( settings, html_inf ){
 
     prototype.create_info_bar = function(){
         // The game field object:
-        this.info_bar = new Info_bar( this.html_inf.info_bar_id, this.html_inf.score_id,
-                                      this.settings.balls_type );
+        this.info_bar = new Info_bar( this.html_inf.info_bar_id, this.html_inf.score_id, this.html_inf.timer_id,
+                                      this.settings.round_time, this.settings.balls_type );
     };
 
     prototype.create_field = function(){
         // The game field object:
         this.field = new Field( this.settings.cell_size, this.settings.border_size,
                                 this.html_inf.field_id, this.settings.mode,
-                                this.settings.balls_type, this.info_bar );
+                                this.settings.round_time, this.settings.balls_type, this.info_bar );
     };
 
     prototype.init_gui = function(){
@@ -144,8 +144,7 @@ with(Lines_game = function( settings, html_inf ){
                 var callback_f =
                 function( _this ){
                     _this.field.clear();
-                    _this.field.next_balls = _this.field.gen_next_balls();
-                    _this.field.update_info_bar();
+                    _this.field.next_round();
                     _this.field.game_started = false;
                     _this.info_bar.score2zero( 0 );
                 }
@@ -393,12 +392,13 @@ with(Button = function( html_id, evt, func, f_param ){
 
 /* The game info bar class: */
 
-with(Info_bar = function( html_id, score_id, balls_type ){
+with(Info_bar = function( html_id, score_id, timer_id, round_time, balls_type ){
 
     /* Constructor: */
 
     this.obj = $( "#" + html_id );  // Saving the jQuery object of info bar
     this.obj_score = $( "#" + score_id );
+    this.obj_timer = $( "#" + timer_id );
 
     var _this = this;               // Save link to "this" property
     $( "#" + html_id ).children( "div" ).children().svg(
@@ -416,8 +416,18 @@ with(Info_bar = function( html_id, score_id, balls_type ){
     // Game score:
     this.score = 0;
 
+    this.time_set( round_time );
+
 }){
     /* Methods */
+
+    /*
+     * Update self & html content with new time
+     */
+    prototype.time_set = function( new_time ) {
+        this.time = new_time;
+        this.obj_timer.text( this.time );
+    }
 
     /*
      * Set new score value
@@ -486,7 +496,7 @@ with(Info_bar = function( html_id, score_id, balls_type ){
  * border_size : width of border line between cells (in px)
  * html_id     : id of <div> which contains svg
  **/
-with(Field = function( cell_size, border_size, html_id, figure_num, balls_type, info_bar_obj ){
+with(Field = function( cell_size, border_size, html_id, figure_num, round_time, balls_type, info_bar_obj ){
 
     this.obj = $( "#" + html_id );  // Saving the jQuery object of field
     var _this = this;               // Save link to "this" property
@@ -506,6 +516,8 @@ with(Field = function( cell_size, border_size, html_id, figure_num, balls_type, 
         this.map[ i ] = new Array( null, null, null, null, null, null, null, null, null );
 
     this.balls_type = balls_type;  // Balls type. One of the 'glossy' and 'matte'
+
+    this.round_time = round_time;
 
     // search motion's patterns
     // each motion pattern is an array of numbers which determine
@@ -564,6 +576,11 @@ with(Field = function( cell_size, border_size, html_id, figure_num, balls_type, 
 
     /*
      * Update the Info_bar class objec balls:
+     * TODO: this method is never used without
+     * TODO:     ...
+     * TODO:     this.next_balls = this.gen_next_balls();
+     * TODO:     ...
+     * TODO: 2Filippov_Daniil: bad design of interface of Field class?  ;)
      */
     prototype.update_info_bar = function(){
         // Remove old "next" balls from the info bar:
@@ -572,6 +589,34 @@ with(Field = function( cell_size, border_size, html_id, figure_num, balls_type, 
         this.info_bar_obj.put_balls( this.next_balls, this.square_size + this.border_size );
     };
 
+    /*
+     * starts new round: put new balls on map,
+     *                   remove new possible combinations,
+     *                   reset timer
+     */
+    prototype.next_round = function() {
+        this.put_balls( this.next_balls );          // put 3 balls which was generated before
+        this.remove_balls();                        // put_balls can create new true figres...
+        this.next_balls = this.gen_next_balls();    // generate 3 new "next" balls
+        this.update_info_bar();                     // update info bar "next" balls
+        this.timer_reset();                         // reset timer
+    };
+
+    /*
+     * Reset internal timer & update info_bar object.
+     */
+    prototype.timer_reset = function() {
+        this.info_bar_obj.time_set( this.round_time );
+
+        $( this ).stopTime( 'clock_down' );
+        // Game timer
+        $( this ).everyTime( 1000, 'clock_down', function() {
+            var ib = this.info_bar_obj;
+            ib.time_set( ib.time - 1 );  // decrease by one second
+            if( ib.time == 0 )
+                this.next_round();       // put balls and reset time
+        });
+    }
 
     /*
      * Draw balls on the own SVG object:
@@ -592,7 +637,7 @@ with(Field = function( cell_size, border_size, html_id, figure_num, balls_type, 
 
 
     /*
-     * Remove all balls from the field and put 3 new
+     * Remove all balls from the field and generates new next_balls
      */
     prototype.clear = function(){
         for( var i in this.map )
@@ -603,7 +648,7 @@ with(Field = function( cell_size, border_size, html_id, figure_num, balls_type, 
                     this.map[ i ][ j ] = null;
                 }
         this.sel_ball = null;
-        this.put_balls( this.gen_next_balls() );
+        this.next_balls = this.gen_next_balls();
     };
 
 
@@ -969,12 +1014,10 @@ with(Field = function( cell_size, border_size, html_id, figure_num, balls_type, 
                 _this.select_ball( nx, ny );     // try to select ball on the map
 
                 var callback = function( _this ){
-                    if( ! _this.remove_balls() ) {                   // user does not build new figure...
-                        _this.put_balls( _this.next_balls );         // put 3 new balls on the field
-                        _this.remove_balls();                        // put_balls can create new true figres...
-                        _this.next_balls = _this.gen_next_balls();   // generate 3 new "next" balls
-                        _this.update_info_bar();                     // update info bar "next" balls
-                    }
+                    if( ! _this.remove_balls() )   // user does not build new figure...
+                        _this.next_round();        // go to the next round
+                    else
+                        _this.timer_reset();        // but reset timer
                 };
 
                 if( _this.move_ball( nx, ny, callback ) )  // try move selected ball to new position
@@ -1209,6 +1252,7 @@ $( document ).ready(
          * info_bar_h     : info bar height (in px)
          * footer_bar_h   : footer bar height (in px)
          * balls_type     : type of the game balls (one of the 'matte' and 'glossy')
+         * round_time     : time ( in seconds ) for round before new balls will be placed
          * zen_mode       : zen mode enabled or not (boolean)
          * mode           : game mode (number from 0 to 8)
          *
@@ -1234,6 +1278,7 @@ $( document ).ready(
                 "info_bar_h"    : 71,
                 "footer_bar_h"  : 71,
                 "balls_type"    : "matte",
+                "round_time"    : 15,
                 "zen_mode"      : false,
                 "mode"          : 3
             };
@@ -1246,6 +1291,7 @@ $( document ).ready(
             {
                 "info_bar_id"    : "info_bar",
                 "score_id"       : "score",
+                "timer_id"       : "timer",
                 "footer_bar_id"  : "footer_bar",
                 "field_id"       : "field",
                 "opt_btn_id"     : "options",
