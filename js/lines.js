@@ -94,9 +94,14 @@ with(Lines_game = function( settings, html_inf ){
             function( event ){
                 var _this = event.data._this;
                 _this.info_bars();
+                if( _this.gui[ 'timer' ].if_checked() )
+                    _this.gui[ 'timer' ].obj.click();
                 _this.settings2cookie();
             },
             { _this : this }
+        );
+        this.gui[ 'timer' ] = new Button(
+            this.html_inf.timer_btn_id
         );
         // "Cancel settings" button:
         this.gui[ 'btn_cancel' ] = new Button(
@@ -138,6 +143,7 @@ with(Lines_game = function( settings, html_inf ){
             function( event ){
                 var _this = event.data._this;
                 _this.field.figure = _this.settings.mode;
+                _this.field.round_time = _this.settings.round_time;
                 if( _this.field.game_started )
                     if( ! confirm( "Вы уверены?" ) )
                         return;
@@ -147,6 +153,9 @@ with(Lines_game = function( settings, html_inf ){
                     _this.field.next_round();
                     _this.field.game_started = false;
                     _this.info_bar.score2zero( 0 );
+                    _this.info_bar.time_set( _this.settings.round_time );
+                    _this.field.timer_reset();
+                    _this.field.timer_stop();
                 }
                 if( _this.active_page != _this.html_inf.field_id ){
                     _this.open_page( _this.html_inf.field_id, callback_f );
@@ -184,15 +193,19 @@ with(Lines_game = function( settings, html_inf ){
                                 break;
 
         }
+        var flag = false;
+        // Вспомагательная функция для вывода вопроса о применении нового режима игры:
+        var confirm_f =
+            function(){
+                return confirm( 'Применить новый режим игры? "Ок" - Будет начата новая игра, "Отмена" - режим будет применен '+
+                                'для следующей игры.' );
+            };
         if( selected_mode != this.settings.mode ){
             this.settings.mode = selected_mode;
-            if( this.field.game_started &&
-                confirm( 'Применить новый режим игры? "Ок" - Будет начата новая игра, "Отмена" - режим будет применен '+
-                         'для следующей игры.' ) ){
-                    this.field.game_started = false;
-                    this.gui[ "btn_new_game" ].obj.click();
-                    return;
-                }
+
+            if( this.field.game_started && ! flag && confirm_f() )
+                flag = true;
+
             if( ! this.field.game_started )
                 this.field.figure = selected_mode;
         }
@@ -202,6 +215,31 @@ with(Lines_game = function( settings, html_inf ){
             this.info_bar.change_balls_type( this.settings.balls_type );
             this.field.change_balls_type( this.settings.balls_type );
         }
+
+        var timer_on = this.settings.round_time > 0 ? true : false;
+        var timer_val = parseInt( this.gui[ 'timer' ].obj.parent().find( "input[type='text']").val() );
+        if( ! this.gui[ 'timer' ].if_checked() )
+            timer_val = 0;
+
+        if( timer_val != this.settings.round_time ){
+
+            this.settings.round_time = timer_val;
+
+            if( this.field.game_started && ! flag && confirm_f() )
+                flag = true;
+
+            if( ! this.field.game_started ){
+                this.field.round_time = timer_val;
+                this.info_bar.time_set( timer_val );
+            }
+        }
+
+
+        if( flag ){
+            this.field.game_started = false;
+            this.gui[ "btn_new_game" ].obj.click();
+        }
+
         this.settings2cookie();
     };
 
@@ -231,6 +269,11 @@ with(Lines_game = function( settings, html_inf ){
             case 7: mode_obj.set_id( "blocks" ); block_sub.set_id( "seven" );          break;
             case 8: mode_obj.set_id( "blocks" ); block_sub.set_id( "eight" );          break;
         }
+        var timer_on = this.settings.round_time > 0 ? true : false;
+        var timer_val = this.settings.round_time > 0 ? this.settings.round_time : 15;
+        if( this.gui[ 'timer' ].if_checked() != timer_on )
+            this.gui[ 'timer' ].obj.click();
+        this.gui[ 'timer' ].obj.parent().find( "input[type='text']").val( timer_val );
     };
 
     prototype.info_bars = function(){
@@ -246,6 +289,9 @@ with(Lines_game = function( settings, html_inf ){
             $( "#" + this.html_inf.info_bar_id ).animate( { height: "0px" }, t );
             $( "#" + this.html_inf.footer_bar_id ).animate( { height: "0px" }, t );
             this.settings.zen_mode = true;
+            this.field.round_time = 0;
+            this.field.timer_stop();
+            this.info_bar.time_set( 0 );
         }
     };
 
@@ -257,6 +303,12 @@ with(Lines_game = function( settings, html_inf ){
 
         if( this.active_page == page )
             page = this.html_inf.field_id;
+
+        if( page != this.html_inf.field_id )
+            this.field.timer_stop();
+        else
+            if( this.field.game_started )
+                this.field.timer_start();
 
         if( ! callback )
             callback = function(){};
@@ -575,12 +627,7 @@ with(Field = function( cell_size, border_size, html_id, figure_num, round_time, 
 
 
     /*
-     * Update the Info_bar class objec balls:
-     * TODO: this method is never used without
-     * TODO:     ...
-     * TODO:     this.next_balls = this.gen_next_balls();
-     * TODO:     ...
-     * TODO: 2Filippov_Daniil: bad design of interface of Field class?  ;)
+     * Update the Info_bar class object balls:
      */
     prototype.update_info_bar = function(){
         // Remove old "next" balls from the info bar:
@@ -603,20 +650,39 @@ with(Field = function( cell_size, border_size, html_id, figure_num, round_time, 
     };
 
     /*
-     * Reset internal timer & update info_bar object.
+     * Reset game timer
      */
-    prototype.timer_reset = function() {
+    prototype.timer_reset = function(){
         this.info_bar_obj.time_set( this.round_time );
+        this.timer_stop();
+        this.timer_start();
+    };
 
+    /*
+     * Stop game timer:
+     */
+    prototype.timer_stop = function(){
         $( this ).stopTime( 'clock_down' );
-        // Game timer
-        $( this ).everyTime( 1000, 'clock_down', function() {
-            var ib = this.info_bar_obj;
-            ib.time_set( ib.time - 1 );  // decrease by one second
-            if( ib.time == 0 )
-                this.next_round();       // put balls and reset time
-        });
-    }
+    };
+
+    /*
+     * Start game timer and update info bar object:
+     */
+    prototype.timer_start = function(){
+        if( this.round_time == 0 )
+            return;
+
+        $( this ).everyTime(
+            1000,
+            'clock_down',
+            function(){
+                var ib = this.info_bar_obj;
+                ib.time_set( ib.time - 1 );  // decrease by one second
+                if( ib.time == 0 )
+                    this.next_round();       // put balls and reset time
+            }
+        );
+    };
 
     /*
      * Draw balls on the own SVG object:
@@ -1266,6 +1332,7 @@ $( document ).ready(
          * blk_n_name     : name of the "at least N balls in block" radio group
          * balls_type     : name of the "balls type" radio group
          * zen_mode_id    : id of the "zen mode" checkbox
+         * timer_id       : id of the "timer constraint" checkbox
          * save_btn_id    : id of the save settings button
          * cancel_btn_id  : id of the cancel settings button
          * hlp_btn_id     : id of the help button
@@ -1278,7 +1345,7 @@ $( document ).ready(
                 "info_bar_h"    : 71,
                 "footer_bar_h"  : 71,
                 "balls_type"    : "matte",
-                "round_time"    : 15,
+                "round_time"    : 0,
                 "zen_mode"      : false,
                 "mode"          : 3
             };
@@ -1301,6 +1368,7 @@ $( document ).ready(
                 "blk_n_name"     : "in_block",
                 "balls_type"     : "ball_type",
                 "zen_mode_id"    : "zen",
+                "timer_btn_id"   : "time_constraint",
                 "save_btn_id"    : "save_button",
                 "cancel_btn_id"  : "cancel_button",
                 "hlp_btn_id"     : "help",
