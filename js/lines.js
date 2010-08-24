@@ -731,6 +731,10 @@ with(Field = function( cell_size, border_size, html_id, figure_num, round_time, 
                     this.map[ i ][ j ].remove();
                     this.map[ i ][ j ] = null;
                 }
+
+        for( var i in this.next_balls )
+            this.next_balls[ i ][ 1 ].remove();
+
         this.sel_ball = null;
         this.next_balls = this.gen_next_balls();
     };
