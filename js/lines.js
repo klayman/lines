@@ -301,6 +301,9 @@ with(Lines_game = function( settings, html_inf ){
         // Time for animation (in ms):
         var t = 250;
 
+        if( this.busy )
+            return;  // I'm busy!
+
         if( this.active_page == page )
             page = this.html_inf.field_id;
 
@@ -313,12 +316,14 @@ with(Lines_game = function( settings, html_inf ){
         if( ! callback )
             callback = function(){};
 
+        this.busy = true;
         $( "#" + this.active_page ).fadeOut( t,
             function(){
                 $( "#" + page ).fadeIn( t,
                     function(){
                         callback( _this );
                         _this.active_page = page;
+                        _this.busy = false;
                     }
                 );
             }
