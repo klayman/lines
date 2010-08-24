@@ -535,8 +535,8 @@ with(Info_bar = function( html_id, score_id, timer_id, round_time, balls_type ){
      */
     prototype.put_balls = function( arr, size ){
         for( var i in arr ){
-            var color = arr[ i ];
-            var ball = new Ball( this.svg_obj, color, size, this.balls_type );
+            var rec = arr[ i ];
+            var ball = new Ball( this.svg_obj, rec[ 1 ].num, size, this.balls_type );
             ball.popup( i * 1, 0, 1 );
             this.balls.push( ball );
         }
@@ -619,13 +619,19 @@ with(Field = function( cell_size, border_size, html_id, figure_num, round_time, 
     ////////////////// Methods ////////////////
 
     /*
-     * Generate 3 new colors of balls and return them in array:
+     * Generate 3 new colors & positions of balls and return them in array:
      */
     prototype.gen_next_balls = function() {
         var arr = [];
         for( var i = 0; i < 3; i++ ) {
             var color = this.rand( 1, 7 );
-            arr.push( color );
+            do {
+                var nx = this.rand( 0, 8 );
+                var ny = this.rand( 0, 8 );
+            } while( this.map[ ny ][ nx ] );
+            var ball = new Ball( this.svg_obj, color, this.square_size + this.border_size, this.balls_type )
+            ball.popup( nx, ny, 0.5 );
+            arr.push( [ [ nx, ny ], ball ] );
         }
         return arr;
     };
@@ -691,18 +697,25 @@ with(Field = function( cell_size, border_size, html_id, figure_num, round_time, 
 
     /*
      * Draw balls on the own SVG object:
-     * arr : array of colors of balls
+     * arr : array of positions & balls,
+     *       i.e. [ [ [x,y], ball ], [ [x,y], ball ], ... ]
      */
     prototype.put_balls = function( arr ){
         for( var i in arr ){
-            var color = arr[ i ];
-            do {
-                var nx = this.rand( 0, 8 );
-                var ny = this.rand( 0, 8 );
-            } while( this.map[ ny ][ nx ] );
-            var ball = new Ball( this.svg_obj, color, this.square_size + this.border_size, this.balls_type );
-            this.map[ ny ][ nx ] = ball;
-            ball.popup( nx, ny, 1 );
+            var rec = arr[ i ];
+            var nx = rec[ 0 ][ 0 ];
+            var ny = rec[ 0 ][ 1 ];
+            var ball = new Ball( this.svg_obj, rec[ 1 ].num, this.square_size + this.border_size, this.balls_type );
+            if( this.map[ ny ][ nx ] )     // user can send ball to this place
+            {
+                do {
+                    nx = this.rand( 0, 8 );
+                    ny = this.rand( 0, 8 );
+                } while( this.map[ ny ][ nx ] );   // find new place...
+            }
+            ball.popup( nx, ny, 1 );       // popup at position which was stored earlier
+            this.map[ ny ][ nx ] = ball;   // store real ball on the map, hint-ball will be destroyed automatically
+            rec[ 1 ].erase();              // after this remove old ball's SVG object
         }
     };
 
