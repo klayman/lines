@@ -696,6 +696,12 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
     prototype.next_round = function() {
         this.put_balls( this.next_balls );          // put 3 balls which was generated before
         this.remove_balls();                        // put_balls can create new true figres...
+        if( this.gameover() )
+        {
+            this.timer_stop();
+            alert( 'GAME OVER! MU-HA-HA!!!' );
+            return;
+        }
         this.next_balls = this.gen_next_balls();    // generate 3 new "next" balls
         if( this.settings.show_next )
             this.add_small_balls();
@@ -1122,6 +1128,14 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
         return score;
     };
 
+    prototype.gameover = function() {
+        var cnt = 0;
+        for( var j = 0; j < this.map.length; j++ )
+            for( var i = 0; i < this.map[ j ].length; i++ )
+                if( this.map[ j ][ i ] )
+                    cnt++;
+        return (9*9 - cnt < 3);
+    }
 
     /*
      * Change balls type:
