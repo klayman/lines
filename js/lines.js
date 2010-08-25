@@ -10,6 +10,7 @@ with(Lines_game = function( settings, html_inf ){
     // Save default settings of the game and html ids to link to
     this.settings = settings;
     this.html_inf = html_inf;
+
     // Active page id:
     this.active_page = this.html_inf.field_id;
     // Create info bar object:
@@ -28,14 +29,12 @@ with(Lines_game = function( settings, html_inf ){
     prototype.create_info_bar = function(){
         // The game field object:
         this.info_bar = new Info_bar( this.html_inf.info_bar_id, this.html_inf.score_id, this.html_inf.timer_id,
-                                      this.settings.round_time, this.settings.balls_type );
+                                      this.settings );
     };
 
     prototype.create_field = function(){
         // The game field object:
-        this.field = new Field( this.settings.cell_size, this.settings.border_size,
-                                this.html_inf.field_id, this.settings.mode,
-                                this.settings.round_time, this.settings.balls_type, this.info_bar );
+        this.field = new Field( this.html_inf.field_id, this.info_bar, this.settings );
     };
 
     prototype.init_gui = function(){
@@ -93,15 +92,23 @@ with(Lines_game = function( settings, html_inf ){
             "click",
             function( event ){
                 var _this = event.data._this;
+
                 _this.info_bars();
-                if( _this.gui[ 'timer' ].if_checked() )
+
+                if( _this.gui[ 'timer' ].if_checked() ){
                     _this.gui[ 'timer' ].obj.click();
-                _this.settings2cookie();
+                }
+
+                _this.save_settings();
+
             },
             { _this : this }
         );
         this.gui[ 'timer' ] = new Button(
             this.html_inf.timer_btn_id
+        );
+        this.gui[ 'next' ] = new Button(
+            this.html_inf.next_id
         );
         // "Cancel settings" button:
         this.gui[ 'btn_cancel' ] = new Button(
@@ -142,18 +149,22 @@ with(Lines_game = function( settings, html_inf ){
             "click",
             function( event ){
                 var _this = event.data._this;
-                _this.field.figure = _this.settings.mode;
-                _this.field.round_time = _this.settings.round_time;
                 if( _this.field.game_started )
                     if( ! confirm( "Вы уверены?" ) )
                         return;
+
+                if( _this.future_s ){
+                    _this.settings = _this.future_s;
+                    _this.field.settings = _this.future_s;
+                    _this.info_bar.settings = _this.future_s;
+                }
+
                 var callback_f =
                 function( _this ){
                     _this.field.clear();
                     _this.field.next_round();
                     _this.field.game_started = false;
                     _this.info_bar.score2zero( 0 );
-                    _this.info_bar.time_set( _this.settings.round_time );
                     _this.field.timer_reset();
                     _this.field.timer_stop();
                 }
@@ -168,6 +179,11 @@ with(Lines_game = function( settings, html_inf ){
     };
 
     prototype.save_settings = function(){
+        // Clone of the settings object:
+        this.future_s = {};
+        for( var i in this.settings )
+            this.future_s[ i ] = this.settings[ i ];
+
         // Define the selected game mode:
         var selected_mode = false;
         switch( this.gui[ 'radio_game_mode' ].get_id() ){
@@ -201,39 +217,54 @@ with(Lines_game = function( settings, html_inf ){
                                 'для следующей игры.' );
             };
         if( selected_mode != this.settings.mode ){
-            this.settings.mode = selected_mode;
 
             if( this.field.game_started && ! flag && confirm_f() )
                 flag = true;
 
+            this.future_s.mode = selected_mode;
+
             if( ! this.field.game_started )
-                this.field.figure = selected_mode;
+                this.settings.mode = selected_mode;
+
         }
+
+        // If necessary, show next balls positions:
+        if( this.gui[ 'next' ].if_checked() != this.settings.show_next ){
+            this.settings.show_next = this.gui[ 'next' ].if_checked();
+            this.future_s.show_next = this.settings.show_next;
+            if( this.settings.show_next )
+                this.field.add_small_balls();
+            else
+                this.field.remove_small_balls();
+        }
+
         // If necessary, change the balls type:
         if( this.gui[ 'radio_balls_type' ].get_id() != this.settings.balls_type ){
             this.settings.balls_type = this.gui[ 'radio_balls_type' ].get_id();
-            this.info_bar.change_balls_type( this.settings.balls_type );
-            this.field.change_balls_type( this.settings.balls_type );
+            this.future_s.balls_type = this.settings.balls_type;
+            this.field.change_balls_type();
+            this.info_bar.change_balls_type();
         }
 
-        var timer_on = this.settings.round_time > 0 ? true : false;
+        this.future_s.zen_mode = false;
+
         var timer_val = parseInt( this.gui[ 'timer' ].obj.parent().find( "input[type='text']").val() );
-        if( ! this.gui[ 'timer' ].if_checked() )
+        if( ! this.gui[ 'timer' ].if_checked() ||
+              this.gui[ 'zen_mode' ].if_checked() )
             timer_val = 0;
 
         if( timer_val != this.settings.round_time ){
 
-            this.settings.round_time = timer_val;
-
             if( this.field.game_started && ! flag && confirm_f() )
                 flag = true;
 
+            this.future_s.round_time = timer_val;
+
             if( ! this.field.game_started ){
-                this.field.round_time = timer_val;
                 this.info_bar.time_set( timer_val );
+                this.settings.round_time = timer_val;
             }
         }
-
 
         if( flag ){
             this.field.game_started = false;
@@ -241,12 +272,14 @@ with(Lines_game = function( settings, html_inf ){
         }
 
         this.settings2cookie();
+
     };
 
     prototype.settings2cookie = function(){
         var str = "{";
-        for( var i in this.settings ){
-            var str_val = ( typeof this.settings[ i ] == "string" ) ? '"' + this.settings[ i ] + '"' : this.settings[ i ].toString();
+        for( var i in this.future_s ){
+            var val = this.future_s[ i ];
+            var str_val = ( typeof val == "string" ) ? '"' + val + '"' : val.toString();
             str += '"' + i + '":' + str_val + ',';
         }
         str = str.substr( 0, str.length - 1 ) + "}";
@@ -254,7 +287,6 @@ with(Lines_game = function( settings, html_inf ){
     };
 
     prototype.restore_settings = function(){
-        this.gui[ 'radio_balls_type' ].set_id( this.settings.balls_type );
 
         var mode_obj = this.gui[ "radio_game_mode" ];
         var lines_sub = this.gui[ "radio_n_in_row" ];
@@ -269,6 +301,12 @@ with(Lines_game = function( settings, html_inf ){
             case 7: mode_obj.set_id( "blocks" ); block_sub.set_id( "seven" );          break;
             case 8: mode_obj.set_id( "blocks" ); block_sub.set_id( "eight" );          break;
         }
+
+        this.gui[ 'radio_balls_type' ].set_id( this.settings.balls_type );
+
+        if( this.gui[ 'next' ].if_checked() != this.settings.show_next )
+            this.gui[ 'next' ].obj.click();
+
         var timer_on = this.settings.round_time > 0 ? true : false;
         var timer_val = this.settings.round_time > 0 ? this.settings.round_time : 15;
         if( this.gui[ 'timer' ].if_checked() != timer_on )
@@ -284,12 +322,14 @@ with(Lines_game = function( settings, html_inf ){
             $( "#" + this.html_inf.info_bar_id ).animate( { height: this.settings.info_bar_h + "px" }, t );
             $( "#" + this.html_inf.footer_bar_id ).animate( { height: this.settings.footer_bar_h + "px" }, t );
             this.settings.zen_mode = false;
+            this.gui[ 'timer' ].enable();
         }else{
             // Hide bars:
             $( "#" + this.html_inf.info_bar_id ).animate( { height: "0px" }, t );
             $( "#" + this.html_inf.footer_bar_id ).animate( { height: "0px" }, t );
             this.settings.zen_mode = true;
-            this.field.round_time = 0;
+            this.gui[ 'timer' ].disable();
+            this.settings.round_time = 0;
             this.field.timer_stop();
             this.info_bar.time_set( 0 );
         }
@@ -443,13 +483,21 @@ with(Button = function( html_id, evt, func, f_param ){
             return true;
         return false;
     };
+
+    prototype.disable = function(){
+        this.obj.attr( "disabled", "disabled" );  // Disable button
+    };
+
+    prototype.enable = function(){
+        this.obj.removeAttr( "disabled" );  // Enable button
+    };
 }
 
 
 
 /* The game info bar class: */
 
-with(Info_bar = function( html_id, score_id, timer_id, round_time, balls_type ){
+with(Info_bar = function( html_id, score_id, timer_id, settings ){
 
     /* Constructor: */
 
@@ -468,12 +516,14 @@ with(Info_bar = function( html_id, score_id, timer_id, round_time, balls_type ){
 
     // Array of the Ball class objects
     this.balls = [];
-    // Type of the balls. One of the 'glossy' and 'matte':
-    this.balls_type = balls_type;
+
     // Game score:
     this.score = 0;
 
-    this.time_set( round_time );
+    // Game settings object:
+    this.settings = settings;
+
+    this.time_set( this.settings.round_time );
 
 }){
     /* Methods */
@@ -521,11 +571,9 @@ with(Info_bar = function( html_id, score_id, timer_id, round_time, balls_type ){
     /*
      * Change balls type:
      */
-    prototype.change_balls_type = function( new_type ){
+    prototype.change_balls_type = function(){
         for( var i in this.balls )
-            this.balls[ i ].change_type( new_type );
-
-        this.balls_type = new_type;
+            this.balls[ i ].change_type( this.settings.balls_type );
     };
 
     /*
@@ -533,10 +581,10 @@ with(Info_bar = function( html_id, score_id, timer_id, round_time, balls_type ){
      * arr   : array of colors of balls
      * size  : size of the field cell (in px)
      */
-    prototype.put_balls = function( arr, size ){
+    prototype.put_balls = function( arr ){
         for( var i in arr ){
             var rec = arr[ i ];
-            var ball = new Ball( this.svg_obj, rec[ 1 ].num, size, this.balls_type );
+            var ball = new Ball( this.svg_obj, rec[ 1 ].num, this.settings.cell_size + this.settings.border_size, this.settings.balls_type );
             ball.popup( i * 1, 0, 1 );
             this.balls.push( ball );
         }
@@ -549,11 +597,9 @@ with(Info_bar = function( html_id, score_id, timer_id, round_time, balls_type ){
 
 /*
  * Create field object.
- * cell_size   : size of each cell on screen (in px)
- * border_size : width of border line between cells (in px)
  * html_id     : id of <div> which contains svg
  **/
-with(Field = function( cell_size, border_size, html_id, figure_num, round_time, balls_type, info_bar_obj ){
+with(Field = function( html_id, info_bar_obj, settings_obj ){
 
     this.obj = $( "#" + html_id );  // Saving the jQuery object of field
     var _this = this;               // Save link to "this" property
@@ -565,16 +611,15 @@ with(Field = function( cell_size, border_size, html_id, figure_num, round_time, 
         }
     );
 
-    this.square_size = cell_size;    // Default size of each cell (in px)
-    this.border_size = border_size;  // Default size of cell border (in px)
+    // Link to the Info_bar class object:
+    this.info_bar_obj = info_bar_obj;
+
+    // Settings object:
+    this.settings = settings_obj;
 
     this.map = new Array( 9 );       // The 2d array of Ball class objects
     for( var i = 0; i < 9; i++ )
         this.map[ i ] = new Array( null, null, null, null, null, null, null, null, null );
-
-    this.balls_type = balls_type;  // Balls type. One of the 'glossy' and 'matte'
-
-    this.round_time = round_time;
 
     // search motion's patterns
     // each motion pattern is an array of numbers which determine
@@ -594,20 +639,17 @@ with(Field = function( cell_size, border_size, html_id, figure_num, round_time, 
        [ [ 2, 2, 2, 2, 2, 2 ], [ 0, 0, 0, 0, 0, 0 ], [ 1, 1, 1, 1, 1, 1 ], [ 3, 3, 3, 3, 3, 3 ] ],  // 6-ball line
     ];
 
-    // current block to remove from field
-    this.figure = figure_num;
-
     // X and Y coords of selected ball (in cells):
     this.sel_ball = null;
-
-    // Link to the Info_bar class object:
-    this.info_bar_obj = info_bar_obj;
 
     // Put 3 first balls on the field:
     this.put_balls( this.gen_next_balls() );
 
-    // Array of "next" colors of balls, which will appear at the field in the next turn:
+    // Array of "next" colors and positions of balls, which will appear at the field in the next turn:
     this.next_balls = this.gen_next_balls();
+    if( this.settings.show_next )
+        this.add_small_balls();
+
     // Update info bar balls:
     this.update_info_bar();
     // Did the game start?
@@ -629,8 +671,7 @@ with(Field = function( cell_size, border_size, html_id, figure_num, round_time, 
                 var nx = this.rand( 0, 8 );
                 var ny = this.rand( 0, 8 );
             } while( this.map[ ny ][ nx ] );
-            var ball = new Ball( this.svg_obj, color, this.square_size + this.border_size, this.balls_type )
-            ball.popup( nx, ny, 0.5 );
+            var ball = new Ball( this.svg_obj, color, this.settings.cell_size + this.settings.border_size, this.settings.balls_type )
             arr.push( [ [ nx, ny ], ball ] );
         }
         return arr;
@@ -644,7 +685,7 @@ with(Field = function( cell_size, border_size, html_id, figure_num, round_time, 
         // Remove old "next" balls from the info bar:
         this.info_bar_obj.remove_balls();
         // Put new "next" balls on the info bar:
-        this.info_bar_obj.put_balls( this.next_balls, this.square_size + this.border_size );
+        this.info_bar_obj.put_balls( this.next_balls );
     };
 
     /*
@@ -656,6 +697,8 @@ with(Field = function( cell_size, border_size, html_id, figure_num, round_time, 
         this.put_balls( this.next_balls );          // put 3 balls which was generated before
         this.remove_balls();                        // put_balls can create new true figres...
         this.next_balls = this.gen_next_balls();    // generate 3 new "next" balls
+        if( this.settings.show_next )
+            this.add_small_balls();
         this.update_info_bar();                     // update info bar "next" balls
         this.timer_reset();                         // reset timer
     };
@@ -664,7 +707,7 @@ with(Field = function( cell_size, border_size, html_id, figure_num, round_time, 
      * Reset game timer
      */
     prototype.timer_reset = function(){
-        this.info_bar_obj.time_set( this.round_time );
+        this.info_bar_obj.time_set( this.settings.round_time );
         this.timer_stop();
         this.timer_start();
     };
@@ -680,7 +723,7 @@ with(Field = function( cell_size, border_size, html_id, figure_num, round_time, 
      * Start game timer and update info bar object:
      */
     prototype.timer_start = function(){
-        if( this.round_time == 0 )
+        if( this.settings.round_time == 0 )
             return;
 
         $( this ).everyTime(
@@ -705,7 +748,7 @@ with(Field = function( cell_size, border_size, html_id, figure_num, round_time, 
             var rec = arr[ i ];
             var nx = rec[ 0 ][ 0 ];
             var ny = rec[ 0 ][ 1 ];
-            var ball = new Ball( this.svg_obj, rec[ 1 ].num, this.square_size + this.border_size, this.balls_type );
+            var ball = new Ball( this.svg_obj, rec[ 1 ].num, this.settings.cell_size + this.settings.border_size, this.settings.balls_type );
             if( this.map[ ny ][ nx ] )     // user can send ball to this place
             {
                 do {
@@ -732,13 +775,31 @@ with(Field = function( cell_size, border_size, html_id, figure_num, round_time, 
                     this.map[ i ][ j ] = null;
                 }
 
-        for( var i in this.next_balls )
-            this.next_balls[ i ][ 1 ].remove();
+        this.remove_small_balls();
 
         this.sel_ball = null;
         this.next_balls = this.gen_next_balls();
     };
 
+    /*
+     * Remove all "small balls":
+     */
+    prototype.remove_small_balls = function(){
+        for( var i in this.next_balls )
+            if( this.next_balls[ i ][ 1 ].obj )
+                this.next_balls[ i ][ 1 ].remove();
+    };
+
+    /*
+     * Add "small balls" to the field:
+     */
+    prototype.add_small_balls = function(){
+        for( var i in this.next_balls ){
+            var nx = this.next_balls[ i ][ 0 ][ 0 ];
+            var ny = this.next_balls[ i ][ 0 ][ 1 ];
+            this.next_balls[ i ][ 1 ].popup( nx, ny, 0.5 );
+        }
+    };
 
     prototype.find_path = function( f_x, f_y, to_x, to_y ) {
         var stack = Array( );           // stack for multiple purposes
@@ -797,7 +858,7 @@ with(Field = function( cell_size, border_size, html_id, figure_num, round_time, 
 
             // we must create new ball, because of two parallel animations:
             // hiding old ball & popupping new ball
-            var new_ball = new Ball( this.svg_obj, old_ball.num, this.square_size + this.border_size, this.balls_type );
+            var new_ball = new Ball( this.svg_obj, old_ball.num, this.settings.cell_size + this.settings.border_size, this.settings.balls_type );
 
             this.map[ to_y ][ to_x ] = new_ball;
 
@@ -922,7 +983,7 @@ with(Field = function( cell_size, border_size, html_id, figure_num, round_time, 
      * belong to current figure path ( box, rombs, etc. )
      */
     prototype.remove_path = function() {
-        var f = this.figures[ this.figure ];  // alias...
+        var f = this.figures[ this.settings.mode ];  // alias...
 
         for( var j = 0; j < this.map.length; j++ )
             for( var i = 0; i < this.map[ j ].length; i++ )
@@ -977,7 +1038,7 @@ with(Field = function( cell_size, border_size, html_id, figure_num, round_time, 
                 if( this.map[ j ][ i ] && this.map[ j ][ i ].marked )
                     cnt += remove_group( i, j, this );
 
-        var cnt_min = this.figures[ this.figure ][ 0 ].length;
+        var cnt_min = this.figures[ this.settings.mode ][ 0 ].length;
 
         return ( cnt - cnt_min + 1 ) * cnt;  // return scores for removed path
     };
@@ -1036,7 +1097,7 @@ with(Field = function( cell_size, border_size, html_id, figure_num, round_time, 
      */
     prototype.remove_block = function() {
         var cnt = 0;
-        var cnt_min = this.figure;  // minimal count of balls in block
+        var cnt_min = this.settings.mode;  // minimal count of balls in block
         for( var j = 0; j < this.map.length; j++ )
             for( var i = 0; i < this.map[ j ].length; i++ )
                 if( this.map[ j ][ i ] && ( this.test_block( i, j ) >= cnt_min ) )
@@ -1051,7 +1112,7 @@ with(Field = function( cell_size, border_size, html_id, figure_num, round_time, 
      */
     prototype.remove_balls = function() {
         var score = 0;
-        if( this.figure > 4 )
+        if( this.settings.mode > 4 )
             score += this.remove_block();
         else
             score += this.remove_path();
@@ -1065,13 +1126,15 @@ with(Field = function( cell_size, border_size, html_id, figure_num, round_time, 
     /*
      * Change balls type:
      */
-    prototype.change_balls_type = function( new_type ){
+    prototype.change_balls_type = function(){
         for( var i in this.map )
             for( var j in this.map[ i ] )
                 if( this.map[ i ][ j ] )
-                    this.map[ i ][ j ].change_type( new_type );
+                    this.map[ i ][ j ].change_type( this.settings.balls_type );
 
-        this.balls_type = new_type;
+        for( var i in this.next_balls )
+            if( this.next_balls[ i ][ 1 ].obj )
+                this.next_balls[ i ][ 1 ].change_type( this.settings.balls_type );
     };
 
 
@@ -1091,12 +1154,12 @@ with(Field = function( cell_size, border_size, html_id, figure_num, round_time, 
                 var y = e.pageY - _this.obj.offset().top - my;
 
                 // X and Y numbers of the cell which is under mouse cursor:
-                var nx = Math.floor( x / ( _this.square_size + _this.border_size ) );
-                var ny = Math.floor( y / ( _this.square_size + _this.border_size ) );
+                var nx = Math.floor( x / ( _this.settings.cell_size + _this.settings.border_size ) );
+                var ny = Math.floor( y / ( _this.settings.cell_size + _this.settings.border_size ) );
 
                 // Check the boundary conditions:
-                if( ( x - ( _this.square_size + _this.border_size ) * nx > _this.square_size && nx < 8 ) ||
-                    ( y - ( _this.square_size + _this.border_size ) * ny > _this.square_size && ny < 8 ) )
+                if( ( x - ( _this.settings.cell_size + _this.settings.border_size ) * nx > _this.settings.cell_size && nx < 8 ) ||
+                    ( y - ( _this.settings.cell_size + _this.settings.border_size ) * ny > _this.settings.cell_size && ny < 8 ) )
                     return false;
 
                 _this.select_ball( nx, ny );     // try to select ball on the map
@@ -1342,6 +1405,7 @@ $( document ).ready(
          * balls_type     : type of the game balls (one of the 'matte' and 'glossy')
          * round_time     : time ( in seconds ) for round before new balls will be placed
          * zen_mode       : zen mode enabled or not (boolean)
+         * show_next      : next balls showing enabled or not (boolean)
          * mode           : game mode (number from 0 to 8)
          *
          * info_bar_id    : id of the DOM element with the score bar
@@ -1354,6 +1418,7 @@ $( document ).ready(
          * blk_n_name     : name of the "at least N balls in block" radio group
          * balls_type     : name of the "balls type" radio group
          * zen_mode_id    : id of the "zen mode" checkbox
+         * next_id        : id of the "next balls showing" checkbox
          * timer_id       : id of the "timer constraint" checkbox
          * save_btn_id    : id of the save settings button
          * cancel_btn_id  : id of the cancel settings button
@@ -1369,6 +1434,7 @@ $( document ).ready(
                 "balls_type"    : "matte",
                 "round_time"    : 0,
                 "zen_mode"      : false,
+                "show_next"     : false,
                 "mode"          : 3
             };
 
@@ -1390,6 +1456,7 @@ $( document ).ready(
                 "blk_n_name"     : "in_block",
                 "balls_type"     : "ball_type",
                 "zen_mode_id"    : "zen",
+                "next_id"        : "next",
                 "timer_btn_id"   : "time_constraint",
                 "save_btn_id"    : "save_button",
                 "cancel_btn_id"  : "cancel_button",
