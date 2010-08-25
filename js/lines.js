@@ -157,6 +157,7 @@ with(Lines_game = function( settings, html_inf ){
                     _this.settings = _this.future_s;
                     _this.field.settings = _this.future_s;
                     _this.info_bar.settings = _this.future_s;
+                    _this.update_mode_button();
                 }
 
                 var callback_f =
@@ -176,6 +177,54 @@ with(Lines_game = function( settings, html_inf ){
             },
             { _this : this }
         );
+        // Button, which toggle game modes:
+        this.gui[ 'btn_game_mode' ] = new Button(
+            this.html_inf.mode_btn_id,
+            "click",
+            function( event ){
+                var _this = event.data._this;
+                if( _this.field.game_started ){
+                    if( ! confirm( "Игра будет запущена сначала. Продолжить?" ) )
+                        return;
+
+                    _this.field.game_started = false;
+                    _this.gui[ 'btn_new_game' ].obj.click();
+                }
+
+                // Update html view:
+                var css_pos = "";
+                var mode = 0;
+                switch( _this.settings.mode ){
+                    case 2: css_pos = "-290px 0"; mode = 0; break;
+                    case 3: css_pos = "-290px 0"; mode = 0; break;
+                    case 4: css_pos = "-290px 0"; mode = 0; break;
+
+                    case 0: css_pos = "-325px 0"; mode = 1; break;
+
+                    case 1: css_pos = "-362px 0"; mode = -6; break;
+
+                    case 6: css_pos = "-253px 0"; mode = -2; break;
+                    case 7: css_pos = "-253px 0"; mode = -2; break;
+                    case 8: css_pos = "-253px 0"; mode = -2; break;
+                }
+                if( mode == - 2 )
+                    switch( _this.gui[ 'radio_n_in_row' ].get_id() ){
+                        case "four": mode = 2; break;
+                        case "five": mode = 3; break;
+                        case "six" : mode = 4; break;
+                    }
+                if( mode == - 6 )
+                    switch( _this.gui[ 'radio_n_in_block' ].get_id() ){
+                        case "six_in_a_block": mode = 6; break;
+                        case "seven"         : mode = 7; break;
+                        case "eight"         : mode = 8; break;
+                    }
+
+                _this.settings.mode = mode;
+                $( this ).css( "background-position", css_pos );
+            },
+            { _this : this }
+        );
     };
 
     prototype.save_settings = function(){
@@ -186,6 +235,7 @@ with(Lines_game = function( settings, html_inf ){
 
         // Define the selected game mode:
         var selected_mode = false;
+        var css_pos = "";
         switch( this.gui[ 'radio_game_mode' ].get_id() ){
 
             case "lines":       switch( this.gui[ 'radio_n_in_row' ].get_id() ){
@@ -223,9 +273,10 @@ with(Lines_game = function( settings, html_inf ){
 
             this.future_s.mode = selected_mode;
 
-            if( ! this.field.game_started )
+            if( ! this.field.game_started ){
                 this.settings.mode = selected_mode;
-
+                this.update_mode_button();
+            }
         }
 
         // If necessary, show next balls positions:
@@ -291,16 +342,22 @@ with(Lines_game = function( settings, html_inf ){
         var mode_obj = this.gui[ "radio_game_mode" ];
         var lines_sub = this.gui[ "radio_n_in_row" ];
         var block_sub = this.gui[ "radio_n_in_block" ];
+        var css_pos = "";
         switch( this.settings.mode ){
             case 0: mode_obj.set_id( "rectangles" ); break;
+
             case 1: mode_obj.set_id( "rings" );      break;
+
             case 2: mode_obj.set_id( "lines" ); lines_sub.set_id( "four" ); break;
             case 3: mode_obj.set_id( "lines" ); lines_sub.set_id( "five" ); break;
             case 4: mode_obj.set_id( "lines" ); lines_sub.set_id( "six" );  break;
+
             case 6: mode_obj.set_id( "blocks" ); block_sub.set_id( "six_in_a_block" ); break;
             case 7: mode_obj.set_id( "blocks" ); block_sub.set_id( "seven" );          break;
             case 8: mode_obj.set_id( "blocks" ); block_sub.set_id( "eight" );          break;
         }
+
+        this.update_mode_button();
 
         this.gui[ 'radio_balls_type' ].set_id( this.settings.balls_type );
 
@@ -312,6 +369,23 @@ with(Lines_game = function( settings, html_inf ){
         if( this.gui[ 'timer' ].if_checked() != timer_on )
             this.gui[ 'timer' ].obj.click();
         this.gui[ 'timer' ].obj.parent().find( "input[type='text']").val( timer_val );
+    };
+    prototype.update_mode_button = function(){
+        var css_pos = "";
+        switch( this.settings.mode ){
+            case 0: css_pos = "-290px 0"; break;
+
+            case 1: css_pos = "-325px 0"; break;
+
+            case 2: css_pos = "-253px 0"; break;
+            case 3: css_pos = "-253px 0"; break;
+            case 4: css_pos = "-253px 0"; break;
+
+            case 6: css_pos = "-362px 0"; break;
+            case 7: css_pos = "-362px 0"; break;
+            case 8: css_pos = "-362px 0"; break;
+        }
+        this.gui[ 'btn_game_mode' ].obj.css( "background-position", css_pos );
     };
 
     prototype.info_bars = function(){
@@ -1480,7 +1554,8 @@ $( document ).ready(
                 "cancel_btn_id"  : "cancel_button",
                 "hlp_btn_id"     : "help",
                 "hlp_page_id"    : "help_page",
-                "restart_btn_id" : "restart"
+                "restart_btn_id" : "restart",
+                "mode_btn_id"    : "mode"
             };
 
         lines = new Lines_game( settings, html_inf );
