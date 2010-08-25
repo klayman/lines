@@ -670,7 +670,11 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
             do {
                 var nx = this.rand( 0, 8 );
                 var ny = this.rand( 0, 8 );
-            } while( this.map[ ny ][ nx ] );
+                var unique = true;
+                for( var j in arr )
+                    if( arr[ j ][ 0 ][ 0 ] == nx && arr[ j ][ 0 ][ 1 ] == ny )
+                        unique = false;  // don't took empty place on the map twice
+            } while( this.map[ ny ][ nx ] || ! unique );
             var ball = new Ball( this.svg_obj, color, this.settings.cell_size + this.settings.border_size, this.settings.balls_type )
             arr.push( [ [ nx, ny ], ball ] );
         }
