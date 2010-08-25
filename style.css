@@ -54,8 +54,8 @@ li {
   padding: 15px 0 0 110px;
 }
 @font-face {
-  font-family: digital-7-it;
-  src: url(digital-7-it.ttf);
+  font-family: digital-7-mono;
+  src: url(digital-7-mono.ttf);
 }
 #back {
   position: fixed;
@@ -76,7 +76,7 @@ li {
 #info_bar {
   position: absolute;
   bottom: 552px;
-  font: 40px "digital-7-it", serif;
+  font: 40px "digital-7-mono", serif;
   text-align: right;
   width: 471px;
   height: 71px;
@@ -203,7 +203,7 @@ span.td {
   vertical-align: top;
 }
 span.digital {
-  font: 25px "digital-7-it", serif;
+  font: 25px "digital-7-mono", serif;
   line-height: 13px;
 }
 #footer_bar {
@@ -261,7 +261,7 @@ span.footer_icons:hover span.tooltip {
 #mode {
   right: 170px;
   width: 37px;
-  background-position: -253px 0; /*-325*/
+  background-position: -253px 0;
 }
 #restart {
   right: 220px;
