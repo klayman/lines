@@ -377,6 +377,7 @@ with(Lines_game = function( settings, html_inf ){
     prototype.restore_game = function(){
         if( $.cookie( "game" ) ){
             this.field.game_load( eval( $.cookie( "game" ) ) );
+            this.update_mode_button();
             if( this.field.balls_count() == 9 * 9 ){
                 this.field.game_started = false;
                 this.gui[ "btn_new_game" ].obj.click();
@@ -1255,7 +1256,7 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
             if( parseInt( i ) != this.next_balls.length - 1 )
                 str += ","
         }
-        str += "]]";
+        str += "]," + this.settings.mode + "]";
         $.cookie( "game", str, { expires : 365 } );
     };
 
@@ -1292,6 +1293,7 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
         this.update_info_bar()
         if( this.settings.show_next )
             this.add_small_balls();
+        this.settings.mode = arr[ 3 ];
         this.game_started = true;
         this.timer_start();
     };
