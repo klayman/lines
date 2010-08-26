@@ -377,7 +377,7 @@ with(Lines_game = function( settings, html_inf ){
     prototype.restore_game = function(){
         if( $.cookie( "game" ) ){
             this.field.game_load( eval( $.cookie( "game" ) ) );
-            if( this.field.gameover() ){
+            if( this.field.balls_count() == 9 * 9 ){
                 this.field.game_started = false;
                 this.gui[ "btn_new_game" ].obj.click();
             }
@@ -753,7 +753,9 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
      */
     prototype.gen_next_balls = function() {
         var arr = [];
-        for( var i = 0; i < 3; i++ ) {
+        var cnt = 9 * 9 - this.balls_count();
+        if( cnt > 3 ) cnt = 3;
+        for( var i = 0; i < cnt; i++ ) {
             var color = this.rand( 1, 7 );
             do {
                 var nx = this.rand( 0, 8 );
@@ -788,7 +790,7 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
     prototype.next_round = function() {
         this.put_balls( this.next_balls );          // put 3 balls which was generated before
         this.remove_balls();                        // put_balls can create new true figres...
-        if( this.gameover() )
+        if( this.balls_count() == 9 * 9 )
         {
             this.timer_stop();
             alert( 'Игра закончена. Очки: ' + this.info_bar_obj.score );
@@ -1220,14 +1222,14 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
         return score;
     };
 
-    prototype.gameover = function() {
+    prototype.balls_count = function() {
         var cnt = 0;
         for( var j = 0; j < this.map.length; j++ )
             for( var i = 0; i < this.map[ j ].length; i++ )
                 if( this.map[ j ][ i ] )
                     cnt++;
-        return ( 9 * 9 - cnt < 3 );
-    };
+        return cnt;
+    }
 
     /*
      * Save current game to the cookie with name "game":
