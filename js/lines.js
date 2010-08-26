@@ -1381,7 +1381,7 @@ with(Ball = function( svg_obj, img_number, img_size, type ){
     this.img_name = undefined;
     switch( this.num ){
         case 1: this.img_name = 'red';    break;
-        case 2: this.img_name = 'orange'; break;
+        case 2: this.img_name = 'black'; break;
         case 3: this.img_name = 'yellow'; break;
         case 4: this.img_name = 'green';  break;
         case 5: this.img_name = 'cyan';   break;
