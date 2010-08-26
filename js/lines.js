@@ -21,6 +21,8 @@ with(Lines_game = function( settings, html_inf ){
     this.init_gui();
     // Change html objects according to the settings:
     this.restore_settings();
+    // Restore game from the cookie:
+    this.restore_game();
     // Set the event handlers:
     this.handlers();
 }){
@@ -164,6 +166,7 @@ with(Lines_game = function( settings, html_inf ){
                 function( _this ){
                     _this.field.clear();
                     _this.field.next_round();
+                    $.cookie( "game", null );
                     _this.field.game_started = false;
                     _this.info_bar.score2zero( 0 );
                     _this.field.timer_reset();
@@ -370,6 +373,17 @@ with(Lines_game = function( settings, html_inf ){
             this.gui[ 'timer' ].obj.click();
         this.gui[ 'timer' ].obj.parent().find( "input[type='text']").val( timer_val );
     };
+
+    prototype.restore_game = function(){
+        if( $.cookie( "game" ) ){
+            this.field.game_load( eval( $.cookie( "game" ) ) );
+            if( this.field.gameover() ){
+                this.field.game_started = false;
+                this.gui[ "btn_new_game" ].obj.click();
+            }
+        }
+    };
+
     prototype.update_mode_button = function(){
         var css_pos = "";
         switch( this.settings.mode ){
@@ -855,7 +869,7 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
             for( var j in this.map[ i ] )
                 if( this.map[ i ][ j ] ){
                     this.map[ i ][ j ].jump_stop( true );
-                    this.map[ i ][ j ].remove();
+                    this.map[ i ][ j ].erase();
                     this.map[ i ][ j ] = null;
                 }
 
@@ -871,7 +885,7 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
     prototype.remove_small_balls = function(){
         for( var i in this.next_balls )
             if( this.next_balls[ i ][ 1 ].obj )
-                this.next_balls[ i ][ 1 ].remove();
+                this.next_balls[ i ][ 1 ].erase();
     };
 
     /*
@@ -1212,8 +1226,73 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
             for( var i = 0; i < this.map[ j ].length; i++ )
                 if( this.map[ j ][ i ] )
                     cnt++;
-        return (9*9 - cnt < 3);
-    }
+        return ( 9 * 9 - cnt < 3 );
+    };
+
+    /*
+     * Save current game to the cookie with name "game":
+     */
+    prototype.game_save = function(){
+        var str = "[" + this.info_bar_obj.score + ",[";
+        for( var i in this.map ){
+            str += "["
+            for( var j in this.map[ i ] ){
+                str += this.map[ i ][ j ] ? this.map[ i ][ j ].num : 0;
+                if( parseInt( j ) != this.map[ i ].length - 1 )
+                    str += ",";
+            }
+            str += "]";
+            if( parseInt( i ) != this.map.length - 1 )
+                str += ",";
+        }
+        str += "],[";
+        for( var i in this.next_balls ){
+            var arr = this.next_balls[ i ];
+            str += "[[" + arr[ 0 ][ 0 ] + "," + arr[ 0 ][ 1 ] + "],";
+            str += arr[ 1 ].num + "]";
+            if( parseInt( i ) != this.next_balls.length - 1 )
+                str += ","
+        }
+        str += "]]";
+        $.cookie( "game", str, { expires : 365 } );
+    };
+
+    /*
+     * Load game from the array:
+     */
+    prototype.game_load = function( arr ){
+        this.info_bar_obj.score = arr[ 0 ];
+        this.info_bar_obj.set_score( arr[ 0 ] );
+        this.clear();
+        this.map = new Array( 9 );
+        for( var i = 0; i < 9; i++ )
+            this.map[ i ] = new Array( null, null, null, null, null, null, null, null, null );
+        for( var i in arr[ 1 ] )
+            for( var j in arr[ 1 ][ i ] ){
+                var color = arr[ 1 ][ i ][ j ];
+                if( color == 0 )
+                    continue;
+                var nx = parseInt( j );
+                var ny = parseInt( i );
+                var ball = new Ball( this.svg_obj, color, this.settings.cell_size + this.settings.border_size, this.settings.balls_type );
+                ball.popup( nx, ny, 1 );
+                this.map[ ny ][ nx ] = ball;
+            }
+        this.next_balls = new Array();
+        for( var i in arr[ 2 ] ){
+            var rec = arr[ 2 ][ i ];
+            var nx = rec[ 0 ][ 0 ];
+            var ny = rec[ 0 ][ 1 ];
+            var color = rec[ 1 ];
+            var ball = new Ball( this.svg_obj, color, this.settings.cell_size + this.settings.border_size, this.settings.balls_type );
+            this.next_balls.push( [ [ nx, ny ], ball ] );
+        }
+        this.update_info_bar()
+        if( this.settings.show_next )
+            this.add_small_balls();
+        this.game_started = true;
+        this.timer_start();
+    };
 
     /*
      * Change balls type:
@@ -1261,10 +1340,13 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
                         _this.next_round();        // go to the next round
                     else
                         _this.timer_reset();        // but reset timer
+
+                    _this.game_save();
                 };
 
-                if( _this.move_ball( nx, ny, callback ) )  // try move selected ball to new position
+                if( _this.move_ball( nx, ny, callback ) ){  // try move selected ball to new position
                     _this.game_started = true;
+                }
             }
         );
     };
