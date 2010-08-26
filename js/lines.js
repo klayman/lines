@@ -777,7 +777,7 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
         if( this.gameover() )
         {
             this.timer_stop();
-            alert( 'GAME OVER! MU-HA-HA!!!' );
+            alert( 'Игра закончена. Очки: ' + this.info_bar_obj.score );
             return;
         }
         this.next_balls = this.gen_next_balls();    // generate 3 new "next" balls
