@@ -898,7 +898,7 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
         for( var i in this.next_balls ){
             var nx = this.next_balls[ i ][ 0 ][ 0 ];
             var ny = this.next_balls[ i ][ 0 ][ 1 ];
-            this.next_balls[ i ][ 1 ].popup( nx, ny, 0.5 );
+            this.next_balls[ i ][ 1 ].popup( nx, ny, 0.3 );
         }
     };
 
@@ -1318,7 +1318,7 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
         var _this = this;
 
         // Configure click event handler:
-        this.obj.click(
+        this.obj.mousedown(
             function( e ){
                 // Get the margin of SVG object:
                 var mx = _this.obj.children().css( "margin-left" ).replace( "px", '' );
@@ -1546,7 +1546,7 @@ with(Ball = function( svg_obj, img_number, img_size, type ){
         this.animate( structure ); // animate this immediately
 
         var _this = this;
-        this.obj.everyTime( 1100,
+        this.obj.everyTime( 1000,
             function(){
                 _this.animate( structure );  // do animation cycle every 1100 ms
             }
@@ -1605,8 +1605,8 @@ $( document ).ready(
          **/
         var settings =
             {
-                "cell_size"     : 48,
-                "border_size"   : 2,
+                "cell_size"     : 50,
+                "border_size"   : 0,
                 "info_bar_h"    : 71,
                 "footer_bar_h"  : 71,
                 "balls_type"    : "matte",
