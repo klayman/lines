@@ -198,9 +198,9 @@ with(Lines_game = function( settings, html_inf ){
                 var css_pos = "";
                 var mode = 0;
                 switch( _this.settings.mode ){
-                    case 2: css_pos = "-290px 0"; mode = 0; break;
-                    case 3: css_pos = "-290px 0"; mode = 0; break;
-                    case 4: css_pos = "-290px 0"; mode = 0; break;
+                    case 2: css_pos = "-289px 0"; mode = 0; break;
+                    case 3: css_pos = "-289px 0"; mode = 0; break;
+                    case 4: css_pos = "-289px 0"; mode = 0; break;
 
                     case 0: css_pos = "-325px 0"; mode = 1; break;
 
@@ -388,7 +388,7 @@ with(Lines_game = function( settings, html_inf ){
     prototype.update_mode_button = function(){
         var css_pos = "";
         switch( this.settings.mode ){
-            case 0: css_pos = "-290px 0"; break;
+            case 0: css_pos = "-289px 0"; break;
 
             case 1: css_pos = "-325px 0"; break;
 
