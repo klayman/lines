@@ -342,11 +342,17 @@ with(Lines_game = function( settings, html_inf ){
 
     prototype.restore_settings = function(){
 
+        // Get the game settings from the cookie:
+        if( $.cookie( "settings" ) )
+            var settings = eval( "(" + $.cookie( "settings" ) + ")" );
+        else
+            return;
+
         var mode_obj = this.gui[ "radio_game_mode" ];
         var lines_sub = this.gui[ "radio_n_in_row" ];
         var block_sub = this.gui[ "radio_n_in_block" ];
         var css_pos = "";
-        switch( this.settings.mode ){
+        switch( settings.mode ){
             case 0: mode_obj.set_id( "rectangles" ); break;
 
             case 1: mode_obj.set_id( "rings" );      break;
@@ -362,13 +368,13 @@ with(Lines_game = function( settings, html_inf ){
 
         this.update_mode_button();
 
-        this.gui[ 'radio_balls_type' ].set_id( this.settings.balls_type );
+        this.gui[ 'radio_balls_type' ].set_id( settings.balls_type );
 
-        if( this.gui[ 'next' ].if_checked() != this.settings.show_next )
+        if( this.gui[ 'next' ].if_checked() != settings.show_next )
             this.gui[ 'next' ].obj.click();
 
-        var timer_on = this.settings.round_time > 0 ? true : false;
-        var timer_val = this.settings.round_time > 0 ? this.settings.round_time : 15;
+        var timer_on = settings.round_time > 0 ? true : false;
+        var timer_val = settings.round_time > 0 ? settings.round_time : 15;
         if( this.gui[ 'timer' ].if_checked() != timer_on )
             this.gui[ 'timer' ].obj.click();
         this.gui[ 'timer' ].obj.parent().find( "input[type='text']").val( timer_val );
