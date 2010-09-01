@@ -10,6 +10,10 @@ with(Lines_game = function( settings, html_inf ){
     // Save default settings of the game and html ids to link to
     this.settings = settings;
     this.html_inf = html_inf;
+    // Clone of the settings object:
+    this.future_s = {};
+    for( var i in this.settings )
+        this.future_s[ i ] = this.settings[ i ];
 
     // Active page id:
     this.active_page = this.html_inf.field_id;
@@ -95,13 +99,11 @@ with(Lines_game = function( settings, html_inf ){
             function( event ){
                 var _this = event.data._this;
 
-                _this.info_bars();
+                _this.zen_mode();
 
                 if( _this.gui[ 'timer' ].if_checked() ){
                     _this.gui[ 'timer' ].obj.click();
                 }
-
-                _this.save_settings();
 
             },
             { _this : this }
@@ -151,9 +153,6 @@ with(Lines_game = function( settings, html_inf ){
             "click",
             function( event ){
                 var _this = event.data._this;
-                if( _this.field.game_started )
-                    if( ! confirm( "Вы уверены?" ) )
-                        return;
 
                 if( _this.future_s ){
                     _this.settings = _this.future_s;
@@ -186,13 +185,8 @@ with(Lines_game = function( settings, html_inf ){
             "click",
             function( event ){
                 var _this = event.data._this;
-                if( _this.field.game_started ){
-                    if( ! confirm( "Игра будет запущена сначала. Продолжить?" ) )
-                        return;
-
-                    _this.field.game_started = false;
-                    _this.gui[ 'btn_new_game' ].obj.click();
-                }
+                _this.field.game_started = false;
+                _this.gui[ 'btn_new_game' ].obj.click();
 
                 // Update html view:
                 var css_pos = "";
@@ -231,10 +225,6 @@ with(Lines_game = function( settings, html_inf ){
     };
 
     prototype.save_settings = function(){
-        // Clone of the settings object:
-        this.future_s = {};
-        for( var i in this.settings )
-            this.future_s[ i ] = this.settings[ i ];
 
         // Define the selected game mode:
         var selected_mode = false;
@@ -263,6 +253,7 @@ with(Lines_game = function( settings, html_inf ){
 
         }
         var flag = false;
+        var dialog = false;
         // Вспомагательная функция для вывода вопроса о применении нового режима игры:
         var confirm_f =
             function(){
@@ -271,8 +262,10 @@ with(Lines_game = function( settings, html_inf ){
             };
         if( selected_mode != this.settings.mode ){
 
-            if( this.field.game_started && ! flag && confirm_f() )
+            if( this.field.game_started && ! dialog && confirm_f() )
                 flag = true;
+
+            dialog = true;
 
             this.future_s.mode = selected_mode;
 
@@ -300,8 +293,6 @@ with(Lines_game = function( settings, html_inf ){
             this.info_bar.change_balls_type();
         }
 
-        this.future_s.zen_mode = false;
-
         var timer_val = parseInt( this.gui[ 'timer' ].obj.parent().find( "input[type='text']").val() );
         if( ! this.gui[ 'timer' ].if_checked() ||
               this.gui[ 'zen_mode' ].if_checked() )
@@ -309,7 +300,7 @@ with(Lines_game = function( settings, html_inf ){
 
         if( timer_val != this.settings.round_time ){
 
-            if( this.field.game_started && ! flag && confirm_f() )
+            if( this.field.game_started && ! dialog && confirm_f() )
                 flag = true;
 
             this.future_s.round_time = timer_val;
@@ -384,10 +375,8 @@ with(Lines_game = function( settings, html_inf ){
         if( $.cookie( "game" ) ){
             this.field.game_load( eval( $.cookie( "game" ) ) );
             this.update_mode_button();
-            if( this.field.balls_count() == 9 * 9 ){
-                this.field.game_started = false;
+            if( this.field.balls_count() == 9 * 9 )
                 this.gui[ "btn_new_game" ].obj.click();
-            }
         }
     };
 
@@ -409,25 +398,29 @@ with(Lines_game = function( settings, html_inf ){
         this.gui[ 'btn_game_mode' ].obj.css( "background-position", css_pos );
     };
 
-    prototype.info_bars = function(){
+    prototype.zen_mode = function(){
         // Time for animation (in ms):
         var t = 200;
         if( this.settings.zen_mode ){
-            // Show bars:
+            // Zen mode is off:
             $( "#" + this.html_inf.info_bar_id ).animate( { height: this.settings.info_bar_h + "px" }, t );
             $( "#" + this.html_inf.footer_bar_id ).animate( { height: this.settings.footer_bar_h + "px" }, t );
             this.settings.zen_mode = false;
             this.gui[ 'timer' ].enable();
         }else{
-            // Hide bars:
+            // Zen mod is on:
             $( "#" + this.html_inf.info_bar_id ).animate( { height: "0px" }, t );
             $( "#" + this.html_inf.footer_bar_id ).animate( { height: "0px" }, t );
             this.settings.zen_mode = true;
             this.gui[ 'timer' ].disable();
             this.settings.round_time = 0;
+            this.future_s.round_time = 0;
             this.field.timer_stop();
             this.info_bar.time_set( 0 );
         }
+
+        this.future_s.zen_mode = false;
+        this.settings2cookie();
     };
 
     prototype.open_page = function( page, callback ){
@@ -680,7 +673,7 @@ with(Info_bar = function( html_id, score_id, timer_id, settings ){
         for( var i in arr ){
             var rec = arr[ i ];
             var ball = new Ball( this.svg_obj, rec[ 1 ].num, this.settings.cell_size + this.settings.border_size, this.settings.balls_type );
-            ball.popup( i * 1, 0, 1 );
+            ball.popup( i * 1, 0, 0.3 );
             this.balls.push( ball );
         }
     };
@@ -797,10 +790,12 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
     prototype.next_round = function() {
         this.put_balls( this.next_balls );          // put 3 balls which was generated before
         this.remove_balls();                        // put_balls can create new true figres...
+        this.game_save();                           // Save the current game
         if( this.balls_count() == 9 * 9 )
         {
             this.timer_stop();
             alert( 'Игра закончена. Очки: ' + this.info_bar_obj.score );
+            this.game_started = false;
             return;
         }
         this.next_balls = this.gen_next_balls();    // generate 3 new "next" balls
