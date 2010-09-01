@@ -358,6 +358,7 @@ with(Lines_game = function( settings, html_inf ){
         }
 
         this.update_mode_button();
+        this.settings.zen_mode = false;
 
         this.gui[ 'radio_balls_type' ].set_id( settings.balls_type );
 
@@ -401,16 +402,34 @@ with(Lines_game = function( settings, html_inf ){
     prototype.zen_mode = function(){
         // Time for animation (in ms):
         var t = 200;
+        var _this = this;
+        if( this.busy )
+            return;
+
         if( this.settings.zen_mode ){
             // Zen mode is off:
+            this.busy = true;
             $( "#" + this.html_inf.info_bar_id ).animate( { height: this.settings.info_bar_h + "px" }, t );
-            $( "#" + this.html_inf.footer_bar_id ).animate( { height: this.settings.footer_bar_h + "px" }, t );
+            $( "#" + this.html_inf.footer_bar_id ).animate( { height: this.settings.footer_bar_h + "px" }, t,
+                function(){
+                    _this.busy = false;
+                }
+            );
+            $( "#" + this.html_inf.footer_bar_id ).find( "a" ).css( "visibility", "visible" );
+            this.future_s.zen_mode = false;
             this.settings.zen_mode = false;
             this.gui[ 'timer' ].enable();
         }else{
             // Zen mod is on:
+            this.busy = true;
             $( "#" + this.html_inf.info_bar_id ).animate( { height: "0px" }, t );
-            $( "#" + this.html_inf.footer_bar_id ).animate( { height: "0px" }, t );
+            $( "#" + this.html_inf.footer_bar_id ).animate( { height: "0px" }, t,
+                function(){
+                    _this.busy = false;
+                    $( "#" + _this.html_inf.footer_bar_id ).find( "a" ).css( "visibility", "hidden" );
+                }
+            );
+            this.future_s.zen_mode = true;
             this.settings.zen_mode = true;
             this.gui[ 'timer' ].disable();
             this.settings.round_time = 0;
@@ -419,7 +438,6 @@ with(Lines_game = function( settings, html_inf ){
             this.info_bar.time_set( 0 );
         }
 
-        this.future_s.zen_mode = false;
         this.settings2cookie();
     };
 
