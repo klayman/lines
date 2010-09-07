@@ -273,13 +273,25 @@ span.footer_icons:hover span.tooltip {
   width: 40px;
   background-position: -174px 0;
 }
-#decor {
-  position: absolute;
-  right: -255px;
-  bottom: -70px;
-  width: 960px;
-  height: 761px;
-  background: url(images/decor.png);
+@media (min-width:960px) {
+  #decor {
+    position: absolute;
+    right: -255px;
+    bottom: -70px;
+    width: 960px;
+    height: 761px;
+    background: url(images/decor.png);
+  }
+}
+@media (max-width:960px) {
+  #decor {
+    position: absolute;
+    right: -175px;
+    bottom: -15px;
+    width: 820px;
+    height: 650px;
+    background: url(images/decor_small.png);
+  }
 }
 input[type=checkbox], input[type=radio] {
   opacity: 0;
