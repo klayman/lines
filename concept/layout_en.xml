@@ -100,10 +100,11 @@
       <h1>Help</h1>
       <div class="help_block">
         <p>Game is played on the 9×9 or 7×7 board, depending on the game mode. Each turn three new balls out of seven possible colors are added on the random cells. The goal is to survive as long as possible, clearing the field by assembling balls of the same color in the specific shapes. There are 4 game modes with 4 different shapes. To complete the shape the player can move one ball per turn, only if there is a path, consisting of empty cells, between the initial and the final cells.</p>
-        
+
         <p>The player scores points for each shape collected according to the formula (<i>n-n</i><sub>min</sub>+1)‧<i>n</i>, where <i>n</i> — the number of balls in the shape, <i>n</i><sub>min</sub> — the minimum number of balls in the shape for this game mode. After the move of the final ball in the shape, next three ball are not added untill the next turn.</p>
-        
-        <p>Game modes:<ul>
+
+        <p>Game modes:</p>
+        <ul>
           <li id="li_lines"><b>Lines</b><br />
             The classic mode in which the figure is a vertical, horizontal or diagonal line. The minimum number of balls in the figure is 5 by default, but you can choose 4 or 6 in the settings as well. Field size is 9×9.
           </li>
@@ -116,7 +117,7 @@
           <li id="li_blocks"><b>Blocks</b><br />
             The block is a arbitrary shape, composed of adjacent balls (their cells must have a common edge). The block size is defined in the settings (default — 7 balls). Field size is 9×9.
           </li>
-        </ul></p>
+        </ul>
       </div> <!--.help_block-->
     </div> <!--#help_page-->
     <div id="scores_page">

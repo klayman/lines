@@ -223,6 +223,7 @@ span.digital {
   height: 46px;
   opacity: 0.5;
   background-image: url(images/icons.png);
+  cursor: pointer;
 }
 #footer_bar span.footer_icons:hover {
   opacity: 1;
