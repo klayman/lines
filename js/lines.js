@@ -10,23 +10,21 @@ with(Lines_game = function( settings, html_inf ){
     // Save default settings of the game and html ids to link to
     this.settings = settings;
     this.html_inf = html_inf;
-    // Clone of the settings object:
-    this.future_s = {};
-    for( var i in this.settings )
-        this.future_s[ i ] = this.settings[ i ];
 
+    // Create button and other GUI objects:
+    this.init_gui();
+    // Change html objects according to the settings:
+    this.restore_settings();
     // Active page id:
     this.active_page = this.html_inf.field_id;
     // Create info bar object:
     this.create_info_bar();
     // Create field object:
     this.create_field();
-    // Create button and other GUI objects:
-    this.init_gui();
-    // Change html objects according to the settings:
-    this.restore_settings();
     // Restore game from the cookie:
     this.restore_game();
+    // Redraw field if it's necessary:
+    this.redraw_field();
     // Set the event handlers:
     this.handlers();
 }){
@@ -163,6 +161,14 @@ with(Lines_game = function( settings, html_inf ){
 
                 var callback_f =
                 function( _this ){
+                    if( _this.settings.mode <= 1 ){
+                        _this.settings.field_size = 7;
+                        _this.settings.field_b = 1;
+                    }else{
+                        _this.settings.field_size = 9;
+                        _this.settings.field_b = 0;
+                    }
+                    _this.redraw_field();
                     _this.field.clear();
                     _this.field.next_round();
                     $.cookie( "game", null );
@@ -186,7 +192,6 @@ with(Lines_game = function( settings, html_inf ){
             function( event ){
                 var _this = event.data._this;
                 _this.field.game_started = false;
-                _this.gui[ 'btn_new_game' ].obj.click();
 
                 // Update html view:
                 var css_pos = "";
@@ -218,6 +223,7 @@ with(Lines_game = function( settings, html_inf ){
                     }
 
                 _this.settings.mode = mode;
+                _this.gui[ 'btn_new_game' ].obj.click();
                 $( this ).css( "background-position", css_pos );
             },
             { _this : this }
@@ -225,6 +231,10 @@ with(Lines_game = function( settings, html_inf ){
     };
 
     prototype.save_settings = function(){
+        // Clone of the settings object:
+        this.future_s = {};
+        for( var i in this.settings )
+            this.future_s[ i ] = this.settings[ i ];
 
         // Define the selected game mode:
         var selected_mode = false;
@@ -264,10 +274,20 @@ with(Lines_game = function( settings, html_inf ){
 
             if( this.field.game_started && ! dialog && confirm_f() )
                 flag = true;
+            if( ! this.field.game_started )
+                flag = true;
 
             dialog = true;
 
             this.future_s.mode = selected_mode;
+
+            if( selected_mode <= 1 ){
+                this.future_s.field_size = 7;
+                this.future_s.field_b = 1;
+            }else{
+                this.future_s.field_size = 9;
+                this.future_s.field_b = 0;
+            }
 
             if( ! this.field.game_started ){
                 this.settings.mode = selected_mode;
@@ -370,13 +390,15 @@ with(Lines_game = function( settings, html_inf ){
         if( this.gui[ 'timer' ].if_checked() != timer_on )
             this.gui[ 'timer' ].obj.click();
         this.gui[ 'timer' ].obj.parent().find( "input[type='text']").val( timer_val );
+
     };
 
     prototype.restore_game = function(){
         if( $.cookie( "game" ) ){
             this.field.game_load( eval( $.cookie( "game" ) ) );
             this.update_mode_button();
-            if( this.field.balls_count() == 9 * 9 )
+            var s = this.settings.field_size;
+            if( this.field.balls_count() == s * s )
                 this.gui[ "btn_new_game" ].obj.click();
         }
     };
@@ -439,6 +461,15 @@ with(Lines_game = function( settings, html_inf ){
         }
 
         this.settings2cookie();
+    };
+
+    prototype.redraw_field = function(){
+        var url = "images/";
+        if( this.settings.mode <= 1 )
+            url += this.html_inf.field_s_img;
+        else
+            url += this.html_inf.field_img;
+        $( "#" + this.html_inf.field_id ).css( "background-image", "url(" + url + ")" );
     };
 
     prototype.open_page = function( page, callback ){
@@ -771,13 +802,15 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
      */
     prototype.gen_next_balls = function() {
         var arr = [];
-        var cnt = 9 * 9 - this.balls_count();
+        var s = this.settings.field_size;
+        var dl = this.settings.field_b;
+        var cnt = s * s - this.balls_count();
         if( cnt > 3 ) cnt = 3;
         for( var i = 0; i < cnt; i++ ) {
             var color = this.rand( 1, 7 );
             do {
-                var nx = this.rand( 0, 8 );
-                var ny = this.rand( 0, 8 );
+                var nx = this.rand( 0 + dl, 8 - dl );
+                var ny = this.rand( 0 + dl, 8 - dl );
                 var unique = true;
                 for( var j in arr )
                     if( arr[ j ][ 0 ][ 0 ] == nx && arr[ j ][ 0 ][ 1 ] == ny )
@@ -809,7 +842,8 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
         this.put_balls( this.next_balls );          // put 3 balls which was generated before
         this.remove_balls();                        // put_balls can create new true figres...
         this.game_save();                           // Save the current game
-        if( this.balls_count() == 9 * 9 )
+        var s = this.settings.field_size;
+        if( this.balls_count() == s * s )
         {
             this.timer_stop();
             alert( 'Игра закончена. Очки: ' + this.info_bar_obj.score );
@@ -864,6 +898,7 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
      *       i.e. [ [ [x,y], ball ], [ [x,y], ball ], ... ]
      */
     prototype.put_balls = function( arr ){
+        var dl = this.settings.field_b;
         for( var i in arr ){
             var rec = arr[ i ];
             var nx = rec[ 0 ][ 0 ];
@@ -872,8 +907,8 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
             if( this.map[ ny ][ nx ] )     // user can send ball to this place
             {
                 do {
-                    nx = this.rand( 0, 8 );
-                    ny = this.rand( 0, 8 );
+                    nx = this.rand( 0 + dl, 8 - dl );
+                    ny = this.rand( 0 + dl, 8 - dl );
                 } while( this.map[ ny ][ nx ] );   // find new place...
             }
             ball.popup( nx, ny, 1 );       // popup at position which was stored earlier
@@ -923,6 +958,7 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
 
     prototype.find_path = function( f_x, f_y, to_x, to_y ) {
         var stack = Array( );           // stack for multiple purposes
+        var dl = this.settings.field_b;
 
         var arr = new Array( 9 );       // 2d array for back-path
         for( var i = 0; i < 9; i++ )
@@ -940,7 +976,8 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
             {
                 var x = pos[ 0 ] + d[ i ][ 0 ];
                 var y = pos[ 1 ] + d[ i ][ 1 ];
-                if( ( x >= 0 ) && ( y >= 0 ) && ( x <= 8 ) && ( y <= 8 ) && !this.map[ y ][ x ] && ! arr[ y ][ x ] )
+                if( ( x >= 0 + dl ) && ( y >= 0 + dl ) && ( x <= 8 - dl ) && ( y <= 8 - dl ) &&
+                    ! this.map[ y ][ x ] && ! arr[ y ][ x ] )
                 {
                     arr[ y ][ x ] = pos;    // we go to position ( x, y ) from position pos
                     stack.push( [ x, y ] ); // add new place...
@@ -1057,11 +1094,12 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
     prototype.test_path = function( nx, ny, ms, mark ){
         var x = nx;
         var y = ny;
+        var dl = this.settings.field_b;
         var num = this.map[ y ][ x ].num;  // save color of ball (number)
 
         for( var i in ms )
         {
-            if( x < 0 || y < 0 || x > 8 || y > 8 )
+            if( x < 0 + dl || y < 0 + dl || x > 8 - dl || y > 8 - dl )
                 return false;
 
             if( ! this.map[ y ][ x ] || this.map[ y ][ x ].num != num )  // broken path or wrong color
@@ -1115,6 +1153,7 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
         function remove_group( nx, ny, _this ) {
             var stack = Array( );   // stack for siblings
             var cnt = 0;            // count of removed balls
+            var dl = _this.settings.field_b;
 
             stack.push( [ nx, ny ] );
             while( stack.length )
@@ -1140,7 +1179,7 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
                                 var mov = ( f[ k ][ m ] + t * 4 ) % 8;   // by 4 we rotate f[ k ][ m ] at 180 degree
                                 var res = _this.move_xy( pos[ 0 ], pos[ 1 ], mov );
 
-                                if( res[ 0 ] >= 0 && res[ 1 ] >= 0 && res[ 0 ] <= 8 && res[ 1 ] <= 8 )  // test boundaries
+                                if( res[ 0 ] >= 0 + dl && res[ 1 ] >= 0 + dl && res[ 0 ] <= 8 - dl && res[ 1 ] <= 8 - dl )  // test boundaries
                                 {
                                     var tmp = _this.map[ res[ 1 ] ][ res[ 0 ] ];
                                     if( tmp && tmp.marked )    // we found marked ball..
@@ -1171,6 +1210,7 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
         var num = this.map[ ny ][ nx ].num;  // save color of ball (number)
         var stack = Array();                 // ball's siblings
         var cnt = 0;                         // count of balls in block
+        var dl = this.settings.field_b;
 
         stack.push( [ nx, ny ] );
         this.map[ ny ][ nx ].marked = true;  // don't add this ball as sibling
@@ -1190,7 +1230,7 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
                     var x = pos[ 0 ] + dx;
                     var y = pos[ 1 ] + dy;
                     if( Math.abs( dx ) ^ Math.abs( dy )  &&    // logical XOR ( only one direction { up, down, left, right } is allowed )
-                        x >= 0 && x <= 8 && y >= 0 && y <= 8 ) // boundary conditions
+                        x >= 0 + dl && x <= 8 - dl && y >= 0 + dl && y <= 8 - dl ) // boundary conditions
                     {
                         var tmp = this.map[ y ][ x ];
                         if( tmp && tmp.num == num && !tmp.marked )  // ... same color && not added early
@@ -1313,6 +1353,13 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
         if( this.settings.show_next )
             this.add_small_balls();
         this.settings.mode = arr[ 3 ];
+        if( this.settings.mode <= 1 ){
+            this.settings.field_size = 7;
+            this.settings.field_b = 1;
+        }else{
+            this.settings.field_size = 9;
+            this.settings.field_b = 0;
+        }
         this.game_started = true;
         this.timer_start();
     };
@@ -1350,10 +1397,11 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
                 // X and Y numbers of the cell which is under mouse cursor:
                 var nx = Math.floor( x / ( _this.settings.cell_size + _this.settings.border_size ) );
                 var ny = Math.floor( y / ( _this.settings.cell_size + _this.settings.border_size ) );
+                var dl = _this.settings.field_b;
 
                 // Check the boundary conditions:
-                if( ( x - ( _this.settings.cell_size + _this.settings.border_size ) * nx > _this.settings.cell_size && nx < 8 ) ||
-                    ( y - ( _this.settings.cell_size + _this.settings.border_size ) * ny > _this.settings.cell_size && ny < 8 ) )
+                if( ( x - ( _this.settings.cell_size + _this.settings.border_size ) * nx > _this.settings.cell_size && nx < 8 - dl ) ||
+                    ( y - ( _this.settings.cell_size + _this.settings.border_size ) * ny > _this.settings.cell_size && ny < 8 - dl ) )
                     return false;
 
                 _this.select_ball( nx, ny );     // try to select ball on the map
@@ -1604,10 +1652,14 @@ $( document ).ready(
          * zen_mode       : zen mode enabled or not (boolean)
          * show_next      : next balls showing enabled or not (boolean)
          * mode           : game mode (number from 0 to 8)
+         * field_size     : game field size (in cells)
+         * field_b        : border on the field - we can't put ball on it (in cells)
          *
          * info_bar_id    : id of the DOM element with the score bar
          * footer_bar_id  : id of the settings bar
          * field_id       : id of the game's field DOM element
+         * field_img      : name of the big field image file
+         * field_s_img    : name of the small field image file
          * opt_btn_id     : id of the options button
          * opt_page_id    : id of the options page
          * mode_name      : name of the "game mode" radio group
@@ -1632,7 +1684,9 @@ $( document ).ready(
                 "round_time"    : 0,
                 "zen_mode"      : false,
                 "show_next"     : false,
-                "mode"          : 3
+                "mode"          : 3,
+                "field_size"    : 9,
+                "field_b"       : 0
             };
 
         // If there is a cookie "settings" - get game settings from it:
@@ -1646,6 +1700,8 @@ $( document ).ready(
                 "timer_id"       : "timer",
                 "footer_bar_id"  : "footer_bar",
                 "field_id"       : "field",
+                "field_img"      : "field.png",
+                "field_s_img"    : "field_small.png",
                 "opt_btn_id"     : "options",
                 "opt_page_id"    : "options_page",
                 "mode_name"      : "mode",
