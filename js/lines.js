@@ -336,11 +336,6 @@ with(Lines_game = function( settings, html_inf ){
             this.gui[ "btn_new_game" ].obj.click();
         }
 
-        this.settings2cookie();
-
-    };
-
-    prototype.settings2cookie = function(){
         var str = "{";
         for( var i in this.future_s ){
             var val = this.future_s[ i ];
@@ -350,6 +345,7 @@ with(Lines_game = function( settings, html_inf ){
         str = str.substr( 0, str.length - 1 ) + "}";
         $.cookie( "settings", str, { expires : 365 } );
     };
+
 
     prototype.restore_settings = function(){
 
@@ -438,7 +434,6 @@ with(Lines_game = function( settings, html_inf ){
                 }
             );
             $( "#" + this.html_inf.footer_bar_id ).find( "a" ).css( "visibility", "visible" );
-            this.future_s.zen_mode = false;
             this.settings.zen_mode = false;
             this.gui[ 'timer' ].enable();
         }else{
@@ -451,7 +446,6 @@ with(Lines_game = function( settings, html_inf ){
                     $( "#" + _this.html_inf.footer_bar_id ).find( "a" ).css( "visibility", "hidden" );
                 }
             );
-            this.future_s.zen_mode = true;
             this.settings.zen_mode = true;
             this.gui[ 'timer' ].disable();
             this.settings.round_time = 0;
@@ -459,8 +453,6 @@ with(Lines_game = function( settings, html_inf ){
             this.field.timer_stop();
             this.info_bar.time_set( 0 );
         }
-
-        this.settings2cookie();
     };
 
     prototype.redraw_field = function(){
