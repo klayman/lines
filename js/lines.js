@@ -38,7 +38,7 @@ with(Lines_game = function( settings, html_inf ){
 
     prototype.create_field = function(){
         // The game field object:
-        this.field = new Field( this.html_inf.field_id, this.info_bar, this.settings );
+        this.field = new Field( this.html_inf.field_id, this.info_bar, this );
     };
 
     prototype.init_gui = function(){
@@ -145,6 +145,18 @@ with(Lines_game = function( settings, html_inf ){
             },
             { _this : this }
         );
+        // Button, which opens "high score" page:
+        this.gui[ 'btn_high_score' ] = new Button(
+            this.html_inf.hsc_btn_id,
+            "click",
+            function( event ){
+                var _this = event.data._this;
+                if( ! _this.busy && _this.active_page != _this.html_inf.hsc_page_id )
+                    _this.load_high_scores();
+                _this.open_page( _this.html_inf.hsc_page_id );
+            },
+            { _this: this }
+        );
         // Button, which start new game:
         this.gui[ 'btn_new_game' ] = new Button(
             this.html_inf.restart_btn_id,
@@ -176,6 +188,7 @@ with(Lines_game = function( settings, html_inf ){
                     _this.info_bar.score2zero( 0 );
                     _this.field.timer_reset();
                     _this.field.timer_stop();
+                    _this.stop_game();
                 }
                 if( _this.active_page != _this.html_inf.field_id ){
                     _this.open_page( _this.html_inf.field_id, callback_f );
@@ -348,7 +361,6 @@ with(Lines_game = function( settings, html_inf ){
         $.cookie( "settings", str, { expires : 365 } );
     };
 
-
     prototype.restore_settings = function(){
         var mode_obj = this.gui[ "radio_game_mode" ];
         var lines_sub = this.gui[ "radio_n_in_row" ];
@@ -380,7 +392,6 @@ with(Lines_game = function( settings, html_inf ){
         if( this.gui[ 'timer' ].if_checked() != timer_on )
             this.gui[ 'timer' ].obj.click();
         this.gui[ 'timer' ].obj.parent().find( "input[type='text']").val( timer_val );
-
     };
 
     prototype.restore_game = function(){
@@ -390,7 +401,143 @@ with(Lines_game = function( settings, html_inf ){
             var s = this.settings.field_size;
             if( this.field.balls_count() == s * s )
                 this.gui[ "btn_new_game" ].obj.click();
+            else
+                this.start_game( true );
         }
+    };
+    prototype.stop_game = function(){
+        this.field.obj.stopTime( "timer" );
+    };
+    prototype.start_game = function( continue_game ){
+        if( ! continue_game )
+            $.ajax(
+                {
+                    type : "POST",
+                     url : "server.php",
+                    data : {
+                                "start_game" : true
+                           }
+                }
+            );
+        var _this = this;
+        this.field.obj.stopTime( "timer" ).everyTime(
+            5000,
+            "timer",
+            function(){
+                $.ajax(
+                    {
+                        type : "POST",
+                         url : "server.php",
+                        data : {
+                                  "score" : _this.info_bar.score
+                               }
+                    }
+                );
+            }
+        );
+    };
+
+    prototype.load_high_scores = function( my_score ){
+        my_score = typeof my_score == "undefined" ? -1 : my_score;
+        var page = $( "#" + this.html_inf.hsc_page_id );
+        var title = page.find( "h1" );
+        title.text( "Таблица рекордов. " );
+        switch( this.settings.mode ){
+            case 0: title.append( "Прямоугольники" ); break;
+            case 1: title.append( "Ромбы" );          break;
+            case 2: title.append( "Линии — 4 в ряд" ); break;
+            case 3: title.append( "Линии — 5 в ряд" ); break;
+            case 4: title.append( "Линии — 6 в ряд" ); break;
+            case 6: title.append( "Блоки — 6" );  break;
+            case 7: title.append( "Блоки — 7" ); break;
+            case 8: title.append( "Блоки — 8" );  break;
+        }
+        var _this = this;
+        var block = page.find( ".scores_block" );
+        block.text( "Идет загрузка..." );
+        $.ajax(
+            {
+                type : "POST",
+                 url : "server.php",
+                data : {
+                            "get_high_scores" : this.settings.mode
+                       },
+             success :
+                function( data ){
+                    block.html( "" );
+                    data = eval( "(" + data + ")" );
+                    var tr = $( "<p></p>" ).addClass( "tr" );
+                    tr.append(
+                        $( "<span class='th'>Место</span>" ),
+                        $( "<span class='th'>Игрок</span>" ),
+                        $( "<span class='th'>Очки</span>" ),
+                        $( "<span class='th'>Дата</span>" )
+                    );
+                    block.append( tr );
+                    var place = 0;
+                    for( var i in data ){
+                        var tr = $( "<p></p>" ).addClass( "tr" );
+                        var date = new Date();
+                        date.setTime( data[ i ][ 2 ] * 1000 );
+                        var day = date.getDate();
+                        var month = ( date.getMonth() + 1 ) + "";
+                        month = month.length == 1 ? "0" + month : month;
+                        var year = date.getFullYear();
+                        tr.append(
+                            $( "<span class='td digital'>" + ( parseInt( i ) + 1 ) + "</span>" ),
+                            $( "<span class='td'>" + data[ i ][ 0 ] + "</span>" ),
+                            $( "<span class='td digital'>" + data[ i ][ 1 ] + "</span>" ),
+                            $( "<span class='td'>" + day + "." + month + "." + year + "</span>" )
+                        );
+                        if( my_score >= data[ i ][ 1 ] && place == 0 )
+                            place = parseInt( i ) + 1;
+                        block.append( tr );
+                    }
+                    if( place ){
+                        _this.stop_game();
+                        if( place == 8 && my_score == data[ data.length - 1 ][ 1 ] ){
+                            alert( "Игра закончена. Очки: " + my_score );
+                            return;
+                        }
+                        var name = prompt(
+                                        "Поздравляем! Ваш результат (" + my_score + ") занял " + place + " место в " +
+                                        "таблице рекордов! Введите ваше имя для сохранения результата в онлайн таблице " +
+                                        "рекордов (при нажатии на кнопку «Отмена» результат сохранен не будет):"
+                                   );
+
+                        if( name ){
+                            $.ajax(
+                                {
+                                      type : "POST",
+                                       url : "server.php",
+                                      data : {
+                                                "score" : my_score,
+                                               "result" : _this.settings.mode,
+                                                 "name" : name
+                                             },
+                                   success : function(){
+                                                _this.load_high_scores();
+                                                _this.open_page( _this.html_inf.hsc_page_id );
+                                             },
+                                     error : function(){
+                                                alert( "Невозможно подключиться к серверу. Онлайн таблица рекордов недоступна." );
+                                             }
+                                }
+                            );
+                        }else
+                            _this.open_page( _this.html_inf.hsc_page_id );
+                    }else
+                        if( my_score >= 0 ){
+                            _this.stop_game();
+                            alert( "Игра закончена. Очки: " + my_score );
+                        }
+                },
+               error :
+                function(){
+                   block.text( "Невозможно подключиться к серверу. Онлайн таблица рекордов недоступна." );
+                }
+            }
+        );
     };
 
     prototype.update_mode_button = function(){
@@ -511,6 +658,7 @@ with(Lines_game = function( settings, html_inf ){
         };
         // Stop click events propagation:
         $( "#" + this.html_inf.field_id ).click( f );
+        $( "#" + this.html_inf.hsc_page_id ).click( f );
         $( "#" + this.html_inf.opt_page_id ).click( f );
         $( "#" + this.html_inf.hlp_page_id ).click( f );
         $( "#" + this.html_inf.footer_bar_id ).click( f );
@@ -719,7 +867,7 @@ with(Info_bar = function( html_id, score_id, timer_id, settings ){
  * Create field object.
  * html_id     : id of <div> which contains svg
  **/
-with(Field = function( html_id, info_bar_obj, settings_obj ){
+with(Field = function( html_id, info_bar_obj, game_obj ){
 
     this.obj = $( "#" + html_id );  // Saving the jQuery object of field
     var _this = this;               // Save link to "this" property
@@ -734,8 +882,10 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
     // Link to the Info_bar class object:
     this.info_bar_obj = info_bar_obj;
 
+    // Link to the main game object:
+    this.game_obj = game_obj;
     // Settings object:
-    this.settings = settings_obj;
+    this.settings = game_obj.settings;
 
     this.map = new Array( 9 );       // The 2d array of Ball class objects
     for( var i = 0; i < 9; i++ )
@@ -829,7 +979,7 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
         if( this.balls_count() == s * s )
         {
             this.timer_stop();
-            alert( 'Игра закончена. Очки: ' + this.info_bar_obj.score );
+            this.game_obj.load_high_scores( this.info_bar_obj.score );
             this.game_started = false;
             return;
         }
@@ -1399,6 +1549,8 @@ with(Field = function( html_id, info_bar_obj, settings_obj ){
                 };
 
                 if( _this.move_ball( nx, ny, callback ) ){  // try move selected ball to new position
+                    if( ! _this.game_started )
+                        _this.game_obj.start_game();
                     _this.game_started = true;
                 }
             }
@@ -1698,6 +1850,8 @@ $( document ).ready(
                 "cancel_btn_id"  : "cancel_button",
                 "hlp_btn_id"     : "help",
                 "hlp_page_id"    : "help_page",
+                "hsc_btn_id"     : "high_score",
+                "hsc_page_id"    : "scores_page",
                 "restart_btn_id" : "restart",
                 "mode_btn_id"    : "mode"
             };

@@ -38,7 +38,7 @@ a {
 h1 {
   font-size: 20px;
   text-align: center;
-  margin: 18px 0 -17px 0;
+  margin: 35px 0 -17px 0;
 }
 h2 {
   font-size: 15px;
@@ -160,11 +160,11 @@ li {
 }
 .help_block {
   position: absolute;
-  top: 50px;
+  top: 70px;
   left: 30px;
   text-align: justify;
   width: 400px;
-  height: 400px;
+  height: 380px;
   padding: 0 10px;
   overflow: auto;
 }
@@ -183,7 +183,7 @@ li {
 .scores_block {
   display: table;
   position: absolute;
-  top: 70px;
+  top: 85px;
   left: 30px;
   width: 411px;
 }
@@ -224,10 +224,10 @@ span.digital {
   opacity: 0.5;
   background-image: url(images/icons.png);
 }
-#footer_bar span.footer_icons:not(#high_score) {
+#footer_bar span.footer_icons {
   cursor: pointer;
 }
-#footer_bar span.footer_icons:not(#high_score):hover {
+#footer_bar span.footer_icons:hover {
   opacity: 1;
 }
 span.tooltip {
