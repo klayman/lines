@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content="Head and Hands" />
+
+    <title>Lines</title>
+
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+    <link rel="icon" href="favicon.ico" />
+</head>
+
+<body>
+    <!--============== Background gradient and Khohloma decor ===============-->
+    <div id="background">
+        <svg id="back-gradient" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <radialGradient id="gradient-dark" cx="50%" cy="50%" r="70.71%">
+                <stop id="dark-center" stop-color="hsl(207, 16%, 74%)" offset="0%"   />
+                <stop id="dark-edge"   stop-color="hsl(213, 60%, 22%)" offset="100%" />
+            </radialGradient>
+            <rect id="background-rect" width="100" height="100" x="0" y="0" fill="url(#gradient-dark)" />
+        </svg>
+        <svg id="back-decor" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 100 100">
+            <radialGradient id="gradient-bright" cx="50%" cy="50%" r="50%">
+                <stop id="bright-center" stop-color="hsla(207, 95%, 80%, 0.1)" offset="45%"   />
+                <stop id="bright-edge"   stop-color="hsla(213, 100%, 65%, 0.4)" offset="100%" />
+            </radialGradient>
+            <mask id="decor-mask">
+                <image width="100" height="100" x="0" y="0" xlink:href="images/temp-mask.png" />
+            </mask>
+            <rect id="decor-rect" width="100" height="100" x="0" y="0" transform="rotate(12.345 50 50)" mask="url(#decor-mask)" fill="url(#gradient-bright)" />
+        </svg>
+    </div>
+
+    <!--==== Container for header, game field (or text pages) and footer ====-->
+    <div id="container">
+        <!--============= Header with next balls and score info =============-->
+        <header>
+            <div id="balls-preview" title="Следующие шарики">
+                <figure class="purple"></figure>
+                <figure class="yellow"></figure>
+                <figure class="blue"></figure>
+            </div>
+            <span id="score" title="Набранные очки">1234</span>
+        </header>
+
+        <!--========================= Main content ==========================-->
+
+        <!-- Game field -->
+        <div id="field">
+            <div id="field-insert">
+                <figure style="left: 3em; top: 1em" class="red"></figure>
+                <figure style="left: 0em; top: 5em" class="white"></figure>
+                <figure style="left: 7em; top: 3em; z-index: 1;
+                               transform: scale(2,2);
+                           -ms-transform: scale(2,2);
+                       -webkit-transform: scale(2,2);
+                            -o-transform: scale(2,2);
+                          -moz-transform: scale(2,2);" class="cyan"></figure>
+                <figure style="left: 5em; top: 6em" class="yellow"></figure>
+            </div>
+        </div>
+        
+        <!-- Options -->
+        <div id="options-page">
+            <h1>Settings</h1>
+            <form>
+                <fieldset>
+                    <legend>Language/Язык:</legend>
+                    <select name="language">
+                        <option value="russian" selected="selected">русский</option>
+                        <option value="english">English</option>
+                    </select>
+                </fieldset>
+                <fieldset>
+                    <legend>Режим по умолчанию:</legend>
+                    <input id="lines" type="radio" name="mode" checked="checked" />
+                        <label for="lines">линии</label> (минимум
+                            <select name="line-num">
+                                <option value="4">4</option>
+                                <option value="5" selected="selected">5</option>
+                                <option value="6">6</option>
+                            </select> в ряд)<br />
+                    <input id="rectangles" type="radio" name="mode" /> <label for="rectangles">прямоугольники</label><br />
+                    <input id="rings" type="radio" name="mode" /> <label for="rings">ромбы</label><br />
+                    <input id="blocks" type="radio" name="mode" />
+                        <label for="blocks">блоки</label> (минимум по
+                            <select name="block-num">
+                                <option value="6">6</option>
+                                <option value="7" selected="selected">7</option>
+                                <option value="8">8</option>
+                            </select>)
+                </fieldset>
+                <fieldset>
+                    <legend>Вид шариков:</legend>
+                    <select name="balls-skin">
+                        <option value="matte" selected="selected">матовые</option>
+                        <option value="glossy">глянцевые</option>
+                    </select>
+                </fieldset>
+                <fieldset>
+                    <legend>Следующие шарики:</legend>
+                    <input id="next" type="checkbox" /> <label for="next">показывать положение следующих шариков</label><br />
+                </fieldset>
+                <input type="button" id="ok" value="oк" />
+                <input type="button" id="cancel" value="отмена" />
+            </form>
+        </div>
+
+        <!-- Help -->
+        <div id="help-page">
+            <h1>Help</h1>
+            <p>Игра проходит на поле размером 9×9 или 7×7 клеток, в зависимости от режима. За каждый ход на случайных клетках поля добавляются три шарика из семи возможных цветов. <em>Цель игры</em> — продержаться как можно дольше, убирая фигуры шаров одинакового цвета. Конкретный вид фигуры определяется режимом игры. Для того, чтобы собрать фигуру, игрок каждый ход может перемещать один шарик, если между начальной и конечной клеткой можно проложить путь, не занятый другими шариками.</p>
+      
+            <p>За каждую собранную фигуру игроку начисляются очки по формуле (<i>n-n</i><sub>min</sub>+1)‧<i>n</i>, где <i>n</i> — количество шариков в убранной фигуре, <i>n</i><sub>min</sub> — минимальное количество шариков в фигуре при данном режиме игры. После перемещения шарика, завершающего фигуру, новые три шарика не добавляются до следующего хода.</p>
+
+            <h2>Режимы игры:</h2>
+            <dl>
+                <dt id="dt-lines">Линии</dt>
+                    <dd>Классический режим, в котором фигурой является вертикальная, горизонтальная или диагональная прямая. Минимальное количество шариков в фигуре по умолчанию — 5, но в настройках можно выбрать 4 или 6. Размер поля 9×9.</dd>
+                <dt id="dt-rectangles">Прямоугольники</dt>
+                    <dd>Минимальной фигурой является квадрат 2×2. За один ход можно убрать 4 или 6 шариков. Поле 7×7.</dd>
+                <dt id="dt-rings">Ромбы</dt>
+                    <dd>В фигуре минимум 4 шарика, расположенных в вершинах квадрата, повернутого на 45 градусов. Максимально возможное количество шариков в фигуре — 9. Размер поля 7×7.</dd>
+                <dt id="dt-blocks">Блоки</dt>
+                    <dd>Блок представляет собой фигуру произвольной формы, составленную из шариков, клетки которых имеют общую грань. Минимальное количество шариков в блоке определяется в настройках (по умолчанию — 7). Поле 9×9.</dd>
+            </dl>
+        </div>
+
+        <!-- High scores -->
+        <div id="scores-page">
+            <h1>Lines, 5 in row</h1>
+            <table>
+                <thead>
+                    <tr><th>Место</th><th>Игрок</th><th>Очки</th><th>Дата</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>1</td><td>Test player 1</td><td>1000</td><td>12.08.2010</td></tr>
+                    <tr><td>2</td><td>Test player 2</td><td>900</td><td>12.08.2010</td></tr>
+                    <tr><td>3</td><td>Test player 3</td><td>800</td><td>12.08.2010</td></tr>
+                    <tr><td>4</td><td>Test player 4</td><td>700</td><td>12.08.2010</td></tr>
+                    <tr><td>5</td><td>Test player 5</td><td>600</td><td>12.08.2010</td></tr>
+                    <tr><td>6</td><td>Test player 6</td><td>500</td><td>12.08.2010</td></tr>
+                    <tr><td>7</td><td>Test player 7</td><td>400</td><td>12.08.2010</td></tr>
+                    <tr><td>8</td><td>Test player 8</td><td>300</td><td>12.08.2010</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!--==================== Footer with some links =====================-->
+        <footer>
+            <a id="logo" href="http://semyonfilippov.net/gallery/2d-works/2010/"><span class="tooltip">Страница в галерее</span></a>
+            <a id="cc" rel="license" href="http://creativecommons.org/licenses/by-nd/3.0/"><span class="tooltip">Creative Commons</span></a>
+            <a id="options"><span class="tooltip">Настройки</span></a>
+            <a id="help"><span class="tooltip">Помощь</span></a>
+            <a id="scores"><span class="tooltip">Таблица рекордов</span></a>
+            <a id="mode"><span id="num-balls">5</span><span class="tooltip">Сменить режим</span></a>
+            <a id="restart"><span class="tooltip">Новая игра</span></a>
+        </footer>
+    </div>
+
+</body>
+
+</html>
+

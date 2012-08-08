@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   version="1.1"
+   width="1000"
+   height="1000"
+   id="svg2">
+  <defs
+     id="defs4">
+    <linearGradient
+       id="linearGradient3753">
+      <stop
+         id="stop3755"
+         style="stop-color:#1287ef;stop-opacity:1"
+         offset="0" />
+      <stop
+         id="stop3757"
+         style="stop-color:#0b4980;stop-opacity:1"
+         offset="1" />
+    </linearGradient>
+    <radialGradient
+       cx="500"
+       cy="500"
+       r="500"
+       fx="500"
+       fy="500"
+       id="radialGradient3759"
+       xlink:href="#linearGradient3753"
+       gradientUnits="userSpaceOnUse" />
+    <mask
+       id="mask3842">
+      <image
+         xlink:href="file:///home/semyon/projects/lines-2012/concept/png/temp-mask.png"
+         x="0"
+         y="-2.7099611e-07"
+         width="1000"
+         height="1000"
+         id="image3844" />
+    </mask>
+  </defs>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     transform="translate(0,-52.36216)"
+     id="layer1">
+    <rect
+       width="1000"
+       height="1000"
+       x="0"
+       y="0"
+       transform="matrix(0.93979342,0.34174306,-0.34174306,0.93979342,200.97482,-88.406083)"
+       mask="url(#mask3842)"
+       id="rect2983"
+       style="color:#000000;fill:url(#radialGradient3759);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1px;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+  </g>
+</svg>

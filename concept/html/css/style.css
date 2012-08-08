@@ -1,0 +1,410 @@
+html, body, div, span, figure,
+h1, h2, h3, p, a, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot,
+thead, tr, th, td, dl, dt, dd,
+input[type=checkbox], input[type=radio] {
+    outline: 0;
+    padding: 0;
+    border: 0;
+    margin: 0;
+}
+
+/*----------------------------- Layout settings ------------------------------*/
+html, body {
+    width: 100%;
+    height: 100%;
+}
+body {
+    position: relative; /* required to not cut top overflow */
+    color: white;
+    font: 13px/1.7 Verdana, sans-serif;
+    min-width: 471px;
+    min-height: 613px;
+}
+a {
+    text-decoration: none;
+    color: inherit;
+}
+#background {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+#back-gradient {
+    position: absolute;
+    z-index: -2;
+    width: 100%;
+    height: 100%;
+}
+#back-decor {
+    position: absolute;
+    z-index: -1;
+    top: 50%;
+    right: 50%;
+    width: 1000px;
+    height: 1000px;
+    margin: -500px -500px 0 0;
+}
+#container {
+    position: absolute;
+    top: 50%;
+    right: 50%;
+    width: 471px;
+    height: 613px;
+    margin: -306px -235px 0 0;
+}
+header {
+    width: 451px;
+    height: 51px;
+    background: url(../images/header-back.png);
+    padding: 10px;
+}
+#field {
+    font-size: 50px;
+    width: 449px;
+    height: 449px;
+    padding: 11px;
+    background: url(../images/field.png);
+}
+#field-insert {
+    position: relative;
+}
+#options-page, #help-page, #scores-page {
+    display: none;
+    width: 411px;
+    height: 431px;
+    overflow: auto;
+    background: url(../images/page-back.png);
+    padding: 20px 30px;
+}
+footer {
+    width: 446px;
+    height: 46px;
+    background: url(../images/footer-back.png);
+    padding: 13px;
+}
+
+/*----------------------------- Content styling ------------------------------*/
+
+@font-face {
+    font-family: ozone;
+    src: url(../fonts/ozone.ttf);
+}
+
+h1 {
+    font-size: 34px;
+    font-family: ozone, sans-serif;
+    font-weight: normal;
+    text-transform: uppercase;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+h2, legend {
+    font-size: 1em;
+    font-weight: bold;
+    margin-bottom: 0.5em;
+}
+
+
+/* Balls */
+figure {
+    width: 50px;
+    height: 50px;
+    background: url(../images/balls-combined.png);
+}
+.blue {
+    background-position: 0 0;
+}
+.purple {
+    background-position: 0 -50px;
+}
+.red {
+    background-position: 0 -100px;
+}
+.yellow {
+    background-position: 0 -150px;
+}
+.green {
+    background-position: 0 -200px;
+}
+.cyan {
+    background-position: 0 -250px;
+}
+.white {
+    background-position: 0 -300px;
+}
+
+/* Header */
+#balls-preview {
+    float: left;
+}
+#balls-preview figure {
+    display: inline-block;
+            transform: scale( 0.4, 0.4 );
+        -ms-transform: scale( 0.4, 0.4 ); /* IE 9 */
+    -webkit-transform: scale( 0.4, 0.4 ); /* Safari and Chrome */
+         -o-transform: scale( 0.4, 0.4 ); /* Opera */
+       -moz-transform: scale( 0.4, 0.4 ); /* Firefox */
+}
+#score {
+    display: inline-block;
+    float: right;
+    font: 34px/51px ozone, sans-serif;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* Field */
+#field figure {
+    position: absolute;
+}
+
+/* Options */
+fieldset, p {
+    clear: both;
+    padding-top: 0.6em;
+    margin-bottom: 1.2em;
+}
+input[type=checkbox], input[type=radio] {
+    opacity: 0;
+    clip: rect(1px, 1px, 1px, 1px);
+    width: 1px;
+    height: 1px;
+}
+input[type=text] {
+    width: 20px;
+}
+input + label {
+    height: 20px;
+    padding-left: 20px;
+    margin-left: 2em;
+    background: url(../images/controls.png) no-repeat;
+}
+input[type=checkbox] + label {
+    background-position: 0 0;
+}
+input[type=checkbox] + label:hover {
+    background-position: 0 -20px;
+}
+input[type=checkbox] + label:active {
+    background-position: 0 -40px;
+}
+input[type=checkbox]:disabled + label {
+    background-position: 0 -60px;
+}
+input[type=checkbox]:checked + label {
+    background-position: 0 -80px;
+}
+input[type=checkbox]:checked + label:hover {
+    background-position: 0 -100px;
+}
+input[type=checkbox]:checked + label:active {
+    background-position: 0 -120px;
+}
+input[type=checkbox]:checked:disabled + label {
+    background-position: 0 -140px;
+}
+input[type=radio] + label {
+    background-position: 0 -160px;
+}
+input[type=radio] + label:hover {
+    background-position: 0 -180px;
+}
+input[type=radio] + label:active {
+    background-position: 0 -200px;
+}
+input[type=radio]:disabled + label {
+    background-position: 0 -220px;
+}
+input[type=radio]:checked + label {
+    background-position: 0 -240px;
+}
+input[type=radio]:checked + label:hover {
+    background-position: 0 -260px;
+}
+input[type=radio]:checked + label:active {
+    background-position: 0 -280px;
+}
+input[type=radio]:checked:disabled + label {
+    background-position: 0 -300px;
+}
+input[type=button] {
+    float: right;
+    min-width: 5em;
+    min-height: 2em;
+    margin: 0.5em;
+}
+select[name=language],
+select[name=balls-skin] {
+    margin-left: 2em;
+}
+select, input[type=button] {
+    color: white;
+    font-size: 13px;
+    line-height: 19px;
+    background-color: transparent;
+    background-image:         linear-gradient( top, rgba(80, 80, 80, 0.2), rgba(0, 0, 0, 0.35) );
+    background-image: -webkit-linear-gradient( top, rgba(80, 80, 80, 0.2), rgba(0, 0, 0, 0.35) );
+    background-image:    -moz-linear-gradient( top, rgba(80, 80, 80, 0.2), rgba(0, 0, 0, 0.35) );
+    background-image:     -ms-linear-gradient( top, rgba(80, 80, 80, 0.2), rgba(0, 0, 0, 0.35) );
+    background-image:      -o-linear-gradient( top, rgba(80, 80, 80, 0.2), rgba(0, 0, 0, 0.35) );
+    padding: 2px 6px;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    border-top-color: rgba(255, 255, 255, 0.25);
+    border-bottom-color: rgba(0, 0, 0, 0.35);
+    border-radius: 3px;
+    box-shadow: 0 -1px rgba(0, 0, 0, 0.2), 0 1px rgba(255, 255, 255, 0.15);
+}
+select:hover, input[type=button]:hover {
+    background-image:         linear-gradient( top, rgba(50, 50, 50, 0.3), rgba(0, 0, 0, 0.45) );
+    background-image: -webkit-linear-gradient( top, rgba(50, 50, 50, 0.3), rgba(0, 0, 0, 0.45) );
+    background-image:    -moz-linear-gradient( top, rgba(50, 50, 50, 0.3), rgba(0, 0, 0, 0.45) );
+    background-image:     -ms-linear-gradient( top, rgba(50, 50, 50, 0.3), rgba(0, 0, 0, 0.45) );
+    background-image:      -o-linear-gradient( top, rgba(50, 50, 50, 0.3), rgba(0, 0, 0, 0.45) );
+    border-top-color: rgba(255, 255, 255, 0.3);
+}
+select:active, input[type=button]:active {
+    background-image:         linear-gradient( top, rgba(50, 50, 50, 0.4), rgba(0, 0, 0, 0.5) );
+    background-image: -webkit-linear-gradient( top, rgba(50, 50, 50, 0.4), rgba(0, 0, 0, 0.5) );
+    background-image:    -moz-linear-gradient( top, rgba(50, 50, 50, 0.4), rgba(0, 0, 0, 0.5) );
+    background-image:     -ms-linear-gradient( top, rgba(50, 50, 50, 0.4), rgba(0, 0, 0, 0.5) );
+    background-image:      -o-linear-gradient( top, rgba(50, 50, 50, 0.4), rgba(0, 0, 0, 0.5) );
+}
+select option {
+    color: inherit;
+    background: #444;
+}
+
+/* Help */
+dt {
+    font-style: italic;
+}
+[id^="dt-"] + dd {
+    position: relative;
+    padding-left: 50px;
+    margin-bottom: 1em;
+}
+[id^="dt-"] + dd:before {
+    display: inline-block;
+    position: absolute;
+    top: 4px;
+    left: 0;
+    content: "";
+    width: 40px;
+    height: 46px;
+    background: url(../images/icons.png) no-repeat;
+}
+#dt-lines + dd:before {
+    background-position: center -276px;
+}
+#dt-rectangles + dd:before {
+    background-position: center -322px;
+}
+#dt-rings + dd:before {
+    background-position: center -368px;
+}
+#dt-blocks + dd:before {
+    background-position: center -414px;
+}
+
+/* Scores */
+table {
+    width: 100%;
+    margin-top: 1em;
+}
+th {
+    padding-bottom: 0.6em;
+}
+td {
+    padding: 0.3em 0;
+    text-align: center;
+}
+td:nth-of-type(odd) {
+    font: 22px/24px ozone, sans-serif;
+}
+
+/* Footer */
+footer a {
+    display: inline-block;
+    position: relative;
+    float: right;
+    opacity: 0.7;
+    cursor: pointer;
+    height: 46px;
+    background-image: url(../images/icons.png);
+}
+footer a:hover {
+    opacity: 1;
+}
+.tooltip {
+    position: absolute;
+    left: 50%;
+    top: 65px;
+    width: 500px;
+    text-align: center;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    margin-left: -250px;
+    opacity: 0;
+}
+footer a:hover .tooltip {
+    opacity: 1;
+}
+#logo {
+    float: left;
+    width: 24px;
+    background-position: center 0;
+}
+#cc {
+    float: left;
+    width: 48px;
+    background-position: center -46px;
+}
+#restart {
+    width: 44px;
+    background-position: center -92px;
+}
+#scores {
+    width: 44px;
+    background-position: center -138px;
+}
+#help {
+    width: 32px;
+    background-position: center -184px;
+}
+#options {
+    width: 48px;
+    background-position: center -230px;
+}
+#mode {
+    width: 40px;
+    background-position: center -276px;
+}
+#num-balls {
+    position: absolute;
+    bottom: 4px;
+    left: 4px;
+    font: 22px/24px ozone, sans-serif;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+/*@media (min-width:960px) {*/
+/*    #decor {*/
+/*    position: absolute;*/
+/*    right: -255px;*/
+/*    bottom: -70px;*/
+/*    width: 960px;*/
+/*    height: 761px;*/
+/*    background: url(../images/decor.png);*/
+/*    }*/
+/*}*/
+/*@media (max-width:960px) {*/
+/*    #decor {*/
+/*    position: absolute;*/
+/*    right: -175px;*/
+/*    bottom: -15px;*/
+/*    width: 820px;*/
+/*    height: 650px;*/
+/*    background: url(../images/decor_small.png);*/
+/*    }*/
+/*}*/
+
+
