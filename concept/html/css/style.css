@@ -21,7 +21,7 @@ body {
     color: white;
     font: 13px/1.7 Verdana, sans-serif;
     min-width: 471px;
-    min-height: 613px;
+    min-height: 680px; /* larger than container size to include tooltips */
 }
 a {
     text-decoration: none;
@@ -330,6 +330,7 @@ footer a {
     display: inline-block;
     position: relative;
     float: right;
+    overflow: hidden;
     opacity: 0.7;
     cursor: pointer;
     height: 46px;
@@ -337,6 +338,7 @@ footer a {
 }
 footer a:hover {
     opacity: 1;
+    overflow: visible;
 }
 .tooltip {
     position: absolute;
