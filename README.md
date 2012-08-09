@@ -2,7 +2,7 @@ About
 -----
 
 This is a simple puzzle game on JavaScript (using popular library [jQuery](http://github.com/jquery/jquery))
-and SVG.
+and html5.
 
 Game rules
 ----------
@@ -15,4 +15,4 @@ same colour. If the player does form such lines of at least five balls of the sa
 lines disappear, and he gains one turn, i.e. he can move another ball. If not, three new balls are added, and
 the game continues until the board is full.
 
-[Wikipedia](http://en.wikipedia.org/wiki/Lines_(video_game))
+[Wikipedia](http://en.wikipedia.org/wiki/Lines_\(video_game\))
