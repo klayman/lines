@@ -24,11 +24,11 @@
     <linearGradient
        id="linearGradient4808">
       <stop
-         style="stop-color:#000000;stop-opacity:0.23529412;"
+         style="stop-color:#000000;stop-opacity:0.17254902;"
          offset="0"
          id="stop4810" />
       <stop
-         style="stop-color:#000000;stop-opacity:0.25098041;"
+         style="stop-color:#000000;stop-opacity:0.19607843;"
          offset="1"
          id="stop4812" />
     </linearGradient>
@@ -428,8 +428,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1"
-     inkscape:cx="-470.62749"
-     inkscape:cy="482.67013"
+     inkscape:cx="-442.03283"
+     inkscape:cy="532.32586"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -469,7 +469,7 @@
      id="layer1"
      transform="translate(0,27.637832)">
     <path
-       style="opacity:1;fill:url(#radialGradient4814);fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:0.29411766;stroke-dasharray:none;stroke-dashoffset:0;color:#000000;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       style="opacity:1;fill:url(#radialGradient4814);fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:0.23529412;stroke-dasharray:none;stroke-dashoffset:0;color:#000000;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m -670.5,277.86217 c -2.77,0 -5,2.23 -5,5 l 0,460 c 0,2.77 2.23,5 5,5 l 460,0 c 2.77,0 5,-2.23 5,-5 l 0,-460 c 0,-2.77 -2.23,-5 -5,-5 l -460,0 z"
        id="path3068" />
     <image
@@ -480,7 +480,7 @@
        height="512"
        width="512"
        clip-path="url(#clipPath4804)"
-       style="opacity:0.13" />
+       style="opacity:0.11" />
     <rect
        style="fill:url(#radialGradient3598);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.29999994999999990;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
        id="rect2818"

@@ -101,10 +101,12 @@ h1 {
     text-transform: uppercase;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
+h2 {
+    margin-bottom: 0.5em;
+}
 h2, legend {
     font-size: 1em;
     font-weight: bold;
-    margin-bottom: 0.5em;
 }
 
 
@@ -112,7 +114,7 @@ h2, legend {
 figure {
     width: 50px;
     height: 50px;
-    background: url(../images/balls-glossy-combined.png);
+    background: url(../images/balls-combined.png);
 }
 .blue {
     background-position: 0 0;
@@ -177,58 +179,59 @@ input[type=text] {
     width: 20px;
 }
 input + label {
+    display: inline-block;
     height: 20px;
     padding-left: 20px;
     margin-left: 2em;
     background: url(../images/controls.png) no-repeat;
 }
 input[type=checkbox] + label {
-    background-position: 0 0;
+    background-position: 0 4px;
 }
 input[type=checkbox] + label:hover {
-    background-position: 0 -20px;
+    background-position: 0 -16px;
 }
 input[type=checkbox] + label:active {
-    background-position: 0 -40px;
+    background-position: 0 -36px;
 }
 input[type=checkbox]:disabled + label {
-    background-position: 0 -60px;
+    background-position: 0 -56px;
 }
 input[type=checkbox]:checked + label {
-    background-position: 0 -80px;
+    background-position: 0 -76px;
 }
 input[type=checkbox]:checked + label:hover {
-    background-position: 0 -100px;
+    background-position: 0 -96px;
 }
 input[type=checkbox]:checked + label:active {
-    background-position: 0 -120px;
+    background-position: 0 -116px;
 }
 input[type=checkbox]:checked:disabled + label {
-    background-position: 0 -140px;
+    background-position: 0 -136px;
 }
 input[type=radio] + label {
-    background-position: 0 -160px;
+    background-position: 0 -156px;
 }
 input[type=radio] + label:hover {
-    background-position: 0 -180px;
+    background-position: 0 -176px;
 }
 input[type=radio] + label:active {
-    background-position: 0 -200px;
+    background-position: 0 -196px;
 }
 input[type=radio]:disabled + label {
-    background-position: 0 -220px;
+    background-position: 0 -216px;
 }
 input[type=radio]:checked + label {
-    background-position: 0 -240px;
+    background-position: 0 -236px;
 }
 input[type=radio]:checked + label:hover {
-    background-position: 0 -260px;
+    background-position: 0 -256px;
 }
 input[type=radio]:checked + label:active {
-    background-position: 0 -280px;
+    background-position: 0 -276px;
 }
 input[type=radio]:checked:disabled + label {
-    background-position: 0 -300px;
+    background-position: 0 -296px;
 }
 input[type=button] {
     float: right;
@@ -238,7 +241,7 @@ input[type=button] {
 }
 select[name=language],
 select[name=balls-skin] {
-    margin-left: 2em;
+    margin-left: 2.5em;
 }
 select, input[type=button] {
     color: white;
@@ -266,11 +269,11 @@ select:hover, input[type=button]:hover {
     border-top-color: rgba(255, 255, 255, 0.3);
 }
 select:active, input[type=button]:active {
-    background-image:         linear-gradient( top, rgba(50, 50, 50, 0.4), rgba(0, 0, 0, 0.5) );
-    background-image: -webkit-linear-gradient( top, rgba(50, 50, 50, 0.4), rgba(0, 0, 0, 0.5) );
-    background-image:    -moz-linear-gradient( top, rgba(50, 50, 50, 0.4), rgba(0, 0, 0, 0.5) );
-    background-image:     -ms-linear-gradient( top, rgba(50, 50, 50, 0.4), rgba(0, 0, 0, 0.5) );
-    background-image:      -o-linear-gradient( top, rgba(50, 50, 50, 0.4), rgba(0, 0, 0, 0.5) );
+    background-image:         linear-gradient( top, rgba(10, 10, 10, 0.35), rgba(50, 50, 50, 0.4) );
+    background-image: -webkit-linear-gradient( top, rgba(10, 10, 10, 0.35), rgba(50, 50, 50, 0.4) );
+    background-image:    -moz-linear-gradient( top, rgba(10, 10, 10, 0.35), rgba(50, 50, 50, 0.4) );
+    background-image:     -ms-linear-gradient( top, rgba(10, 10, 10, 0.35), rgba(50, 50, 50, 0.4) );
+    background-image:      -o-linear-gradient( top, rgba(10, 10, 10, 0.35), rgba(50, 50, 50, 0.4) );
 }
 select option {
     color: inherit;
