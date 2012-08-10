@@ -95,9 +95,8 @@ footer {
 }
 
 h1 {
-    font-size: 34px;
-    font-family: ozone, sans-serif;
-    font-weight: normal;
+    font-size: 1.5em;
+    line-height: 2.5em;
     text-transform: uppercase;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
@@ -247,7 +246,7 @@ select, input[type=button] {
     color: white;
     font-size: 13px;
     line-height: 19px;
-    background-color: transparent;
+    background-color: rgba(0, 0, 0, 0.0); /* Windows version of Opera treat 'transparent' incorrectly */
     background-image:         linear-gradient( top, rgba(80, 80, 80, 0.2), rgba(0, 0, 0, 0.35) );
     background-image: -webkit-linear-gradient( top, rgba(80, 80, 80, 0.2), rgba(0, 0, 0, 0.35) );
     background-image:    -moz-linear-gradient( top, rgba(80, 80, 80, 0.2), rgba(0, 0, 0, 0.35) );
