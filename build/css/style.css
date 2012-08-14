@@ -149,11 +149,6 @@ figure.glossy {
 #balls-preview figure {
     display: inline-block;
     float: left;
-            transform: scale( 0.35, 0.35 );
-        -ms-transform: scale( 0.35, 0.35 ); /* IE 9 */
-    -webkit-transform: scale( 0.35, 0.35 ); /* Safari and Chrome */
-         -o-transform: scale( 0.35, 0.35 ); /* Opera */
-       -moz-transform: scale( 0.35, 0.35 ); /* Firefox */
 }
 #score {
     display: inline-block;

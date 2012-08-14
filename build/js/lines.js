@@ -16,6 +16,8 @@ with(Lines_game = function( settings, html ){
         this.update_settings_controls();
         // Set active page as game field:
         this.active_page = this.html.field_page;
+        // Create info bar:
+        this.info_bar = new Info_bar( this );
         // Create field object:
         this.field = new Field( this );
         // Set event handlers:
@@ -135,6 +137,11 @@ with(Lines_game = function( settings, html ){
 
         // Define, whether is need to show next balls on the field:
         this.new_settings.show_next = ( this.html.show_next_btn.filter( ":checked" ).length > 0 ) ? true : false;
+        this.settings.show_next = this.new_settings.show_next;
+        if( this.settings.show_next )
+            this.field.add_small_balls();
+        else
+            this.field.remove_small_balls();
 
         var str = "{";
         for( var i in this.new_settings ){
@@ -192,6 +199,74 @@ with(Lines_game = function( settings, html ){
 
 
 
+/* The game info bar class: */
+
+with(Info_bar = function( game_obj ){
+
+    this.game = game_obj;  // Link to the main game object
+    this.obj = this.game.html.info_bar;  // Saving the jQuery object of info bar
+    this.obj_score = this.game.html.score;
+    // Array of the Ball class objects
+    this.balls = [];
+    // Game score:
+    this.game.score = 0;
+}){
+    /*
+     * Set new score value
+     */
+    prototype.set_score = function( score ){
+        this.obj_score.text( score );
+    };
+
+    /*
+     * Plus score and set it to bar
+     */
+    prototype.plus_score = function( score ){
+        this.game.score += score;
+        this.set_score( this.game.score );
+    };
+
+    /*
+     * Set game score to zero
+     */
+    prototype.score2zero = function(){
+        this.game.score = 0;
+        this.set_score( 0 );
+    };
+
+    /*
+     * Remove all balls from the own SVG object:
+     */
+    prototype.remove_balls = function(){
+        for( var i in this.balls )
+            this.balls[ i ].erase();
+        this.balls = [];
+    };
+
+    /*
+     * Change balls type:
+     */
+    prototype.change_balls_type = function(){
+        for( var i in this.balls )
+            this.balls[ i ].change_type( this.game.settings.balls_type );
+    };
+
+    /*
+     * Draw balls on the own SVG object:
+     * arr   : array of colors of balls
+     * size  : size of the field cell (in px)
+     */
+    prototype.put_balls = function( arr ){
+        for( var i in arr ){
+            var rec = arr[ i ];
+            var ball = new Ball( this.obj, rec[ 1 ].num, this.game.settings.balls_type );
+            ball.popup( i * 1, 0, 0.25 );
+            this.balls.push( ball );
+        }
+    };
+}
+
+
 
 /* The game field class: */
 
@@ -233,12 +308,12 @@ with(Field = function( game_obj ){
     this.put_balls( this.gen_next_balls() );
 
     // Array of "next" colors and positions of balls, which will appear at the field in the next turn:
-    //this.next_balls = this.gen_next_balls();
-    //if( this.game.settings.show_next )
-        //this.add_small_balls();
+    this.next_balls = this.gen_next_balls();
+    if( this.game.settings.show_next )
+        this.add_small_balls();
 
     // Update info bar balls:
-    // this.update_info_bar();
+    this.update_info_bar();
     // Did the game start?
     this.game_started = false;
 
@@ -278,9 +353,9 @@ with(Field = function( game_obj ){
      */
     prototype.update_info_bar = function(){
         // Remove old "next" balls from the info bar:
-        this.info_bar_obj.remove_balls();
+        this.game.info_bar.remove_balls();
         // Put new "next" balls on the info bar:
-        this.info_bar_obj.put_balls( this.next_balls );
+        this.game.info_bar.put_balls( this.next_balls );
     };
 
     /*
@@ -289,19 +364,19 @@ with(Field = function( game_obj ){
      */
     prototype.next_round = function() {
         this.put_balls( this.next_balls );          // put 3 balls which was generated before
-        /*this.remove_balls();                        // put_balls can create new true figres...
-        this.game_save();                         // Save the current game
+        this.remove_balls();                        // put_balls can create new true figres...
+        //this.game_save();                         // Save the current game
         var s = this.game.settings.field_size;
         if( this.balls_count() == s * s )
         {
-            this.game_obj.load_high_scores( this.info_bar_obj.score );
+            //this.game_obj.load_high_scores( this.info_bar_obj.score );
             this.game_started = false;
             return;
         }
         this.next_balls = this.gen_next_balls();    // generate 3 new "next" balls
         if( this.game.settings.show_next )
             this.add_small_balls();
-        this.update_info_bar();*/                     // update info bar "next" balls
+        this.update_info_bar();                     // update info bar "next" balls
     };
 
     /*
@@ -364,7 +439,7 @@ with(Field = function( game_obj ){
         for( var i in this.next_balls ){
             var nx = this.next_balls[ i ][ 0 ][ 0 ];
             var ny = this.next_balls[ i ][ 0 ][ 1 ];
-            this.next_balls[ i ][ 1 ].popup( nx, ny, 0.3 );
+            this.next_balls[ i ][ 1 ].popup( nx, ny, 0.25 );
         }
     };
 
@@ -689,7 +764,7 @@ with(Field = function( game_obj ){
         else
             score += this.remove_path();
 
-        //this.info_bar_obj.plus_score( score );
+        this.game.info_bar.plus_score( score );
 
         return score;
     };
@@ -707,7 +782,10 @@ with(Field = function( game_obj ){
      * Save current game to the cookie with name "game":
      */
     prototype.game_save = function(){
-        var str = "[" + this.info_bar_obj.score + ",[";
+        /*
+         * TODO: move this method to main class
+         */
+        /*var str = "[" + this.game.info_bar.score + ",[";
         for( var i in this.map ){
             str += "["
             for( var j in this.map[ i ] ){
@@ -728,14 +806,17 @@ with(Field = function( game_obj ){
                 str += ","
         }
         str += "]," + this.game.settings.mode + "]";
-        $.cookie( "game", str, { expires : 365 } );
+        $.cookie( "game", str, { expires : 365 } );*/
     };
 
     /*
      * Load game from the array:
      */
     prototype.game_load = function( arr ){
-        this.info_bar_obj.score = arr[ 0 ];
+        /*
+         * TODO: move this method to main class
+         */
+        /*this.info_bar_obj.score = arr[ 0 ];
         this.info_bar_obj.set_score( arr[ 0 ] );
         this.clear();
         this.map = new Array( 9 );
@@ -772,7 +853,7 @@ with(Field = function( game_obj ){
             this.game.settings.field_size = 9;
             this.game.settings.field_border = 0;
         }
-        this.game_started = true;
+        this.game_started = true;*/
     };
 
     /*
@@ -1077,7 +1158,7 @@ $( document ).ready(
         var html =
             {
                   "cell_size" : 50,  // the field's cell size (in px)
-                   "info_bar" : $( "header" ),
+                   "info_bar" : $( "#balls-preview" ),
                       "score" : $( "#score" ),
                   "container" : $( "#container" ),
                  "field_page" : $( "#field" ),
