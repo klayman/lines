@@ -75,6 +75,9 @@ with(Lines_game = function( settings, html ){
                     this.html.block_num_sel.find( "[value='" + ( this.settings.mode ) + "']" ).attr( "selected", "selected" );
                 }
         }
+
+        this.html.balls_type_sel.find( "[value='" + this.settings.balls_type + "']" ).attr( "selected", "selected" );
+
         if( this.settings.show_next )
             this.html.show_next_btn.attr( "checked", "checked" );
         this.update_mode_button();
@@ -125,6 +128,10 @@ with(Lines_game = function( settings, html ){
             this.settings.mode = this.new_settings.mode;
             this.update_mode_button();
         }
+
+        this.settings.balls_type = this.html.balls_type_sel.val();
+        this.new_settings.balls_type = this.settings.balls_type;
+        this.field.change_balls_type();
 
         // Define, whether is need to show next balls on the field:
         this.new_settings.show_next = ( this.html.show_next_btn.filter( ":checked" ).length > 0 ) ? true : false;
@@ -882,13 +889,9 @@ with(Ball = function( parent_obj, number, type ){
 
 
     prototype.change_type = function( new_type ){
-
-        if( new_type == "glossy" )
-            this.prefix = "_glossy";
-        else
-            this.prefix = "";
-
-        this.obj.attr( "href", 'images/' + this.img_name + this.prefix + '.png' );
+        this.obj.removeClass( this.type );
+        this.type = new_type;
+        this.obj.addClass( this.type );
     };
 
 
