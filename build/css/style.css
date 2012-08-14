@@ -114,7 +114,12 @@ h2, legend {
 figure {
     width: 50px;
     height: 50px;
-    background: url(../images/balls-combined.png);
+}
+figure.matte {
+    background-image: url(../images/balls.png);
+}
+figure.glossy {
+    background-image: url(../images/balls-glossy.png);
 }
 .blue {
     background-position: 0 0;

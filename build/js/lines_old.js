@@ -1682,8 +1682,8 @@ with(Ball = function( svg_obj, img_number, img_size, type ){
      * After animation SVG object will be destroyed.
      */
     prototype.remove = function(){
-        var _this = this;
-        callback = function() { _this.erase(); }
+        var self = this;
+        callback = function() { self.erase(); }
 
         this.jump_stop( true ); // hard stop of jumping animation
         this.animate( [ [ this.x, this.y, 0, 100 ] ], callback );  // animate to zero scale

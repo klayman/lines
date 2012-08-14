@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="css/style.css" />
     <script type="text/javascript" src="js/jquery.js"></script>
+    <script type="text/javascript" src="js/jquery.transition.js"></script>
     <script type="text/javascript" src="js/lines.js"></script>
     <link rel="icon" href="favicon.ico" />
 </head>
@@ -42,9 +43,9 @@
         <!--============= Header with next balls and score info =============-->
         <header>
             <div id="balls-preview" title="Следующие шарики">
-                <figure class="purple"></figure>
-                <figure class="yellow"></figure>
-                <figure class="blue"></figure>
+                <figure class="purple matte"></figure>
+                <figure class="yellow matte"></figure>
+                <figure class="blue matte"></figure>
             </div>
             <span id="score" title="Набранные очки">1234</span>
         </header>
@@ -54,15 +55,6 @@
         <!-- Game field -->
         <div id="field">
             <div id="field-insert">
-                <figure style="left: 3em; top: 1em" class="red"></figure>
-                <figure style="left: 0em; top: 5em" class="white"></figure>
-                <figure style="left: 7em; top: 3em; z-index: 1;
-                               transform: scale(1.1,1.1);
-                           -ms-transform: scale(1.1,1.1);
-                       -webkit-transform: scale(1.1,1.1);
-                            -o-transform: scale(1.1,1.1);
-                          -moz-transform: scale(1.1,1.1);" class="cyan"></figure>
-                <figure style="left: 5em; top: 6em" class="yellow"></figure>
             </div>
         </div>
 
