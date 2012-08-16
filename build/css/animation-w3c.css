@@ -1,0 +1,86 @@
+/*
+ * W3C standards animation styles
+ */
+@keyframes jumping{
+    0%{
+        transform: scale( 1.00, 1.00 );
+        animation-timing-function: ease-out;
+    }
+    16.6%{
+        transform: scale( 1.13, 1.13 );
+        animation-timing-function: ease-in;
+    }
+    33.3%{
+        transform: scale( 1.00, 1.00 );
+        animation-timing-function: ease-out;
+    }
+    50%{
+        transform: scale( 1.07, 1.07 );
+        animation-timing-function: ease-in;
+    }
+    66.6%{
+        transform: scale( 1.00, 1.00 );
+        animation-timing-function: ease-out;
+    }
+    83.3%{
+        transform: scale( 1.04, 1.04 );
+        animation-timing-function: ease-in;
+    }
+    100%{
+        transform: scale( 1.00, 1.00 );
+    }
+}
+figure.jumping{
+    animation: jumping 0.9s infinite;
+}
+@keyframes popup_small{
+    0%{
+        transform: scale( 0.00, 0.00 );
+        animation-timing-function: ease-out;
+    }
+    50%{
+        transform: scale( 0.35, 0.35 );
+        animation-timing-function: ease-in-out;
+    }
+    100%{
+        transform: scale( 0.30, 0.30 );
+    }
+}
+figure.popup_small{
+    animation: popup_small 0.35s 1;
+    transform: scale( 0.3, 0.3 );
+}
+@keyframes popup_from_small{
+    0%{
+        transform: scale( 0.30, 0.30 );
+    }
+    100%{
+        transform: scale( 1.00, 1.00 );
+    }
+}
+figure.popup_from_small{
+    animation: popup_from_small 0.3s ease-in-out 1;
+    transform: scale( 1.00, 1.00 );
+}
+@keyframes popup{
+    0%{
+        transform: scale( 0.00, 0.00 );
+    }
+    100%{
+        transform: scale( 1.00, 1.00 );
+    }
+}
+figure.popup{
+    animation: popup 0.2s 1;
+    transform: scale( 1.00, 1.00 );
+}
+@keyframes remove{
+    0%{
+    }
+    100%{
+        transform: scale( 0.00, 0.00 );
+    }
+}
+figure.remove{
+    animation: remove 0.1s 1 forwards;
+}

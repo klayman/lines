@@ -1,0 +1,86 @@
+/*
+ * Animation styles for Opera
+ */
+@-o-keyframes jumping{
+    0%{
+        -o-transform: scale( 1.00, 1.00 );
+        -o-animation-timing-function: ease-out;
+    }
+    16.6%{
+        -o-transform: scale( 1.13, 1.13 );
+        -o-animation-timing-function: ease-in;
+    }
+    33.3%{
+        -o-transform: scale( 1.00, 1.00 );
+        -o-animation-timing-function: ease-out;
+    }
+    50%{
+        -o-transform: scale( 1.07, 1.07 );
+        -o-animation-timing-function: ease-in;
+    }
+    66.6%{
+        -o-transform: scale( 1.00, 1.00 );
+        -o-animation-timing-function: ease-out;
+    }
+    83.3%{
+        -o-transform: scale( 1.04, 1.04 );
+        -o-animation-timing-function: ease-in;
+    }
+    100%{
+        -o-transform: scale( 1.00, 1.00 );
+    }
+}
+figure.jumping{
+    -o-animation: jumping 0.9s infinite;
+}
+@-o-keyframes popup_small{
+    0%{
+        -o-transform: scale( 0.00, 0.00 );
+        -o-animation-timing-function: ease-out;
+    }
+    50%{
+        -o-transform: scale( 0.35, 0.35 );
+        -o-animation-timing-function: ease-in-out;
+    }
+    100%{
+        -o-transform: scale( 0.30, 0.30 );
+    }
+}
+figure.popup_small{
+    -o-animation: popup_small 0.35s 1;
+    -o-transform: scale( 0.3, 0.3 );
+}
+@-o-keyframes popup_from_small{
+    0%{
+        -o-transform: scale( 0.30, 0.30 );
+    }
+    100%{
+        -o-transform: scale( 1.00, 1.00 );
+    }
+}
+figure.popup_from_small{
+    -o-animation: popup_from_small 0.3s ease-in-out 1;
+    -o-transform: scale( 1.00, 1.00 );
+}
+@-o-keyframes popup{
+    0%{
+        -o-transform: scale( 0.00, 0.00 );
+    }
+    100%{
+        -o-transform: scale( 1.00, 1.00 );
+    }
+}
+figure.popup{
+    -o-animation: popup 0.2s 1;
+    -o-transform: scale( 1.00, 1.00 );
+}
+@-o-keyframes remove{
+    0%{
+    }
+    100%{
+        -o-transform: scale( 0.00, 0.00 );
+    }
+}
+figure.remove{
+    -o-animation: remove 0.1s 1 forwards;
+}

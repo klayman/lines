@@ -1,0 +1,86 @@
+/*
+ * Animation styles for Google Chrome and Apple Safari
+ */
+@-webkit-keyframes jumping{
+    0%{
+        -webkit-transform: scale( 1.00, 1.00 );
+        -webkit-animation-timing-function: ease-out;
+    }
+    16.6%{
+        -webkit-transform: scale( 1.13, 1.13 );
+        -webkit-animation-timing-function: ease-in;
+    }
+    33.3%{
+        -webkit-transform: scale( 1.00, 1.00 );
+        -webkit-animation-timing-function: ease-out;
+    }
+    50%{
+        -webkit-transform: scale( 1.07, 1.07 );
+        -webkit-animation-timing-function: ease-in;
+    }
+    66.6%{
+        -webkit-transform: scale( 1.00, 1.00 );
+        -webkit-animation-timing-function: ease-out;
+    }
+    83.3%{
+        -webkit-transform: scale( 1.04, 1.04 );
+        -webkit-animation-timing-function: ease-in;
+    }
+    100%{
+        -webkit-transform: scale( 1.00, 1.00 );
+    }
+}
+figure.jumping{
+    -webkit-animation: jumping 0.9s infinite;
+}
+@-webkit-keyframes popup_small{
+    0%{
+        -webkit-transform: scale( 0.00, 0.00 );
+        -webkit-animation-timing-function: ease-out;
+    }
+    50%{
+        -webkit-transform: scale( 0.35, 0.35 );
+        -webkit-animation-timing-function: ease-in-out;
+    }
+    100%{
+        -webkit-transform: scale( 0.30, 0.30 );
+    }
+}
+figure.popup_small{
+    -webkit-animation: popup_small 0.35s 1;
+    -webkit-transform: scale( 0.3, 0.3 );
+}
+@-webkit-keyframes popup_from_small{
+    0%{
+        -webkit-transform: scale( 0.30, 0.30 );
+    }
+    100%{
+        -webkit-transform: scale( 1.00, 1.00 );
+    }
+}
+figure.popup_from_small{
+    -webkit-animation: popup_from_small 0.3s ease-in-out 1;
+    -webkit-transform: scale( 1.00, 1.00 );
+}
+@-webkit-keyframes popup{
+    0%{
+        -webkit-transform: scale( 0.00, 0.00 );
+    }
+    100%{
+        -webkit-transform: scale( 1.00, 1.00 );
+    }
+}
+figure.popup{
+    -webkit-animation: popup 0.2s 1;
+    -webkit-transform: scale( 1.00, 1.00 );
+}
+@-webkit-keyframes remove{
+    0%{
+    }
+    100%{
+        -webkit-transform: scale( 0.00, 0.00 );
+    }
+}
+figure.remove{
+    -webkit-animation: remove 0.1s 1 forwards;
+}

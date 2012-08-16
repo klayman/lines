@@ -1,9 +1,10 @@
 /*------------------------- Import animation styles --------------------------*/
-@import url( "animation_w3c.css" );
-@import url( "animation_chr.css" );
-@import url( "animation_ff.css" );
-@import url( "animation_ms.css" );
-@import url( "animation_o.css" );
+@import url( "animation-w3c.css" );
+@import url( "animation-chr.css" );
+@import url( "animation-ff.css" );
+@import url( "animation-ms.css" );
+@import url( "animation-o.css" );
+
 /*-------------------------------- CSS Reset ---------------------------------*/
 html, body, div, span, figure,
 h1, h2, h3, p, a, ol, ul, li,
@@ -166,6 +167,7 @@ figure.glossy {
 /* Field */
 #field figure {
     position: absolute;
+    -moz-transform-origin: 25px 25px; /* useless firefox twitching fix =( */
 }
 
 /* Options */

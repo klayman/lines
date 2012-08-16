@@ -1,0 +1,86 @@
+/*
+ * Animation styles for IE10
+ */
+@-ms-keyframes jumping{
+    0%{
+        -ms-transform: scale( 1.00, 1.00 );
+        -ms-animation-timing-function: ease-out;
+    }
+    16.6%{
+        -ms-transform: scale( 1.13, 1.13 );
+        -ms-animation-timing-function: ease-in;
+    }
+    33.3%{
+        -ms-transform: scale( 1.00, 1.00 );
+        -ms-animation-timing-function: ease-out;
+    }
+    50%{
+        -ms-transform: scale( 1.07, 1.07 );
+        -ms-animation-timing-function: ease-in;
+    }
+    66.6%{
+        -ms-transform: scale( 1.00, 1.00 );
+        -ms-animation-timing-function: ease-out;
+    }
+    83.3%{
+        -ms-transform: scale( 1.04, 1.04 );
+        -ms-animation-timing-function: ease-in;
+    }
+    100%{
+        -ms-transform: scale( 1.00, 1.00 );
+    }
+}
+figure.jumping{
+    -ms-animation: jumping 0.9s infinite;
+}
+@-ms-keyframes popup_small{
+    0%{
+        -ms-transform: scale( 0.00, 0.00 );
+        -ms-animation-timing-function: ease-out;
+    }
+    50%{
+        -ms-transform: scale( 0.35, 0.35 );
+        -ms-animation-timing-function: ease-in-out;
+    }
+    100%{
+        -ms-transform: scale( 0.30, 0.30 );
+    }
+}
+figure.popup_small{
+    -ms-animation: popup_small 0.35s 1;
+    -ms-transform: scale( 0.3, 0.3 );
+}
+@-ms-keyframes popup_from_small{
+    0%{
+        -ms-transform: scale( 0.30, 0.30 );
+    }
+    100%{
+        -ms-transform: scale( 1.00, 1.00 );
+    }
+}
+figure.popup_from_small{
+    -ms-animation: popup_from_small 0.3s ease-in-out 1;
+    -ms-transform: scale( 1.00, 1.00 );
+}
+@-ms-keyframes popup{
+    0%{
+        -ms-transform: scale( 0.00, 0.00 );
+    }
+    100%{
+        -ms-transform: scale( 1.00, 1.00 );
+    }
+}
+figure.popup{
+    -ms-animation: popup 0.2s 1;
+    -ms-transform: scale( 1.00, 1.00 );
+}
+@-ms-keyframes remove{
+    0%{
+    }
+    100%{
+        -ms-transform: scale( 0.00, 0.00 );
+    }
+}
+figure.remove{
+    -ms-animation: remove 0.1s 1 forwards;
+}

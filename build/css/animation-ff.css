@@ -1,0 +1,86 @@
+/*
+ * Animation styles for Firefox
+ */
+@-moz-keyframes jumping{
+    0%{
+        -moz-transform: scale( 1.00, 1.00 );
+        -moz-animation-timing-function: ease-out;
+    }
+    16.6%{
+        -moz-transform: scale( 1.13, 1.13 );
+        -moz-animation-timing-function: ease-in;
+    }
+    33.3%{
+        -moz-transform: scale( 1.00, 1.00 );
+        -moz-animation-timing-function: ease-out;
+    }
+    50%{
+        -moz-transform: scale( 1.07, 1.07 );
+        -moz-animation-timing-function: ease-in;
+    }
+    66.6%{
+        -moz-transform: scale( 1.00, 1.00 );
+        -moz-animation-timing-function: ease-out;
+    }
+    83.3%{
+        -moz-transform: scale( 1.04, 1.04 );
+        -moz-animation-timing-function: ease-in;
+    }
+    100%{
+        -moz-transform: scale( 1.00, 1.00 );
+    }
+}
+figure.jumping{
+    -moz-animation: jumping 0.9s infinite;
+}
+@-moz-keyframes popup_small{
+    0%{
+        -moz-transform: scale( 0.00, 0.00 );
+        -moz-animation-timing-function: ease-out;
+    }
+    50%{
+        -moz-transform: scale( 0.35, 0.35 );
+        -moz-animation-timing-function: ease-in-out;
+    }
+    100%{
+        -moz-transform: scale( 0.30, 0.30 );
+    }
+}
+figure.popup_small{
+    -moz-animation: popup_small 0.35s 1;
+    -moz-transform: scale( 0.3, 0.3 );
+}
+@-moz-keyframes popup_from_small{
+    0%{
+        -moz-transform: scale( 0.30, 0.30 );
+    }
+    100%{
+        -moz-transform: scale( 1.00, 1.00 );
+    }
+}
+figure.popup_from_small{
+    -moz-animation: popup_from_small 0.3s ease-in-out 1;
+    -moz-transform: scale( 1.00, 1.00 );
+}
+@-moz-keyframes popup{
+    0%{
+        -moz-transform: scale( 0.00, 0.00 );
+    }
+    100%{
+        -moz-transform: scale( 1.00, 1.00 );
+    }
+}
+figure.popup{
+    -moz-animation: popup 0.2s 1;
+    -moz-transform: scale( 1.00, 1.00 );
+}
+@-moz-keyframes remove{
+    0%{
+    }
+    100%{
+        -moz-transform: scale( 0.00, 0.00 );
+    }
+}
+figure.remove{
+    -moz-animation: remove 0.1s 1 forwards;
+}
