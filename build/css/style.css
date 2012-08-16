@@ -1,3 +1,9 @@
+/*------------------------- Import animation styles --------------------------*/
+@import url( "animation_w3c.css" );
+@import url( "animation_chr.css" );
+@import url( "animation_ff.css" );
+@import url( "animation_ms.css" );
+@import url( "animation_o.css" );
 /*-------------------------------- CSS Reset ---------------------------------*/
 html, body, div, span, figure,
 h1, h2, h3, p, a, ol, ul, li,

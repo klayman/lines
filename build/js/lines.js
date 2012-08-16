@@ -260,7 +260,7 @@ with(Info_bar = function( game_obj ){
         for( var i in arr ){
             var rec = arr[ i ];
             var ball = new Ball( this.obj, rec[ 1 ].num, this.game.settings.balls_type );
-            ball.popup( i * 1, 0, 0.25 );
+            ball.popup( i * 1, 0, "small" );
             this.balls.push( ball );
         }
     };
@@ -380,7 +380,7 @@ with(Field = function( game_obj ){
     };
 
     /*
-     * Draw balls on the own SVG object:
+     * Draw balls on the field:
      * arr : array of positions & balls,
      *       i.e. [ [ [x,y], ball ], [ [x,y], ball ], ... ]
      */
@@ -398,9 +398,14 @@ with(Field = function( game_obj ){
                     ny = this.rand( 0 + dl, 8 - dl );
                 } while( this.map[ ny ][ nx ] );   // find new place...
             }
-            ball.popup( nx, ny, 1 );       // popup at position which was stored earlier
-            this.map[ ny ][ nx ] = ball;   // store real ball on the map, hint-ball will be destroyed automatically
-            rec[ 1 ].erase();              // after this remove old ball's html object
+            // Popup at position which was stored earlier:
+            if( this.game_started && this.game.settings.show_next )
+                ball.popup( nx, ny, "transition" );
+            else
+                ball.popup( nx, ny, "normal" );
+
+            this.map[ ny ][ nx ] = ball;    // store real ball on the map, hint-ball will be destroyed automatically
+            rec[ 1 ].erase();               // after this remove old ball's html object
         }
     };
 
@@ -439,7 +444,7 @@ with(Field = function( game_obj ){
         for( var i in this.next_balls ){
             var nx = this.next_balls[ i ][ 0 ][ 0 ];
             var ny = this.next_balls[ i ][ 0 ][ 1 ];
-            this.next_balls[ i ][ 1 ].popup( nx, ny, 0.25 );
+            this.next_balls[ i ][ 1 ].popup( nx, ny, "small" );
         }
     };
 
@@ -514,7 +519,7 @@ with(Field = function( game_obj ){
                 callback( self );
             };
 
-            new_ball.popup( to_x, to_y, 1, after_move, this );
+            new_ball.popup( to_x, to_y, "normal", after_move, this );
 
             return true;
         }
@@ -940,34 +945,6 @@ with(Ball = function( parent_obj, number, type ){
 
 }){
 
-    /*
-     * Draw the ball without animation.
-     */
-    prototype.draw = function( x, y, scale ){
-        this.erase();  // first erase old object
-
-        // Define the css class:
-        var css_class = undefined;
-        switch( this.num ){
-            case 1: css_class = 'red';    break;
-            case 2: css_class = 'white';  break;
-            case 3: css_class = 'yellow'; break;
-            case 4: css_class = 'green';  break;
-            case 5: css_class = 'cyan';   break;
-            case 6: css_class = 'blue';   break;
-            case 7: css_class = 'purple'; break;
-        }
-        this.obj = $( "<figure></figure>" ).addClass( css_class ).addClass( this.type );
-        this.obj.css( "left", x + "em" );
-        this.obj.css( "top", y + "em" );
-        var arr = [ '', '-ms-', '-webkit-', '-o-', '-moz-' ];
-        for( var i in arr )
-            this.obj.css( arr[ i ] + "transform", 'scale(' + scale + ',' + scale + ')' );
-        this.parent.append( this.obj );
-        this.x = x;
-        this.y = y;
-    };
-
 
     prototype.change_type = function( new_type ){
         this.obj.removeClass( this.type );
@@ -980,17 +957,50 @@ with(Ball = function( parent_obj, number, type ){
      * Destroy internal html object.
      */
     prototype.erase = function(){
-        if( this.obj )
+        if( this.obj ){
+            this.obj.hide();
             this.obj.remove();  // remove html object
+        }
     }
-
 
     /*
      * Popup ball with animation at position ( nx, ny )
      */
-    prototype.popup = function( nx, ny, scale, callback, clbk_param ){
-        this.draw( nx, ny, 0 );                      // create new object with zero size
-        this.animate( [ [ nx, ny, scale, 100 ] ], callback, clbk_param );  // ... and animate to desired size
+    prototype.popup = function( nx, ny, anim_type, callback, clbk_param ){
+        // Define the css class:
+        var css_class;
+        switch( this.num ){
+            case 1: css_class = 'red';    break;
+            case 2: css_class = 'white';  break;
+            case 3: css_class = 'yellow'; break;
+            case 4: css_class = 'green';  break;
+            case 5: css_class = 'cyan';   break;
+            case 6: css_class = 'blue';   break;
+            case 7: css_class = 'purple'; break;
+        }
+        this.obj = $( "<figure></figure>" ).addClass( css_class ).addClass( this.type );
+        this.obj.css( "left", nx + "em" );
+        this.obj.css( "top", ny + "em" );
+        this.x = nx;
+        this.y = ny;
+        switch( anim_type ){
+            case "small"      : this.obj.addClass( "popup_small" ); break; // Draw a small ball
+            case "normal"     : this.obj.addClass( "popup" ); break;       // Draw a ball with normal size
+            case "transition" : this.obj.addClass( "popup_from_small" ); break;  // Draw the "transition" growing animation
+        }
+        this.parent.append( this.obj );
+        var self = this;
+        var evts = [ "animationend", "webkitAnimationEnd", "oanimationend", "MSAnimationEnd" ];
+        var listener = function( event ){
+            self.obj.removeClass( "popup popup_small popup_from_small" );
+            for( var i in evts )
+                self.obj[ 0 ].removeEventListener( evts[ i ], listener, false );
+            if( callback )
+                callback( clbk_param );
+        }
+        if( callback || anim_type != "small" )
+            for( var i in evts )
+                this.obj[ 0 ].addEventListener( evts[ i ], listener, false );
     };
 
 
@@ -999,89 +1009,30 @@ with(Ball = function( parent_obj, number, type ){
      * After animation html object will be destroyed.
      */
     prototype.remove = function(){
+        this.obj.addClass( "remove" );
         var self = this;
-        callback = function() { self.erase(); }
-
-        this.jump_stop( true ); // hard stop of jumping animation
-        this.animate( [ [ this.x, this.y, 0, 100 ] ], callback );  // animate to zero scale
-    };
-
-
-    /*
-     * Very flexible method to animate existing html ball object.
-     * structure  : array of structures [ new_x, new_y, new_scale, time ]
-     * callback   : callback to call after all animation steps.
-     * clbk_param : callback function parameter
-     *
-     * For example:
-     *
-     * this.animate( [ [ 1, 1, 1, 100 ], [ 2, 2, 1.1, 200 ] ], function() { alert( 'bla' ) } );
-     *
-     * 1 step : animate from current position and scale to x = 1, y = 1, scale = 1 during 100 ms
-     * 2 step : animate to x = 2, y = 2, scale = 1.1 during 200 ms
-     * after this alert will be shown.
-     */
-    prototype.animate = function( structure, callback, clbk_param ){
-        var self = this;  // save link to this...
-
-        // ... send part of structure to next animation step
-        var func = function(){
-            self.animate( structure.slice( 1 ) );
-        };
-        if( structure.length == 1 )  // we on the last step,
-            if( callback ){
-                func = function(){
-                    callback( clbk_param );  // ...at the end of animation call this callback
-                };
-            }else
-                func = function(){};
-
-
-        var arr = structure[ 0 ]; // take parameters for animation
-
-        this.obj.css( "left", arr[ 0 ] + "em" );
-        this.obj.css( "top", arr[ 1 ] + "em" );
-
-        this.obj.transition( { scale : arr[ 2 ] }, arr[ 3 ], func );
+        var listener = function( event ){
+            self.erase();
+        }
+        var evts = [ "animationend", "webkitAnimationEnd", "oanimationend", "MSAnimationEnd" ];
+        for( var i in evts )
+            this.obj[ 0 ].addEventListener( evts[ i ], listener, false );
     };
 
 
     /*
      * Animate jumping :)
-     * For stop this animation call jump_stop.
-     * Inside hard usage of animate method...
      */
-    prototype.jump = function( ){
-        // animation parameters...
-        var structure = [ [ this.x, this.y, 1.20, 100 ],
-                          [ this.x, this.y, 1,    100 ],
-                          [ this.x, this.y, 1.09, 60  ],
-                          [ this.x, this.y, 1,    60  ] ]
-
-        this.animate( structure ); // animate this immediately
-
-        var self = this;
-        this.timer = window.setInterval(
-            function(){
-                self.animate( structure );  // do animation cycle every 1100 ms
-            },
-            1000
-        );
+    prototype.jump = function(){
+        this.obj.addClass( "jumping" ).removeClass( "popup popup_small popup_from_small" );
     };
 
 
     /*
      * Stop jumping animation.
-     * hard : if true do not revert to scale = 1.0, otherwise
-     *        animate to standard scale.
      */
-    prototype.jump_stop = function( hard ){
-        // Stop animation:
-        if( this.timer )
-            clearInterval( this.timer );
-        if( ! hard )
-            // Return default size:
-            this.animate( [ [ this.x, this.y, 1, 1 ] ] );
+    prototype.jump_stop = function(){
+        this.obj.removeClass( "jumping" );
     };
 }
 

@@ -1,0 +1,81 @@
+/*
+ * Animation styles for IE10.
+ */
+@-ms-keyframes jumping{
+    0%{
+         -ms-transform: scale( 1.00, 1.00 );
+    }
+    100%{
+         -ms-transform: scale( 1.10, 1.10 );
+    }
+}
+figure.jumping{
+    -ms-animation-name: jumping;
+    -ms-animation-duration: 0.2s;
+    -ms-animation-iteration-count: infinite;
+    -ms-animation-direction: alternate;
+    -ms-animation-timing-function: ease;
+}
+@-ms-keyframes popup_small{
+    0%{
+         -ms-transform: scale( 0.00, 0.00 );
+    }
+    100%{
+         -ms-transform: scale( 0.25, 0.25 );
+    }
+}
+figure.popup_small{
+    -ms-animation-name: popup_small;
+    -ms-animation-duration: 0.2s;
+    -ms-animation-iteration-count: 1;
+    -ms-animation-direction: alternate;
+    -ms-animation-timing-function: ease-in;
+    -ms-transform: scale( 0.25, 0.25 );
+}
+@-ms-keyframes popup_from_small{
+    0%{
+         -ms-transform: scale( 0.25, 0.25 );
+    }
+    100%{
+         -ms-transform: scale( 1.00, 1.00 );
+    }
+}
+figure.popup_from_small{
+    -ms-animation-name: popup_from_small;
+    -ms-animation-duration: 0.2s;
+    -ms-animation-iteration-count: 1;
+    -ms-animation-direction: alternate;
+    -ms-animation-timing-function: ease-in;
+    -ms-transform: scale( 1.00, 1.00 );
+}
+@-ms-keyframes popup{
+    0%{
+         -ms-transform: scale( 0.00, 0.00 );
+    }
+    100%{
+         -ms-transform: scale( 1.00, 1.00 );
+    }
+}
+figure.popup{
+    -ms-animation-name: popup;
+    -ms-animation-duration: 0.2s;
+    -ms-animation-iteration-count: 1;
+    -ms-animation-direction: alternate;
+    -ms-animation-timing-function: ease-in;
+    -ms-transform: scale( 1.00, 1.00 );
+}
+@-ms-keyframes remove{
+    0%{
+    }
+    100%{
+         -ms-transform: scale( 0.00, 0.00 );
+    }
+}
+figure.remove{
+    -ms-animation-name: remove;
+    -ms-animation-duration: 0.2s;
+    -ms-animation-iteration-count: 1;
+    -ms-animation-direction: alternate;
+    -ms-animation-timing-function: ease-in;
+    -ms-animation-fill-mode: forwards;
+}

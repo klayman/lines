@@ -1,0 +1,81 @@
+/*
+ * W3C standards animation styles.
+ */
+@keyframes jumping{
+    0%{
+         transform: scale( 1.00, 1.00 );
+    }
+    100%{
+         transform: scale( 1.10, 1.10 );
+    }
+}
+figure.jumping{
+    animation-name: jumping;
+    animation-duration: 0.2s;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-timing-function: ease;
+}
+@keyframes popup_small{
+    0%{
+         transform: scale( 0.00, 0.00 );
+    }
+    100%{
+         transform: scale( 0.25, 0.25 );
+    }
+}
+figure.popup_small{
+    animation-name: popup_small;
+    animation-duration: 0.2s;
+    animation-iteration-count: 1;
+    animation-direction: alternate;
+    animation-timing-function: ease-in;
+    transform: scale( 0.25, 0.25 );
+}
+@keyframes popup_from_small{
+    0%{
+         transform: scale( 0.25, 0.25 );
+    }
+    100%{
+         transform: scale( 1.00, 1.00 );
+    }
+}
+figure.popup_from_small{
+    animation-name: popup_from_small;
+    animation-duration: 0.2s;
+    animation-iteration-count: 1;
+    animation-direction: alternate;
+    animation-timing-function: ease-in;
+    transform: scale( 1.00, 1.00 );
+}
+@keyframes popup{
+    0%{
+         transform: scale( 0.00, 0.00 );
+    }
+    100%{
+         transform: scale( 1.00, 1.00 );
+    }
+}
+figure.popup{
+    animation-name: popup;
+    animation-duration: 0.2s;
+    animation-iteration-count: 1;
+    animation-direction: alternate;
+    animation-timing-function: ease-in;
+    transform: scale( 1.00, 1.00 );
+}
+@keyframes remove{
+    0%{
+    }
+    100%{
+         transform: scale( 0.00, 0.00 );
+    }
+}
+figure.remove{
+    animation-name: remove;
+    animation-duration: 0.2s;
+    animation-iteration-count: 1;
+    animation-direction: alternate;
+    animation-timing-function: ease-in;
+    animation-fill-mode: forwards;
+}
