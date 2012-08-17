@@ -38,6 +38,7 @@ with(Lines_game = function( settings, html ){
     prototype.show_page = function( page ){
         if( this.active_page.attr( "id" ) == page.attr( "id" ) )
             return;
+        this.field.deselect_ball();  // deselect active ball on the field
         this.active_page.hide()
         this.active_page = page;
         page.show();
@@ -619,7 +620,7 @@ with(Field = function( game_obj ){
 
                 var x = this.selected_ball.x;
                 var y = this.selected_ball.y;
-                this.map[ y ][ x ].jump_stop();
+                this.map[ y ][ x ].stop_jump();
             }
             this.selected_ball = { "x" : nx,
                                    "y" : ny };
@@ -999,6 +1000,20 @@ with(Field = function( game_obj ){
 
 
     /*
+     * Deselect active ball.
+     */
+    prototype.deselect_ball = function(){
+        if( ! this.selected_ball )
+            return;
+        var x = this.selected_ball.x;
+        var y = this.selected_ball.y;
+        var ball = this.map[ y ][ x ];
+        ball.stop_jump();
+        this.selected_ball = null;
+    };
+
+
+    /*
      * Auxiliary method for generating random numbers in a certain range:
      */
     prototype.rand = function( m, n ){
@@ -1110,7 +1125,7 @@ with(Ball = function( parent_obj, number, type ){
     /*
      * Stop jumping animation.
      */
-    prototype.jump_stop = function(){
+    prototype.stop_jump = function(){
         this.obj.removeClass( "jumping" );
     };
 }
