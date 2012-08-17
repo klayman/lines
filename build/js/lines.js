@@ -13,10 +13,9 @@ with(Lines_game = function( settings, html ){
         // Load saved settings if possible:
         if( this.store.load( "lines_settings" ) )
             this.settings = eval( "(" + this.store.load( "lines_settings" ) + ")" );
-        // Make a sync request - get texts on selected language:
+        // Make a async request - get texts on selected language:
         $.ajax(
             {
-                   async: false,
                    cache: true,
                      url: "js/lang_" + this.settings.lang + ".js",
                 dataType: "script"
@@ -127,6 +126,14 @@ with(Lines_game = function( settings, html ){
             break;
         }
 
+        // Define, whether is need to show next balls on the field:
+        this.new_settings.show_next = ( this.html.show_next_btn.filter( ":checked" ).length > 0 ) ? true : false;
+        this.settings.show_next = this.new_settings.show_next;
+        if( this.settings.show_next )
+            this.field.add_small_balls();
+        else
+            this.field.remove_small_balls();
+
         if( this.new_settings.mode != this.settings.mode ){
             if( this.new_settings.mode <= 1 ){
                 this.new_settings.field_size = 7;
@@ -135,27 +142,18 @@ with(Lines_game = function( settings, html ){
                 this.new_settings.field_size = 9;
                 this.new_settings.field_border = 0;
             }
-            if( this.game_started && confirm( txt.CONFIRM_START_NEW_GAME ) ){
-                this.settings.mode = this.new_settings.mode;
-                this.update_mode_button();
-                this.settings.field_size = this.new_settings.field_size;
-                this.settings.field_border = this.new_settings.field_border;
-                this.field.update_size();
-            }
+            if( this.game_started ){
+                if( confirm( txt.CONFIRM_START_NEW_GAME ) )
+                    // Start new game with new game mode:
+                    this.start_new_game();
+            }else
+                this.start_new_game();
         }
 
         this.settings.balls_type = this.html.balls_type_sel.val();
         this.new_settings.balls_type = this.settings.balls_type;
         this.field.change_balls_type();
         this.info_bar.change_balls_type();
-
-        // Define, whether is need to show next balls on the field:
-        this.new_settings.show_next = ( this.html.show_next_btn.filter( ":checked" ).length > 0 ) ? true : false;
-        this.settings.show_next = this.new_settings.show_next;
-        if( this.settings.show_next )
-            this.field.add_small_balls();
-        else
-            this.field.remove_small_balls();
 
         var str = "{";
         for( var i in this.new_settings ){
@@ -169,14 +167,26 @@ with(Lines_game = function( settings, html ){
 
 
     prototype.start_new_game = function(){
-        /*
-         * TODO: write this method :)
-         */
+        if( this.new_settings ){
+            this.settings = this.new_settings;
+            this.update_mode_button();
+        }
+        this.field.update_size();
+        this.field.clear();
+        this.field.next_round();
+        this.game_started = false;
+        this.info_bar.score2zero();
     };
 
 
     prototype.handlers = function(){
         var self = this;
+        this.html.new_game_btn.click(
+            function(){
+                self.show_page( self.html.field_page );
+                self.start_new_game();
+            }
+        );
         this.html.options_btn.click(
             function(){
                 self.show_page( self.html.options_page );
@@ -325,17 +335,12 @@ with(Field = function( game_obj ){
     // X and Y coords of selected ball (in cells):
     this.selected_ball = null;
 
-    // Put 3 first balls on the field:
-    this.put_balls( this.gen_next_balls() );
-
     // Array of "next" colors and positions of balls, which will appear at the field in the next turn:
     this.next_balls = this.gen_next_balls();
-    if( this.game.settings.show_next )
-        this.add_small_balls();
 
-    // Update info bar balls:
-    this.update_info_bar();
-    // Did the game start?
+    // Add first balls on the field:
+    this.next_round();
+
     this.game.game_started = false;
 
     this.handlers();    // Set the event handlers:
@@ -435,16 +440,10 @@ with(Field = function( game_obj ){
      * Remove all balls from the field and generates new next_balls
      */
     prototype.clear = function(){
-        for( var i in this.map )
-            for( var j in this.map[ i ] )
-                if( this.map[ i ][ j ] ){
-                    this.map[ i ][ j ].jump_stop( true );
-                    this.map[ i ][ j ].erase();
-                    this.map[ i ][ j ] = null;
-                }
-
-        this.remove_small_balls();
-
+        this.game.html.field_insert.empty();
+        this.map = new Array( 9 );
+        for( var i = 0; i < 9; i++ )
+            this.map[ i ] = new Array( null, null, null, null, null, null, null, null, null );
         this.selected_ball = null;
         this.next_balls = this.gen_next_balls();
     };
