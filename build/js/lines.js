@@ -13,6 +13,15 @@ with(Lines_game = function( settings, html ){
         // Load saved settings if possible:
         if( this.store.load( "lines_settings" ) )
             this.settings = eval( "(" + this.store.load( "lines_settings" ) + ")" );
+        // Make a sync request - get texts on selected language:
+        $.ajax(
+            {
+                   async: false,
+                   cache: true,
+                     url: "js/lang_" + this.settings.lang + ".js",
+                dataType: "script"
+            }
+        );
         this.update_settings_controls();
         // Set active page as game field:
         this.active_page = this.html.field_page;
@@ -20,6 +29,8 @@ with(Lines_game = function( settings, html ){
         this.info_bar = new Info_bar( this );
         // Create field object:
         this.field = new Field( this );
+        // Update field size according to game mode:
+        this.field.update_size();
         // Set event handlers:
         this.handlers();
     };
@@ -124,11 +135,13 @@ with(Lines_game = function( settings, html ){
                 this.new_settings.field_size = 9;
                 this.new_settings.field_border = 0;
             }
-            /*
-             * TODO: make confirm of these changes if the game was started
-             */
-            this.settings.mode = this.new_settings.mode;
-            this.update_mode_button();
+            if( this.game_started && confirm( txt.CONFIRM_START_NEW_GAME ) ){
+                this.settings.mode = this.new_settings.mode;
+                this.update_mode_button();
+                this.settings.field_size = this.new_settings.field_size;
+                this.settings.field_border = this.new_settings.field_border;
+                this.field.update_size();
+            }
         }
 
         this.settings.balls_type = this.html.balls_type_sel.val();
@@ -151,6 +164,13 @@ with(Lines_game = function( settings, html ){
         }
         str = str.substr( 0, str.length - 1 ) + "}";
         this.store.save( "lines_settings", str );
+    };
+
+
+    prototype.start_new_game = function(){
+        /*
+         * TODO: write this method :)
+         */
     };
 
 
@@ -315,7 +335,7 @@ with(Field = function( game_obj ){
     // Update info bar balls:
     this.update_info_bar();
     // Did the game start?
-    this.game_started = false;
+    this.game.game_started = false;
 
     this.handlers();    // Set the event handlers:
 
@@ -370,7 +390,7 @@ with(Field = function( game_obj ){
         if( this.balls_count() == s * s )
         {
             //this.game_obj.load_high_scores( this.info_bar_obj.score );
-            this.game_started = false;
+            this.game.game_started = false;
             return;
         }
         this.next_balls = this.gen_next_balls();    // generate 3 new "next" balls
@@ -399,7 +419,7 @@ with(Field = function( game_obj ){
                 } while( this.map[ ny ][ nx ] );   // find new place...
             }
             // Popup at position which was stored earlier:
-            if( this.game_started && this.game.settings.show_next )
+            if( this.game.game_started && this.game.settings.show_next )
                 ball.popup( nx, ny, "transition" );
             else
                 ball.popup( nx, ny, "normal" );
@@ -862,7 +882,7 @@ with(Field = function( game_obj ){
     };
 
     /*
-     * Change balls type:
+     * Change balls type.
      */
     prototype.change_balls_type = function(){
         for( var i in this.map )
@@ -873,6 +893,15 @@ with(Field = function( game_obj ){
         for( var i in this.next_balls )
             if( this.next_balls[ i ][ 1 ].obj )
                 this.next_balls[ i ][ 1 ].change_type( this.game.settings.balls_type );
+    };
+
+
+    /*
+     * Update field size according to current game mode.
+     */
+    prototype.update_size = function(){
+        var url = ( this.game.settings.mode <= 1 ) ? this.game.html.field_small_img : this.game.html.field_img;
+        this.obj.css( "background-image", 'url(' + url + ')' );
     };
 
 
@@ -909,11 +938,8 @@ with(Field = function( game_obj ){
                     //self.game_save();
                 };
 
-                if( self.move_ball( nx, ny, callback ) ){  // try move selected ball to new position
-                    //if( ! self.game_started )
-                        //self.game_obj.start_game();
-                    self.game_started = true;
-                }
+                if( self.move_ball( nx, ny, callback ) )  // try move selected ball to new position
+                    self.game.game_started = true;
             }
         );
     };
@@ -1114,8 +1140,8 @@ $( document ).ready(
                   "container" : $( "#container" ),
                  "field_page" : $( "#field" ),
                "field_insert" : $( "#field-insert" ),
-                  "field_img" : "field.png",
-                "field_s_img" : "field-small.png",
+                  "field_img" : "images/field.png",
+            "field_small_img" : "images/field-small.png",
                 "options_btn" : $( "#options" ),
                "options_page" : $( "#options-page" ),
                  "mode_radio" : $( 'input[name="mode"]' ),
