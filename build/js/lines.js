@@ -44,21 +44,23 @@ with(Lines_game = function( settings, html ){
     };
 
 
-    // Update the game's mode icon on the appropriate button:
+    /*
+     * Update the game's mode icon on the appropriate button.
+     */
     prototype.update_mode_button = function(){
         var css_pos = "0 0";
         this.html.mode_num.text( "" );
         switch( this.settings.mode ){
-            case 0: css_pos = "center -322px"; break;
-            case 1: css_pos = "center -368px"; break;
-            case 2: css_pos = "center -276px"; break;
-            case 3: css_pos = "center -276px"; break;
-            case 4: css_pos = "center -276px"; break;
-            case 6: css_pos = "center -414px"; break;
-            case 7: css_pos = "center -414px"; break;
-            case 8: css_pos = "center -414px"; break;
+            case 0: css_pos = "-322px"; break;
+            case 1: css_pos = "-368px"; break;
+            case 2: css_pos = "-276px"; break;
+            case 3: css_pos = "-276px"; break;
+            case 4: css_pos = "-276px"; break;
+            case 6: css_pos = "-414px"; break;
+            case 7: css_pos = "-414px"; break;
+            case 8: css_pos = "-414px"; break;
         }
-        this.html.mode_btn.css( "background-position", css_pos );
+        this.html.mode_btn.css( "background-position", "center " + css_pos );
         if( this.settings.mode > 1 ){
             var num = this.settings.mode;
             if( this.settings.mode > 4 )
@@ -166,16 +168,60 @@ with(Lines_game = function( settings, html ){
     };
 
 
+    /*
+     * Reset old and start new game.
+     */
     prototype.start_new_game = function(){
         if( this.new_settings ){
             this.settings = this.new_settings;
             this.update_mode_button();
+        }
+        if( this.settings.mode <= 1 ){
+            this.settings.field_size = 7;
+            this.settings.field_border = 1;
+        }else{
+            this.settings.field_size = 9;
+            this.settings.field_border = 0;
         }
         this.field.update_size();
         this.field.clear();
         this.field.next_round();
         this.game_started = false;
         this.info_bar.score2zero();
+    };
+
+    /*
+     * Change game mode and start new game.
+     */
+    prototype.change_mode = function(){
+        var mode = 0;
+        switch( this.settings.mode ){
+            case 2: mode = 0;  break;
+            case 3: mode = 0;  break;
+            case 4: mode = 0;  break;
+            case 0: mode = 1;  break;
+            case 1: mode = -6; break;
+            case 6: mode = -2; break;
+            case 7: mode = -2; break;
+            case 8: mode = -2; break;
+        }
+        if( mode == -2 )
+            switch( this.html.row_num_sel.val() ){
+                case "4" : mode = 2; break;
+                case "5" : mode = 3; break;
+                case "6" : mode = 4; break;
+            }
+        if( mode == -6 )
+            switch( this.html.block_num_sel.val() ){
+                case "6" : mode = 6; break;
+                case "7" : mode = 7; break;
+                case "8" : mode = 8; break;
+            }
+        if( this.new_settings )
+            this.new_settings.mode = mode;
+        this.settings.mode = mode;
+        this.update_mode_button();
+        this.start_new_game();
     };
 
 
@@ -185,6 +231,12 @@ with(Lines_game = function( settings, html ){
             function(){
                 self.show_page( self.html.field_page );
                 self.start_new_game();
+            }
+        );
+        this.html.mode_btn.click(
+            function(){
+                self.show_page( self.html.field_page );
+                self.change_mode();
             }
         );
         this.html.options_btn.click(
