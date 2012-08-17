@@ -449,6 +449,7 @@ with(Field = function( game_obj ){
         {
             //this.game_obj.load_high_scores( this.info_bar_obj.score );
             this.game.game_started = false;
+            this.next_balls = [];
             return;
         }
         this.next_balls = this.gen_next_balls();    // generate 3 new "next" balls
