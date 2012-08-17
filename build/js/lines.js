@@ -147,6 +147,7 @@ with(Lines_game = function( settings, html ){
         this.settings.balls_type = this.html.balls_type_sel.val();
         this.new_settings.balls_type = this.settings.balls_type;
         this.field.change_balls_type();
+        this.info_bar.change_balls_type();
 
         // Define, whether is need to show next balls on the field:
         this.new_settings.show_next = ( this.html.show_next_btn.filter( ":checked" ).length > 0 ) ? true : false;
