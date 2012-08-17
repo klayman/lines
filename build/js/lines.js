@@ -13,6 +13,14 @@ with(Lines_game = function( settings, html ){
         // Load saved settings if possible:
         if( this.store.load( "lines_settings" ) )
             this.settings = eval( "(" + this.store.load( "lines_settings" ) + ")" );
+        // Make a async request - get texts on selected language:
+        $.ajax(
+            {
+                   cache: true,
+                     url: "js/lang_" + this.settings.lang + ".js",
+                dataType: "script"
+            }
+        );
         this.update_settings_controls();
         // Set active page as game field:
         this.active_page = this.html.field_page;
@@ -20,6 +28,8 @@ with(Lines_game = function( settings, html ){
         this.info_bar = new Info_bar( this );
         // Create field object:
         this.field = new Field( this );
+        // Update field size according to game mode:
+        this.field.update_size();
         // Set event handlers:
         this.handlers();
     };
@@ -28,27 +38,30 @@ with(Lines_game = function( settings, html ){
     prototype.show_page = function( page ){
         if( this.active_page.attr( "id" ) == page.attr( "id" ) )
             return;
+        this.field.deselect_ball();  // deselect active ball on the field
         this.active_page.hide()
         this.active_page = page;
         page.show();
     };
 
 
-    // Update the game's mode icon on the appropriate button:
+    /*
+     * Update the game's mode icon on the appropriate button.
+     */
     prototype.update_mode_button = function(){
         var css_pos = "0 0";
         this.html.mode_num.text( "" );
         switch( this.settings.mode ){
-            case 0: css_pos = "center -322px"; break;
-            case 1: css_pos = "center -368px"; break;
-            case 2: css_pos = "center -276px"; break;
-            case 3: css_pos = "center -276px"; break;
-            case 4: css_pos = "center -276px"; break;
-            case 6: css_pos = "center -414px"; break;
-            case 7: css_pos = "center -414px"; break;
-            case 8: css_pos = "center -414px"; break;
+            case 0: css_pos = "-322px"; break;
+            case 1: css_pos = "-368px"; break;
+            case 2: css_pos = "-276px"; break;
+            case 3: css_pos = "-276px"; break;
+            case 4: css_pos = "-276px"; break;
+            case 6: css_pos = "-414px"; break;
+            case 7: css_pos = "-414px"; break;
+            case 8: css_pos = "-414px"; break;
         }
-        this.html.mode_btn.css( "background-position", css_pos );
+        this.html.mode_btn.css( "background-position", "center " + css_pos );
         if( this.settings.mode > 1 ){
             var num = this.settings.mode;
             if( this.settings.mode > 4 )
@@ -116,6 +129,14 @@ with(Lines_game = function( settings, html ){
             break;
         }
 
+        // Define, whether is need to show next balls on the field:
+        this.new_settings.show_next = ( this.html.show_next_btn.filter( ":checked" ).length > 0 ) ? true : false;
+        this.settings.show_next = this.new_settings.show_next;
+        if( this.settings.show_next )
+            this.field.add_small_balls();
+        else
+            this.field.remove_small_balls();
+
         if( this.new_settings.mode != this.settings.mode ){
             if( this.new_settings.mode <= 1 ){
                 this.new_settings.field_size = 7;
@@ -124,24 +145,18 @@ with(Lines_game = function( settings, html ){
                 this.new_settings.field_size = 9;
                 this.new_settings.field_border = 0;
             }
-            /*
-             * TODO: make confirm of these changes if the game was started
-             */
-            this.settings.mode = this.new_settings.mode;
-            this.update_mode_button();
+            if( this.game_started ){
+                if( confirm( txt.CONFIRM_START_NEW_GAME ) )
+                    // Start new game with new game mode:
+                    this.start_new_game();
+            }else
+                this.start_new_game();
         }
 
         this.settings.balls_type = this.html.balls_type_sel.val();
         this.new_settings.balls_type = this.settings.balls_type;
         this.field.change_balls_type();
-
-        // Define, whether is need to show next balls on the field:
-        this.new_settings.show_next = ( this.html.show_next_btn.filter( ":checked" ).length > 0 ) ? true : false;
-        this.settings.show_next = this.new_settings.show_next;
-        if( this.settings.show_next )
-            this.field.add_small_balls();
-        else
-            this.field.remove_small_balls();
+        this.info_bar.change_balls_type();
 
         var str = "{";
         for( var i in this.new_settings ){
@@ -154,8 +169,77 @@ with(Lines_game = function( settings, html ){
     };
 
 
+    /*
+     * Reset old and start new game.
+     */
+    prototype.start_new_game = function(){
+        if( this.new_settings ){
+            this.settings = this.new_settings;
+            this.update_mode_button();
+        }
+        if( this.settings.mode <= 1 ){
+            this.settings.field_size = 7;
+            this.settings.field_border = 1;
+        }else{
+            this.settings.field_size = 9;
+            this.settings.field_border = 0;
+        }
+        this.field.update_size();
+        this.field.clear();
+        this.field.next_round();
+        this.game_started = false;
+        this.info_bar.score2zero();
+    };
+
+    /*
+     * Change game mode and start new game.
+     */
+    prototype.change_mode = function(){
+        var mode = 0;
+        switch( this.settings.mode ){
+            case 2: mode = 0;  break;
+            case 3: mode = 0;  break;
+            case 4: mode = 0;  break;
+            case 0: mode = 1;  break;
+            case 1: mode = -6; break;
+            case 6: mode = -2; break;
+            case 7: mode = -2; break;
+            case 8: mode = -2; break;
+        }
+        if( mode == -2 )
+            switch( this.html.row_num_sel.val() ){
+                case "4" : mode = 2; break;
+                case "5" : mode = 3; break;
+                case "6" : mode = 4; break;
+            }
+        if( mode == -6 )
+            switch( this.html.block_num_sel.val() ){
+                case "6" : mode = 6; break;
+                case "7" : mode = 7; break;
+                case "8" : mode = 8; break;
+            }
+        if( this.new_settings )
+            this.new_settings.mode = mode;
+        this.settings.mode = mode;
+        this.update_mode_button();
+        this.start_new_game();
+    };
+
+
     prototype.handlers = function(){
         var self = this;
+        this.html.new_game_btn.click(
+            function(){
+                self.show_page( self.html.field_page );
+                self.start_new_game();
+            }
+        );
+        this.html.mode_btn.click(
+            function(){
+                self.show_page( self.html.field_page );
+                self.change_mode();
+            }
+        );
         this.html.options_btn.click(
             function(){
                 self.show_page( self.html.options_page );
@@ -304,18 +388,13 @@ with(Field = function( game_obj ){
     // X and Y coords of selected ball (in cells):
     this.selected_ball = null;
 
-    // Put 3 first balls on the field:
-    this.put_balls( this.gen_next_balls() );
-
     // Array of "next" colors and positions of balls, which will appear at the field in the next turn:
     this.next_balls = this.gen_next_balls();
-    if( this.game.settings.show_next )
-        this.add_small_balls();
 
-    // Update info bar balls:
-    this.update_info_bar();
-    // Did the game start?
-    this.game_started = false;
+    // Add first balls on the field:
+    this.next_round();
+
+    this.game.game_started = false;
 
     this.handlers();    // Set the event handlers:
 
@@ -370,7 +449,8 @@ with(Field = function( game_obj ){
         if( this.balls_count() == s * s )
         {
             //this.game_obj.load_high_scores( this.info_bar_obj.score );
-            this.game_started = false;
+            this.game.game_started = false;
+            this.next_balls = [];
             return;
         }
         this.next_balls = this.gen_next_balls();    // generate 3 new "next" balls
@@ -399,7 +479,7 @@ with(Field = function( game_obj ){
                 } while( this.map[ ny ][ nx ] );   // find new place...
             }
             // Popup at position which was stored earlier:
-            if( this.game_started && this.game.settings.show_next )
+            if( this.game.game_started && this.game.settings.show_next )
                 ball.popup( nx, ny, "transition" );
             else
                 ball.popup( nx, ny, "normal" );
@@ -414,16 +494,10 @@ with(Field = function( game_obj ){
      * Remove all balls from the field and generates new next_balls
      */
     prototype.clear = function(){
-        for( var i in this.map )
-            for( var j in this.map[ i ] )
-                if( this.map[ i ][ j ] ){
-                    this.map[ i ][ j ].jump_stop( true );
-                    this.map[ i ][ j ].erase();
-                    this.map[ i ][ j ] = null;
-                }
-
-        this.remove_small_balls();
-
+        this.game.html.field_insert.empty();
+        this.map = new Array( 9 );
+        for( var i = 0; i < 9; i++ )
+            this.map[ i ] = new Array( null, null, null, null, null, null, null, null, null );
         this.selected_ball = null;
         this.next_balls = this.gen_next_balls();
     };
@@ -546,7 +620,7 @@ with(Field = function( game_obj ){
 
                 var x = this.selected_ball.x;
                 var y = this.selected_ball.y;
-                this.map[ y ][ x ].jump_stop();
+                this.map[ y ][ x ].stop_jump();
             }
             this.selected_ball = { "x" : nx,
                                    "y" : ny };
@@ -862,7 +936,7 @@ with(Field = function( game_obj ){
     };
 
     /*
-     * Change balls type:
+     * Change balls type.
      */
     prototype.change_balls_type = function(){
         for( var i in this.map )
@@ -873,6 +947,15 @@ with(Field = function( game_obj ){
         for( var i in this.next_balls )
             if( this.next_balls[ i ][ 1 ].obj )
                 this.next_balls[ i ][ 1 ].change_type( this.game.settings.balls_type );
+    };
+
+
+    /*
+     * Update field size according to current game mode.
+     */
+    prototype.update_size = function(){
+        var url = ( this.game.settings.mode <= 1 ) ? this.game.html.field_small_img : this.game.html.field_img;
+        this.obj.css( "background-image", 'url(' + url + ')' );
     };
 
 
@@ -909,13 +992,24 @@ with(Field = function( game_obj ){
                     //self.game_save();
                 };
 
-                if( self.move_ball( nx, ny, callback ) ){  // try move selected ball to new position
-                    //if( ! self.game_started )
-                        //self.game_obj.start_game();
-                    self.game_started = true;
-                }
+                if( self.move_ball( nx, ny, callback ) )  // try move selected ball to new position
+                    self.game.game_started = true;
             }
         );
+    };
+
+
+    /*
+     * Deselect active ball.
+     */
+    prototype.deselect_ball = function(){
+        if( ! this.selected_ball )
+            return;
+        var x = this.selected_ball.x;
+        var y = this.selected_ball.y;
+        var ball = this.map[ y ][ x ];
+        ball.stop_jump();
+        this.selected_ball = null;
     };
 
 
@@ -1031,7 +1125,7 @@ with(Ball = function( parent_obj, number, type ){
     /*
      * Stop jumping animation.
      */
-    prototype.jump_stop = function(){
+    prototype.stop_jump = function(){
         this.obj.removeClass( "jumping" );
     };
 }
@@ -1114,8 +1208,8 @@ $( document ).ready(
                   "container" : $( "#container" ),
                  "field_page" : $( "#field" ),
                "field_insert" : $( "#field-insert" ),
-                  "field_img" : "field.png",
-                "field_s_img" : "field-small.png",
+                  "field_img" : "images/field.png",
+            "field_small_img" : "images/field-small.png",
                 "options_btn" : $( "#options" ),
                "options_page" : $( "#options-page" ),
                  "mode_radio" : $( 'input[name="mode"]' ),
