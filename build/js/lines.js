@@ -28,6 +28,8 @@ with(Lines_game = function( settings, html ){
         this.info_bar = new Info_bar( this );
         // Create field object:
         this.field = new Field( this );
+        // Load saved game if possible:
+        this.load_game();
         // Update field size according to game mode:
         this.field.update_size();
         // Set event handlers:
@@ -157,15 +159,78 @@ with(Lines_game = function( settings, html ){
         this.new_settings.balls_type = this.settings.balls_type;
         this.field.change_balls_type();
         this.info_bar.change_balls_type();
+        this.store.save( "lines_settings", JSON.stringify( this.new_settings ) );
+    };
 
-        var str = "{";
-        for( var i in this.new_settings ){
-            var val = this.new_settings[ i ];
-            var str_val = ( typeof val == "string" ) ? '"' + val + '"' : val.toString();
-            str += '"' + i + '":' + str_val + ',';
+
+    /*
+     * Save current game to html5 store or cookie.
+     */
+     prototype.save_game = function(){
+        if( ! this.game_started )
+            return;
+        var str = "[" + this.score + ",[";
+        for( var i in this.field.map ){
+            str += "["
+            for( var j in this.field.map[ i ] ){
+                str += this.field.map[ i ][ j ] ? this.field.map[ i ][ j ].num : 0;
+                if( parseInt( j ) != this.field.map[ i ].length - 1 )
+                    str += ",";
+            }
+            str += "]";
+            if( parseInt( i ) != this.field.map.length - 1 )
+                str += ",";
         }
-        str = str.substr( 0, str.length - 1 ) + "}";
-        this.store.save( "lines_settings", str );
+        str += "],[";
+        for( var i in this.field.next_balls ){
+            var arr = this.field.next_balls[ i ];
+            str += "[[" + arr[ 0 ][ 0 ] + "," + arr[ 0 ][ 1 ] + "],";
+            str += arr[ 1 ].num + "]";
+            if( parseInt( i ) != this.field.next_balls.length - 1 )
+                str += ","
+        }
+        str += "]," + this.settings.mode + "]";
+        this.store.save( "lines_game", str );
+     };
+
+     /*
+      * Load saved game from html5 store or cookie.
+      */
+    prototype.load_game = function(){
+        if( ! this.store.load( "lines_game" ) )
+            return;
+        this.game_started = true;
+        this.field.clear();
+        var arr = JSON.parse( this.store.load( "lines_game" ) );
+        this.info_bar.set_score( arr[ 0 ] );
+        this.score = arr[ 0 ];
+        for( var i in arr[ 1 ] )
+            for( var j in arr[ 1 ][ i ] )
+                if( arr[ 1 ][ i ][ j ] ){
+                    var ball = new Ball( this.html.field_insert, arr[ 1 ][ i ][ j ], this.settings.balls_type );
+                    this.field.map[ i ][ j ] = ball;
+                    ball.popup( j, i, "normal" );
+                }
+        this.field.next_balls = [];
+        for( var i in arr[ 2 ] ){
+            var ball = new Ball( this.html.field_insert, arr[ 2 ][ i ][ 1 ], this.settings.balls_type );
+            var x = arr[ 2 ][ i ][ 0 ][ 0 ];
+            var y = arr[ 2 ][ i ][ 0 ][ 1 ];
+            this.field.next_balls.push( [ [ x, y ], ball ] );
+            ball.popup( x, y, "small" );
+        }
+        this.field.update_info_bar();
+        this.settings.mode = arr[ 3 ];
+        this.update_mode_button();
+    };
+
+
+    /*
+     * Delete saved game from html5 store or cookie.
+     */
+    prototype.delete_game = function(){
+        if( this.store.load( "lines_game" ) )
+            this.store.delete( "lines_game" );
     };
 
 
@@ -177,18 +242,12 @@ with(Lines_game = function( settings, html ){
             this.settings = this.new_settings;
             this.update_mode_button();
         }
-        if( this.settings.mode <= 1 ){
-            this.settings.field_size = 7;
-            this.settings.field_border = 1;
-        }else{
-            this.settings.field_size = 9;
-            this.settings.field_border = 0;
-        }
         this.field.update_size();
         this.field.clear();
         this.field.next_round();
         this.game_started = false;
         this.info_bar.score2zero();
+        this.delete_game();
     };
 
     /*
@@ -444,13 +503,14 @@ with(Field = function( game_obj ){
     prototype.next_round = function() {
         this.put_balls( this.next_balls );          // put 3 balls which was generated before
         this.remove_balls();                        // put_balls can create new true figres...
-        //this.game_save();                         // Save the current game
+        this.game.save_game();                      // Save the current game
         var s = this.game.settings.field_size;
         if( this.balls_count() == s * s )
         {
             //this.game_obj.load_high_scores( this.info_bar_obj.score );
             this.game.game_started = false;
             this.next_balls = [];
+            this.game.delete_game();
             return;
         }
         this.next_balls = this.gen_next_balls();    // generate 3 new "next" balls
@@ -857,83 +917,6 @@ with(Field = function( game_obj ){
         return cnt;
     }
 
-    /*
-     * Save current game to the cookie with name "game":
-     */
-    prototype.game_save = function(){
-        /*
-         * TODO: move this method to main class
-         */
-        /*var str = "[" + this.game.info_bar.score + ",[";
-        for( var i in this.map ){
-            str += "["
-            for( var j in this.map[ i ] ){
-                str += this.map[ i ][ j ] ? this.map[ i ][ j ].num : 0;
-                if( parseInt( j ) != this.map[ i ].length - 1 )
-                    str += ",";
-            }
-            str += "]";
-            if( parseInt( i ) != this.map.length - 1 )
-                str += ",";
-        }
-        str += "],[";
-        for( var i in this.next_balls ){
-            var arr = this.next_balls[ i ];
-            str += "[[" + arr[ 0 ][ 0 ] + "," + arr[ 0 ][ 1 ] + "],";
-            str += arr[ 1 ].num + "]";
-            if( parseInt( i ) != this.next_balls.length - 1 )
-                str += ","
-        }
-        str += "]," + this.game.settings.mode + "]";
-        $.cookie( "game", str, { expires : 365 } );*/
-    };
-
-    /*
-     * Load game from the array:
-     */
-    prototype.game_load = function( arr ){
-        /*
-         * TODO: move this method to main class
-         */
-        /*this.info_bar_obj.score = arr[ 0 ];
-        this.info_bar_obj.set_score( arr[ 0 ] );
-        this.clear();
-        this.map = new Array( 9 );
-        for( var i = 0; i < 9; i++ )
-            this.map[ i ] = new Array( null, null, null, null, null, null, null, null, null );
-        for( var i in arr[ 1 ] )
-            for( var j in arr[ 1 ][ i ] ){
-                var color = arr[ 1 ][ i ][ j ];
-                if( color == 0 )
-                    continue;
-                var nx = parseInt( j );
-                var ny = parseInt( i );
-                var ball = new Ball( this.svg_obj, color, this.game.html.cell_size, this.game.settings.balls_type );
-                ball.popup( nx, ny, 1 );
-                this.map[ ny ][ nx ] = ball;
-            }
-        this.next_balls = new Array();
-        for( var i in arr[ 2 ] ){
-            var rec = arr[ 2 ][ i ];
-            var nx = rec[ 0 ][ 0 ];
-            var ny = rec[ 0 ][ 1 ];
-            var color = rec[ 1 ];
-            var ball = new Ball( this.svg_obj, color, this.game.html.cell_size, this.game.settings.balls_type );
-            this.next_balls.push( [ [ nx, ny ], ball ] );
-        }
-        this.update_info_bar()
-        if( this.game.settings.show_next )
-            this.add_small_balls();
-        this.game.settings.mode = arr[ 3 ];
-        if( this.game.settings.mode <= 1 ){
-            this.game.settings.field_size = 7;
-            this.game.settings.field_border = 1;
-        }else{
-            this.game.settings.field_size = 9;
-            this.game.settings.field_border = 0;
-        }
-        this.game_started = true;*/
-    };
 
     /*
      * Change balls type.
@@ -954,7 +937,16 @@ with(Field = function( game_obj ){
      * Update field size according to current game mode.
      */
     prototype.update_size = function(){
-        var url = ( this.game.settings.mode <= 1 ) ? this.game.html.field_small_img : this.game.html.field_img;
+        var url;
+        if( this.game.settings.mode <= 1 ){
+            this.game.settings.field_size = 7;
+            this.game.settings.field_border = 1;
+            url = this.game.html.field_small_img;
+        }else{
+            this.game.settings.field_size = 9;
+            this.game.settings.field_border = 0;
+            url = this.game.html.field_img;
+        }
         this.obj.css( "background-image", 'url(' + url + ')' );
     };
 
@@ -989,7 +981,7 @@ with(Field = function( game_obj ){
                     if( ! self.remove_balls() )   // user does not build new figure...
                         self.next_round();        // go to the next round
 
-                    //self.game_save();
+                    self.game.save_game();
                 };
 
                 if( self.move_ball( nx, ny, callback ) )  // try move selected ball to new position
@@ -1174,6 +1166,14 @@ with(Store=function(){
             exdate.setDate( exdate.getDate() + 365 );  // Expire to 1 year
             document.cookie = item + "=" + escape( value ) + "; expires=" + exdate.toUTCString();
         }
+    };
+
+
+    prototype.delete = function( item ){
+        if( this.html5 )
+            localStorage.removeItem( item );
+        else
+            document.cookie = item + "=; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
     };
 }
 
