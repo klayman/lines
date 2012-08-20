@@ -16,26 +16,53 @@ mysql_select_db( $db, $link )
 // Set UTF-8 encoding as default:
 mysql_query( "SET NAMES 'utf8'" );
 
-/*session_start();
-if( isset( $_POST[ "start_game" ] ) ){
-    $_SESSION[ "timestamp" ] = time();
-    $_SESSION[ "score" ] = 0;
+if( isset( $_POST[ "new_game" ] ) && isset( $_POST[ "game_hash" ] ) ){
+    $hash_id = mysql_real_escape_string( $_POST[ "game_hash" ] );
+    if( $_POST[ "game_hash" ] === "" ){
+        // Create new unique game hash id:
+        $hash_id = md5( $_SERVER[ "REMOTE_ADDR" ] . time() . rand( 0, 10000 ) );
+        mysql_query( "INSERT INTO games (hash_id, score, last_update)
+                           VALUES ('" . $hash_id . "', '0', '" . time() . "')" ) or die( "" );
+        // Delete old saved games:
+        mysql_query( "DELETE FROM games
+                            WHERE last_update < '" . ( time() - ( 7 * 24 * 60 * 60 ) ) . "'" ) or die( "" );
+        die( $hash_id );
+    }
+    // Reset game score:
+    mysql_query( "UPDATE games
+                     SET score = '0',
+                         last_update = '" . time() . "'
+                   WHERE hash_id = '" . $hash_id . "'" ) or die( "" );
 }
-if( isset( $_POST[ "score" ] ) ){
-    if( ! isset( $_SESSION[ "score" ] ) ){
-        session_destroy();
-        die( "" );
-    }
-    $prev_score = $_SESSION[ "score" ];
+
+
+if( isset( $_POST[ "update_time" ] ) && isset( $_POST[ "game_hash" ] ) ){
+    $hash_id = mysql_real_escape_string( $_POST[ "game_hash" ] );
+    // Resume saved game - update "last_update" field:
+    mysql_query( "UPDATE games
+                     SET last_update = '" . time() . "'
+                   WHERE hash_id = '" . $hash_id . "'" ) or die( "0" );
+    if( mysql_affected_rows() == 0 )
+        die( "0" );
+}
+
+
+if( isset( $_POST[ "score" ] ) && isset( $_POST[ "game_hash" ] ) ){
+    $hash_id = mysql_real_escape_string( $_POST[ "game_hash" ] );
+    $res = mysql_query( "SELECT score, last_update
+                           FROM games
+                          WHERE hash_id = '" . $hash_id . "'" ) or die( "" );
+    $row = mysql_fetch_row( $res );
+    $prev_score = $row[ 0 ];
+    $prev_time = $row[ 1 ];
     $curt_score = ( int ) $_POST[ "score" ];
-    $prev_time = $_SESSION[ "timestamp" ];
     $curt_time = time();
-    $max_allowed_score = ( $curt_time - $prev_time ) * 35;
+    if( $curt_time - $prev_time >= 20 )
+        die( "" );  // Time interval is about 10 seconds. Too late.
+    $max_allowed_score = ( $curt_time - $prev_time ) * 8;  // Magic number - max allowed score for this time interval
     $user_score = $curt_score - $prev_score;
-    if( $user_score >= $max_allowed_score ){
-        session_destroy();
-        die( "" );
-    }
+    if( $user_score >= $max_allowed_score )
+        die( "" );  // Cool hacking attempt :)
     if( isset( $_POST[ "result" ] ) && isset( $_POST[ "name" ] ) ){
         $mode = ( int ) $_POST[ "result" ];
         $res = mysql_query( "SELECT score
@@ -49,14 +76,19 @@ if( isset( $_POST[ "score" ] ) ){
         }
         $name = mysql_real_escape_string( $_POST[ "name" ] );
         if( $curt_score >= $arr[ 7 ] )
+            // New record!
             mysql_query( "INSERT INTO high_scores (mode, player, score, timestamp)
                                VALUES ('" . $mode . "', '" . $name . "', '" . $curt_score . "', '" . time() . "')" );
-        session_destroy();
-        die( "" );
+        $curt_score = 0;  // Reset score - game is finished.
     }
-    $_SESSION[ "score" ] = $curt_score;
-    $_SESSION[ "timestamp" ] = time();
-}*/
+    // Update game score:
+    mysql_query( "UPDATE games
+                     SET score = '" . $curt_score . "',
+                         last_update = '" . time() . "'
+                   WHERE hash_id = '" . mysql_real_escape_string( $_POST[ "game_hash" ] ) . "'" ) or die( "" );
+}
+
+
 if( isset( $_POST[ "get_high_scores" ] ) ){
     // Get highscores by game mode:
     $mode = ( int ) $_POST[ "get_high_scores" ];

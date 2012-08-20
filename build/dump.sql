@@ -7,6 +7,16 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8 */;
 
 
+DROP TABLE IF EXISTS `games`;
+CREATE TABLE IF NOT EXISTS `games` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `hash_id` varchar(32) NOT NULL,
+  `score` int(11) NOT NULL,
+  `last_update` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `hash_id` (`hash_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+
 DROP TABLE IF EXISTS `high_scores`;
 CREATE TABLE IF NOT EXISTS `high_scores` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -15,7 +25,7 @@ CREATE TABLE IF NOT EXISTS `high_scores` (
   `score` int(11) NOT NULL,
   `timestamp` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=68 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=73 ;
 
 INSERT INTO `high_scores` (`id`, `mode`, `player`, `score`, `timestamp`) VALUES
 (1, 0, 'Test player 1', 800, 1314264134),

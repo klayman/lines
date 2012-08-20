@@ -12,7 +12,7 @@ with(Lines_game = function( settings, html ){
         this.store = new Store;
         // Load saved settings if possible:
         if( this.store.load( "lines_settings" ) )
-            this.settings = eval( "(" + this.store.load( "lines_settings" ) + ")" );
+            this.settings = JSON.parse( this.store.load( "lines_settings" ) );
         // Make a async request - get texts on selected language:
         $.ajax(
             {
@@ -50,7 +50,7 @@ with(Lines_game = function( settings, html ){
     /*
      * Load game high scores table.
      */
-    prototype.load_high_scores = function(){
+    prototype.load_high_scores = function( check_record ){
         var page = this.html.high_score_page;
         var title = page.find( "h1" );
         switch( this.settings.mode ){
@@ -85,6 +85,7 @@ with(Lines_game = function( settings, html ){
                         $( "<th>" + txt.DATE + "</th>" )
                     );
                     table.append( tr );
+                    var place = 0;
                     for( var i in data ){
                         tr = $( "<tr></tr>" );
                         var date = new Date();
@@ -100,12 +101,42 @@ with(Lines_game = function( settings, html ){
                             $( "<td>" + day + "." + month + "." + year + "</td>" )
                         );
                         table.append( tr );
+                        if( check_record && self.score >= data[ i ][ 1 ] && place == 0 )
+                            place = parseInt( i ) + 1;
                     }
                     self.html.scores_table.append( table );
+                    if( check_record ){
+                        if( place ){
+                            var name = prompt( txt.HIGH_SCORE.replace( "%s", self.score ).replace( "%p", place ) );
+                            if( name ){
+                                $.ajax(
+                                    {
+                                          type : "POST",
+                                           url : "server.php",
+                                          data : {
+                                                    "score" : self.score,
+                                                   "result" : self.settings.mode,
+                                                "game_hash" : self.game_hash,
+                                                     "name" : name
+                                                 },
+                                       success : function(){
+                                                    self.load_high_scores();
+                                                    self.show_page( self.html.high_score_page );
+                                                 },
+                                         error : function(){
+                                                    alert( txt.UNABLE_TO_CONNECT );
+                                                 }
+                                    }
+                                );
+                            }else
+                                self.show_page( self.html.high_score_page );
+                        }else
+                            alert( txt.GAME_OVER + " " + txt.SCORE + ": " + self.score );
+                    }
                 },
                error :
                 function(){
-                   block.text( txt.UNABLE_TO_CONNECT );
+                   self.html.scores_table.text( txt.UNABLE_TO_CONNECT );
                 }
             }
         );
@@ -262,8 +293,11 @@ with(Lines_game = function( settings, html ){
       * Load saved game from html5 store or cookie.
       */
     prototype.load_game = function(){
-        if( ! this.store.load( "lines_game" ) )
+        this.game_hash = this.store.load( "lines_game_hash" );
+        if( ! this.store.load( "lines_game" ) ){
+            this.start_new_game();
             return;
+        }
         this.game_started = true;
         this.field.clear();
         var arr = JSON.parse( this.store.load( "lines_game" ) );
@@ -287,15 +321,18 @@ with(Lines_game = function( settings, html ){
         this.field.update_info_bar();
         this.settings.mode = arr[ 3 ];
         this.update_mode_button();
+        this.resume_online_score();
     };
 
 
     /*
-     * Delete saved game from html5 store or cookie.
+     * Delete saved game from html5 store or cookie, stop game global timer.
      */
     prototype.delete_game = function(){
         if( this.store.load( "lines_game" ) )
             this.store.delete( "lines_game" );
+        if( this.timer )
+            clearInterval( this.timer );
     };
 
 
@@ -313,6 +350,7 @@ with(Lines_game = function( settings, html ){
         this.game_started = false;
         this.info_bar.score2zero();
         this.delete_game();
+        this.reset_online_score();
     };
 
     /*
@@ -347,6 +385,101 @@ with(Lines_game = function( settings, html ){
         this.settings.mode = mode;
         this.update_mode_button();
         this.start_new_game();
+    };
+
+
+
+    /*
+     * Resume saved game - update game time on the server and resume global timer.
+     */
+    prototype.resume_online_score = function(){
+        var self = this;
+        if( ! this.game_hash )
+            return;
+        if( this.timer )
+            clearInterval( this.timer );
+        $.ajax(
+            {
+                type : "POST",
+                 url : "server.php",
+                data : {
+                         "update_time" : true,
+                           "game_hash" : this.game_hash
+                       },
+             success :
+                function( data ){
+                    if( parseInt( data ) == 0 ){
+                        alert( txt.GAME_EXPIRED );
+                        self.game_hash = null;
+                        self.store.delete( "lines_game_hash" );
+                    }else
+                        self.timer = window.setInterval(
+                            self.update_online_score,
+                            10000,
+                            self
+                        );
+                },
+               error :
+                function(){
+                    alert( txt.UNABLE_TO_CONNECT );
+                }
+            }
+        );
+    };
+
+
+    /*
+     * Reset game score on the server and start global update timer.
+     */
+    prototype.reset_online_score = function(){
+        var self = this;
+        if( this.timer )
+            clearInterval( this.timer );
+        $.ajax(
+            {
+                type : "POST",
+                 url : "server.php",
+                data : {
+                            "new_game" : true,
+                           "game_hash" : this.game_hash
+                       },
+             success :
+                function( data ){
+                    if( ! self.game_hash && data != "" ){
+                        self.store.save( "lines_game_hash", data );
+                        self.game_hash = data;
+                    }
+                    self.timer = window.setInterval(
+                        self.update_online_score,
+                        10000,
+                        self
+                    );
+                },
+               error :
+                function(){
+                    alert( txt.UNABLE_TO_CONNECT );
+                }
+            }
+        );
+    };
+
+
+    /*
+     * Update current game score on the server.
+     */
+    prototype.update_online_score = function( self ){
+        var score = ( self ) ? self.score : this.score;
+        var game_hash = ( self ) ? self.game_hash : this.game_hash;
+        $.ajax(
+            {
+                type : "POST",
+                 url : "server.php",
+                data : {
+                                "score" : score,
+                            "game_hash" : game_hash
+                       }
+            }
+        );
     };
 
 
@@ -513,12 +646,6 @@ with(Field = function( game_obj ){
     // X and Y coords of selected ball (in cells):
     this.selected_ball = null;
 
-    // Array of "next" colors and positions of balls, which will appear at the field in the next turn:
-    this.next_balls = this.gen_next_balls();
-
-    // Add first balls on the field:
-    this.next_round();
-
     this.game.game_started = false;
 
     this.handlers();    // Set the event handlers:
@@ -573,7 +700,7 @@ with(Field = function( game_obj ){
         var s = this.game.settings.field_size;
         if( this.balls_count() == s * s )
         {
-            //this.game_obj.load_high_scores( this.info_bar_obj.score );
+            this.game.load_high_scores( true );
             this.game.game_started = false;
             this.next_balls = [];
             this.game.delete_game();
