@@ -48,6 +48,71 @@ with(Lines_game = function( settings, html ){
 
 
     /*
+     * Load game high scores table.
+     */
+    prototype.load_high_scores = function(){
+        var page = this.html.high_score_page;
+        var title = page.find( "h1" );
+        switch( this.settings.mode ){
+            case 0: title.text( txt.RECTANGLES ); break;
+            case 1: title.text( txt.RINGS );      break;
+            case 2: title.text( txt.LINES + ", 4 " + txt.IN_ROW ); break;
+            case 3: title.text( txt.LINES + ", 5 " + txt.IN_ROW ); break;
+            case 4: title.text( txt.LINES + ", 6 " + txt.IN_ROW ); break;
+            case 6: title.text( txt.BLOCKS + ", 6 " + txt.IN_BLOCK ); break;
+            case 7: title.text( txt.BLOCKS + ", 7 " + txt.IN_BLOCK ); break;
+            case 8: title.text( txt.BLOCKS + ", 8 " + txt.IN_BLOCK ); break;
+        }
+        this.html.scores_table.text( txt.LOADING );
+        var self = this;
+        $.ajax(
+            {
+                type : "POST",
+                 url : "server.php",
+                data : {
+                            "get_high_scores" : this.settings.mode
+                       },
+             success :
+                function( data ){
+                    self.html.scores_table.empty();
+                    data = JSON.parse( data );
+                    var table = $( "<table></table>" );
+                    var tr = $( "<tr></tr>" );
+                    tr.append(
+                        $( "<th>" + txt.PLACE + "</th>" ),
+                        $( "<th>" + txt.PLAYER + "</th>" ),
+                        $( "<th>" + txt.SCORE + "</th>" ),
+                        $( "<th>" + txt.DATE + "</th>" )
+                    );
+                    table.append( tr );
+                    for( var i in data ){
+                        tr = $( "<tr></tr>" );
+                        var date = new Date();
+                        date.setTime( data[ i ][ 2 ] * 1000 );
+                        var day = date.getDate();
+                        var month = ( date.getMonth() + 1 ) + "";
+                        month = month.length == 1 ? "0" + month : month;
+                        var year = date.getFullYear();
+                        tr.append(
+                            $( "<td>" + ( parseInt( i ) + 1 ) + "</td>" ),
+                            $( "<td>" + data[ i ][ 0 ] + "</td>" ),
+                            $( "<td>" + data[ i ][ 1 ] + "</td>" ),
+                            $( "<td>" + day + "." + month + "." + year + "</td>" )
+                        );
+                        table.append( tr );
+                    }
+                    self.html.scores_table.append( table );
+                },
+               error :
+                function(){
+                   block.text( txt.UNABLE_TO_CONNECT );
+                }
+            }
+        );
+    };
+
+
+    /*
      * Update the game's mode icon on the appropriate button.
      */
     prototype.update_mode_button = function(){
@@ -311,6 +376,7 @@ with(Lines_game = function( settings, html ){
         );
         this.html.high_score_btn.click(
             function(){
+                self.load_high_scores();
                 self.show_page( self.html.high_score_page );
             }
         );
@@ -1223,6 +1289,7 @@ $( document ).ready(
                   "help_page" : $( "#help-page" ),
              "high_score_btn" : $( "#scores" ),
             "high_score_page" : $( "#scores-page" ),
+               "scores_table" : $( "#scores-table" ),
                "new_game_btn" : $( "#restart" ),
                    "mode_btn" : $( "#mode" ),
                    "mode_num" : $( "#num-balls" )
