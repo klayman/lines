@@ -51,9 +51,9 @@ a {
     z-index: -1;
     top: 50%;
     right: 50%;
-    width: 1000px;
-    height: 1000px;
-    margin: -500px -500px 0 0;
+    width: 1024px;
+    height: 1024px;
+    margin: -512px -512px 0 0;
 }
 #container {
     position: absolute;
