@@ -173,6 +173,23 @@ with(Lines_game = function( settings, html ){
     };
 
 
+    /*
+     * Update background style - random color, rotation and image.
+     */
+    prototype.update_background = function(){
+        var rotation = this.field.rand( 0, 360 );
+        var hue = this.field.rand( 0, 360 );
+        var arr = this.html.decor_images;
+        var image = arr[ 0 ].replace( "%n", this.field.rand( arr[ 1 ], arr[ 2 ] ) );
+        this.html.decor_rect.attr( "transform", this.html.decor_rect_rot.replace( "%n", rotation ) );
+        this.html.dark_center.attr( "stop-color", this.html.dark_center_sc.replace( "%n", hue ) );
+        this.html.dark_edge.attr( "stop-color", this.html.dark_edge_sc.replace( "%n", hue ) );
+        this.html.bright_center.attr( "stop-color", this.html.bright_center_sc.replace( "%n", hue ) );
+        this.html.bright_edge.attr( "stop-color", this.html.bright_edge_sc.replace( "%n", hue ) );
+        this.html.decor.attr( "href", image );
+    };
+
+
     prototype.update_settings_controls = function(){
         // Update html elements according to new settings:
         switch( this.settings.mode ){
@@ -351,6 +368,7 @@ with(Lines_game = function( settings, html ){
         this.info_bar.score2zero();
         this.delete_game();
         this.reset_online_score();
+        this.update_background();
     };
 
     /*
@@ -1419,7 +1437,19 @@ $( document ).ready(
                "scores_table" : $( "#scores-table" ),
                "new_game_btn" : $( "#restart" ),
                    "mode_btn" : $( "#mode" ),
-                   "mode_num" : $( "#num-balls" )
+                   "mode_num" : $( "#num-balls" ),
+                 "decor_rect" : $( "#decor-rect" ),
+             "decor_rect_rot" : "rotate(%n 50 50)",
+                "dark_center" : $( "#dark-center" ),
+             "dark_center_sc" : "hsl(%n, 16%, 78%)",
+                  "dark_edge" : $( "#dark-edge" ),
+               "dark_edge_sc" : "hsl(%n, 25%, 23%)",
+              "bright_center" : $( "#bright-center" ),
+           "bright_center_sc" : "hsla(%n, 90%, 93%, 0.16)",
+                "bright_edge" : $( "#bright-edge" ),
+             "bright_edge_sc" : "hsla(%n, 100%, 76%, 0.35)",
+                      "decor" : $( "#decor-mask image" ),
+               "decor_images" : [ "images/khokhloma-%n.png", 1, 2 ]
             };
 
         var lines = new Lines_game( settings, html );
