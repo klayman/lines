@@ -89,7 +89,7 @@ with(Lines_game = function( settings, html ){
                     for( var i in data ){
                         tr = $( "<tr></tr>" );
                         var date = new Date();
-                        date.setTime( data[ i ][ 2 ] * 1000 );
+                        date.setTime( Math.round( data[ i ][ 2 ] / 10 ) );
                         var day = date.getDate();
                         var month = ( date.getMonth() + 1 ) + "";
                         month = month.length == 1 ? "0" + month : month;
@@ -408,7 +408,7 @@ with(Lines_game = function( settings, html ){
                        },
              success :
                 function( data ){
-                    if( parseInt( data ) == 0 ){
+                    if( data == "0" ){
                         alert( txt.GAME_EXPIRED );
                         self.game_hash = null;
                         self.store.delete( "lines_game_hash" );
@@ -445,7 +445,7 @@ with(Lines_game = function( settings, html ){
                        },
              success :
                 function( data ){
-                    if( ! self.game_hash && data != "" ){
+                    if( data != "" ){
                         self.store.save( "lines_game_hash", data );
                         self.game_hash = data;
                     }
@@ -468,8 +468,8 @@ with(Lines_game = function( settings, html ){
      * Update current game score on the server.
      */
     prototype.update_online_score = function( self ){
-        var score = ( self ) ? self.score : this.score;
-        var game_hash = ( self ) ? self.game_hash : this.game_hash;
+        var score = self.score;
+        var game_hash = self.game_hash;
         $.ajax(
             {
                 type : "POST",
