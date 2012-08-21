@@ -1441,13 +1441,13 @@ $( document ).ready(
                  "decor_rect" : $( "#decor-rect" ),
              "decor_rect_rot" : "rotate(%n 50 50)",
                 "dark_center" : $( "#dark-center" ),
-             "dark_center_sc" : "hsl(%n, 16%, 78%)",
+             "dark_center_sc" : "hsl(%n, 13%, 78%)",
                   "dark_edge" : $( "#dark-edge" ),
                "dark_edge_sc" : "hsl(%n, 25%, 23%)",
               "bright_center" : $( "#bright-center" ),
-           "bright_center_sc" : "hsla(%n, 90%, 93%, 0.16)",
+           "bright_center_sc" : "hsl(%n, 90%, 93%)",
                 "bright_edge" : $( "#bright-edge" ),
-             "bright_edge_sc" : "hsla(%n, 100%, 76%, 0.35)",
+             "bright_edge_sc" : "hsl(%n, 100%, 76%)",
                       "decor" : $( "#decor-mask image" ),
                "decor_images" : [ "images/khokhloma-%n.png", 1, 2 ]
             };
