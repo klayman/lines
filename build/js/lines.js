@@ -13,6 +13,7 @@ with(Lines_game = function( settings, html ){
         // Load saved settings if possible:
         if( this.store.load( "lines_settings" ) )
             this.settings = JSON.parse( this.store.load( "lines_settings" ) );
+        txt = {};  // Create "empty" object of texts - fallback for local game start
         // Make a async request - get texts on selected language:
         $.ajax(
             {
@@ -77,7 +78,12 @@ with(Lines_game = function( settings, html ){
              success :
                 function( data ){
                     self.html.scores_table.empty();
-                    data = JSON.parse( data );
+                    try{
+                        data = JSON.parse( data );
+                    }catch( e ){
+                        alert( txt.UNABLE_TO_CONNECT );
+                        return;
+                    }
                     var table = $( "<table></table>" );
                     var tr = $( "<tr></tr>" );
                     tr.append(
@@ -443,7 +449,9 @@ with(Lines_game = function( settings, html ){
                 },
                error :
                 function(){
-                    alert( txt.UNABLE_TO_CONNECT );
+                    var msg = txt.UNABLE_TO_CONNECT;
+                    if( ! msg ) msg = "Local game launch isn't supported for your browser. You should place it at the real web server!";
+                    alert( msg );
                 }
             }
         );
@@ -479,7 +487,9 @@ with(Lines_game = function( settings, html ){
                 },
                error :
                 function(){
-                    alert( txt.UNABLE_TO_CONNECT );
+                    var msg = txt.UNABLE_TO_CONNECT;
+                    if( ! msg ) msg = "Local game launch isn't supported for your browser. You should place it at the real web server!";
+                    alert( msg );
                 }
             }
         );
