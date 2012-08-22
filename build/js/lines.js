@@ -321,7 +321,7 @@ with(Lines_game = function( settings, html ){
         this.game_started = true;
         this.field.clear();
         var arr = JSON.parse( this.store.load( "lines_game" ) );
-        this.info_bar.set_score( arr[ 0 ] );
+        this.info_bar.animate_score( 0, arr[ 0 ] );
         this.score = arr[ 0 ];
         for( var i in arr[ 1 ] )
             for( var j in arr[ 1 ][ i ] )
@@ -576,26 +576,34 @@ with(Info_bar = function( game_obj ){
     this.game.score = 0;
 }){
     /*
-     * Set new score value
+     * Animate score digits.
      */
-    prototype.set_score = function( score ){
-        this.obj_score.text( score );
+    prototype.animate_score = function( old_score, new_score ){
+        var self = this;
+        jQuery( { score : old_score } ).animate(
+            { score : new_score },
+            { duration : 300,
+              step : function( now, fx ){
+                self.obj_score.text( now.toFixed( 0 ) );
+              }
+            }
+        );
     };
 
     /*
      * Plus score and set it to bar
      */
     prototype.plus_score = function( score ){
+        this.animate_score( this.game.score, this.game.score + score );
         this.game.score += score;
-        this.set_score( this.game.score );
     };
 
     /*
      * Set game score to zero
      */
     prototype.score2zero = function(){
+        this.animate_score( this.game.score, 0 );
         this.game.score = 0;
-        this.set_score( 0 );
     };
 
     /*
