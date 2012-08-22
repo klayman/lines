@@ -562,6 +562,12 @@ with(Lines_game = function( settings, html ){
                 event.stopPropagation();
             }
         );
+        $( document ).keydown(
+            function( event ){
+                if( event.keyCode == 27 )  // [Esc] key
+                    self.show_page( self.html.field_page );
+            }
+        );
         $( document ).click(
             function(){
                 self.html.cancel_opt_btn.click();
