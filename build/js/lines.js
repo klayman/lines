@@ -38,8 +38,10 @@ with(Lines_game = function( settings, html ){
 
 
     prototype.show_page = function( page ){
-        if( this.active_page.attr( "id" ) == page.attr( "id" ) )
+        if( this.active_page.attr( "id" ) == page.attr( "id" ) && page.attr( "id" ) != this.html.field_page.attr( "id" ) ){
+            this.show_page( this.html.field_page );  // Return to the field on second click at the same button
             return;
+        }
         this.field.deselect_ball();  // deselect active ball on the field
         this.active_page.hide()
         this.active_page = page;
