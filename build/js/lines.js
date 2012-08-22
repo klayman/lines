@@ -254,6 +254,11 @@ with(Lines_game = function( settings, html ){
         else
             this.field.remove_small_balls();
 
+        this.settings.balls_type = this.html.balls_type_sel.val();
+        this.new_settings.balls_type = this.settings.balls_type;
+        this.field.change_balls_type();
+        this.info_bar.change_balls_type();
+
         if( this.new_settings.mode != this.settings.mode ){
             if( this.new_settings.mode <= 1 ){
                 this.new_settings.field_size = 7;
@@ -270,10 +275,6 @@ with(Lines_game = function( settings, html ){
                 this.start_new_game();
         }
 
-        this.settings.balls_type = this.html.balls_type_sel.val();
-        this.new_settings.balls_type = this.settings.balls_type;
-        this.field.change_balls_type();
-        this.info_bar.change_balls_type();
         this.store.save( "lines_settings", JSON.stringify( this.new_settings ) );
     };
 
@@ -335,7 +336,8 @@ with(Lines_game = function( settings, html ){
             var x = arr[ 2 ][ i ][ 0 ][ 0 ];
             var y = arr[ 2 ][ i ][ 0 ][ 1 ];
             this.field.next_balls.push( [ [ x, y ], ball ] );
-            ball.popup( x, y, "small" );
+            if( this.settings.show_next )
+                ball.popup( x, y, "small" );
         }
         this.field.update_info_bar();
         this.settings.mode = arr[ 3 ];
@@ -1266,6 +1268,8 @@ with(Ball = function( parent_obj, number, type ){
      * Popup ball with animation at position ( nx, ny )
      */
     prototype.popup = function( nx, ny, anim_type, callback, clbk_param ){
+        // Delete old html object of the ball:
+        this.erase();
         // Define the css class:
         var css_class;
         switch( this.num ){
