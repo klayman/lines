@@ -256,8 +256,9 @@ select[name=balls-skin] {
 select, input[type=button] {
     color: white;
     font-size: 13px;
-    line-height: 19px;
+    line-height: 16px;
     background-color: rgba(0, 0, 0, 0.0); /* Windows version of Opera treat 'transparent' incorrectly */
+    -webkit-appearance: none; /* Fix of the same problem as above for the Windows version of Chrome */
     background-image:         linear-gradient( top, rgba(80, 80, 80, 0.2), rgba(0, 0, 0, 0.35) );
     background-image: -webkit-linear-gradient( top, rgba(80, 80, 80, 0.2), rgba(0, 0, 0, 0.35) );
     background-image:    -moz-linear-gradient( top, rgba(80, 80, 80, 0.2), rgba(0, 0, 0, 0.35) );
