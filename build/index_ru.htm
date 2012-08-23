@@ -12,6 +12,25 @@
     <link rel="stylesheet" type="text/css" href="css/style.css" />
     <script type="text/javascript" src="js/jquery.js"></script>
     <script type="text/javascript" src="js/lines.js"></script>
+    <script type="text/javascript">
+        // Set default game settings:
+        /*
+         * balls_type     : type of the game balls (one of the 'matte' and 'glossy')
+         * show_next      : next balls showing enabled or not (boolean)
+         * mode           : game mode (number from 0 to 8)
+         * field_size     : game field size (in cells)
+         * field_border   : the inner boundary of the field (in cells) - we can't put a ball on it
+         */
+        var settings =
+            {
+                 "balls_type" : "matte",
+                       "lang" : "ru",
+                  "show_next" : false,
+                       "mode" : 3,
+                 "field_size" : 9,
+               "field_border" : 0
+            };
+    </script>
     <link rel="icon" href="favicon.ico" />
 </head>
 
@@ -60,9 +79,9 @@
             <form>
                 <fieldset>
                     <legend>Language/Язык:</legend>
-                    <select name="language" disabled="disabled">
-                        <option value="russian" selected="selected">Русский</option>
-                        <option value="english">English</option>
+                    <select name="language">
+                        <option value="ru" selected="selected">Русский</option>
+                        <option value="en">English</option>
                     </select>
                 </fieldset>
                 <fieldset>

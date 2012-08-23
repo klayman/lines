@@ -10,9 +10,14 @@ with(Lines_game = function( settings, html ){
 
     prototype.init = function(){
         this.store = new Store;
+        // Save old settings just in case:
+        var settings = this.settings;
         // Load saved settings if possible:
         if( this.store.load( "lines_settings" ) )
             this.settings = JSON.parse( this.store.load( "lines_settings" ) );
+        // Change language if necessary:
+        if( settings.lang != this.settings.lang )
+            this.change_language( this.settings.lang );
         txt = {};  // Create "empty" object of texts - fallback for local game start
         // Make a async request - get texts on selected language:
         $.ajax(
@@ -202,6 +207,9 @@ with(Lines_game = function( settings, html ){
 
     prototype.update_settings_controls = function(){
         // Update html elements according to new settings:
+
+        this.html.lang_sel.find( "[value='" + this.settings.lang + "']" ).attr( "selected", "selected" );
+
         switch( this.settings.mode ){
             case 0: this.html.mode_radio.filter( "#rectangles" ).click(); break;
             case 1: this.html.mode_radio.filter( "#rings" ).click(); break;
@@ -281,6 +289,12 @@ with(Lines_game = function( settings, html ){
                     this.start_new_game();
             }else
                 this.start_new_game();
+        }
+
+        if( this.settings.lang != this.html.lang_sel.val() ){
+            this.settings.lang = this.html.lang_sel.val();
+            this.new_settings.lang = this.settings.lang;
+            this.change_language( this.settings.lang );
         }
 
         this.store.save( "lines_settings", JSON.stringify( this.new_settings ) );
@@ -417,6 +431,37 @@ with(Lines_game = function( settings, html ){
         this.start_new_game();
     };
 
+
+    /*
+     * Change language of the game interface.
+     */
+    prototype.change_language = function( lang ){
+        var self = this;
+        $.ajax(
+            {
+                type : "GET",
+                 url : "index_" + lang + ".htm",
+            dataType : "html",
+             success :
+                function( data ){
+                    var reg = /<div id="container">([\s\S]*)<\/div>(?:[\s\S]*)<\/body>/i;
+                    var content = reg.exec( data )[ 1 ];
+                    self.html.container.empty().html( content );
+                    // Reassign objects:
+                    for( var i in self.html )
+                        if( typeof self.html[ i ] == "object" && self.html[ i ] instanceof jQuery ){
+                            if( self.html[ i ].attr( "id" ) && self.html[ i ].attr( "type" ) != "radio" )
+                                self.html[ i ] = $( "#" + self.html[ i ].attr( "id" ) );
+                            else
+                                if( self.html[ i ].attr( "name" ) )
+                                    self.html[ i ] = $( self.html[ i ].prop( "tagName" ).toLowerCase() + '[name="' + self.html[ i ].attr( "name" ) + '"]' );
+                        }
+                    // Global reset:
+                    self.init();
+                }
+            }
+        );
+    };
 
 
     /*
@@ -1450,23 +1495,6 @@ with(Store=function(){
 $( document ).ready(
     function(){
         /* Game initialization after the page loads: */
-        // Set default game settings:
-        /*
-         * balls_type     : type of the game balls (one of the 'matte' and 'glossy')
-         * show_next      : next balls showing enabled or not (boolean)
-         * mode           : game mode (number from 0 to 8)
-         * field_size     : game field size (in cells)
-         * field_border   : the inner boundary of the field (in cells) - we can't put a ball on it
-         */
-        var settings =
-            {
-                 "balls_type" : "matte",
-                       "lang" : "ru",
-                  "show_next" : false,
-                       "mode" : 3,
-                 "field_size" : 9,
-               "field_border" : 0
-            };
 
         // html objects and their attributes:
         var html =
@@ -1481,6 +1509,7 @@ $( document ).ready(
             "field_small_img" : "images/field-small.png",
                 "options_btn" : $( "#options" ),
                "options_page" : $( "#options-page" ),
+                   "lang_sel" : $( 'select[name="language"]' ),
                  "mode_radio" : $( 'input[name="mode"]' ),
                 "row_num_sel" : $( 'select[name="line-num"]' ),
               "block_num_sel" : $( 'select[name="block-num"]' ),
@@ -1497,6 +1526,7 @@ $( document ).ready(
                    "mode_btn" : $( "#mode" ),
                    "mode_num" : $( "#num-balls" ),
                  "decor_rect" : $( "#decor-rect" ),
+            "background_rect" : $( "#background-rect" ),
              "decor_rect_rot" : "rotate(%n 50 50)",
                 "dark_center" : $( "#dark-center" ),
              "dark_center_sc" : "hsl(%n, 8%, 80%)",
