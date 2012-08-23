@@ -1,5 +1,5 @@
 <?php
-    $browser = get_browser()
+    $browser = get_browser();
     if( $browser -> browser == 'MSIE' and $browser -> version < 9.0 ) {
         require( 'ie.php' );
         exit;
