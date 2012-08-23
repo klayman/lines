@@ -23,6 +23,8 @@ with(Lines_game = function( settings, html ){
             }
         );
         this.update_settings_controls();
+        // Check CSS3 animation support:
+        this.animation_supported = this.check_animation_support();
         // Set active page as game field:
         this.active_page = this.html.field_page;
         // Create info bar:
@@ -332,13 +334,13 @@ with(Lines_game = function( settings, html ){
         for( var i in arr[ 1 ] )
             for( var j in arr[ 1 ][ i ] )
                 if( arr[ 1 ][ i ][ j ] ){
-                    var ball = new Ball( this.html.field_insert, arr[ 1 ][ i ][ j ], this.settings.balls_type );
+                    var ball = new Ball( this.html.field_insert, arr[ 1 ][ i ][ j ], this.settings.balls_type, this.animation_supported );
                     this.field.map[ i ][ j ] = ball;
                     ball.popup( j, i, "normal" );
                 }
         this.field.next_balls = [];
         for( var i in arr[ 2 ] ){
-            var ball = new Ball( this.html.field_insert, arr[ 2 ][ i ][ 1 ], this.settings.balls_type );
+            var ball = new Ball( this.html.field_insert, arr[ 2 ][ i ][ 1 ], this.settings.balls_type, this.animation_supported );
             var x = arr[ 2 ][ i ][ 0 ][ 0 ];
             var y = arr[ 2 ][ i ][ 0 ][ 1 ];
             this.field.next_balls.push( [ [ x, y ], ball ] );
@@ -515,6 +517,24 @@ with(Lines_game = function( settings, html ){
     };
 
 
+    /*
+     * Are CSS3 animations supported?
+     */
+    prototype.check_animation_support = function(){
+        var check = false,
+            domPrefixes = [ "Webkit", "Moz", "O", "ms", "Khtml" ],
+            obj = document.createElement( "div" );
+        if( obj.style.animationName )
+            check = true;
+
+        if( check === false )
+            for( var i in domPrefixes )
+                if( obj.style[ domPrefixes[ i ] + "AnimationName" ] !== undefined )
+                    return true;
+        return false;
+    };
+
+
     prototype.handlers = function(){
         var self = this;
         this.html.new_game_btn.click(
@@ -647,7 +667,7 @@ with(Info_bar = function( game_obj ){
     prototype.put_balls = function( arr ){
         for( var i in arr ){
             var rec = arr[ i ];
-            var ball = new Ball( this.obj, rec[ 1 ].num, this.game.settings.balls_type );
+            var ball = new Ball( this.obj, rec[ 1 ].num, this.game.settings.balls_type, this.game.animation_supported );
             ball.popup( i * 1, 0, "small" );
             this.balls.push( ball );
         }
@@ -718,7 +738,7 @@ with(Field = function( game_obj ){
                     if( arr[ j ][ 0 ][ 0 ] == nx && arr[ j ][ 0 ][ 1 ] == ny )
                         unique = false;  // don't take empty place on the map twice
             } while( this.map[ ny ][ nx ] || ! unique );
-            var ball = new Ball( this.game.html.field_insert, color, this.game.settings.balls_type )
+            var ball = new Ball( this.game.html.field_insert, color, this.game.settings.balls_type, this.game.animation_supported )
             arr.push( [ [ nx, ny ], ball ] );
         }
         return arr;
@@ -769,7 +789,7 @@ with(Field = function( game_obj ){
             var rec = arr[ i ];
             var nx = rec[ 0 ][ 0 ];
             var ny = rec[ 0 ][ 1 ];
-            var ball = new Ball( this.game.html.field_insert, rec[ 1 ].num, this.game.settings.balls_type );
+            var ball = new Ball( this.game.html.field_insert, rec[ 1 ].num, this.game.settings.balls_type, this.game.animation_supported );
             if( this.map[ ny ][ nx ] )     // user can send ball to this place
             {
                 do {
@@ -880,7 +900,7 @@ with(Field = function( game_obj ){
 
             // we must create new ball, because of two parallel animations:
             // hiding old ball & popupping new ball
-            var new_ball = new Ball( this.game.html.field_insert, old_ball.num, this.game.settings.balls_type );
+            var new_ball = new Ball( this.game.html.field_insert, old_ball.num, this.game.settings.balls_type, this.game.animation_supported );
 
             this.map[ to_y ][ to_x ] = new_ball;
 
@@ -1257,7 +1277,7 @@ with(Field = function( game_obj ){
 
 
 
-with(Ball = function( parent_obj, number, type ){
+with(Ball = function( parent_obj, number, type, animation_supported ){
 
     // Saving the link to parent html object:
     this.parent = parent_obj;
@@ -1268,6 +1288,8 @@ with(Ball = function( parent_obj, number, type ){
     // Save the ball type (matte or glossy):
     this.type = type;
 
+    // Is CSS3 animation supported?
+    this.animation_supported = animation_supported;
 }){
 
 
@@ -1328,6 +1350,9 @@ with(Ball = function( parent_obj, number, type ){
         if( callback || anim_type != "small" )
             for( var i in evts )
                 this.obj[ 0 ].addEventListener( evts[ i ], listener, false );
+        if( callback && ! this.animation_supported )
+            // Animation isn't supported:
+            callback( clbk_param );
     };
 
 
@@ -1344,6 +1369,9 @@ with(Ball = function( parent_obj, number, type ){
         var evts = [ "animationend", "webkitAnimationEnd", "oanimationend", "MSAnimationEnd" ];
         for( var i in evts )
             this.obj[ 0 ].addEventListener( evts[ i ], listener, false );
+        if( ! this.animation_supported )
+            // Animation isn't supported:
+            this.erase();
     };
 
 
