@@ -47,7 +47,7 @@ figure.jumping{
     }
 }
 figure.popup_small{
-    -o-animation: popup_small 0.2s 1;
+    -o-animation: popup_small 0.3s 1;
     -o-transform: scale( 0.3, 0.3 );
 }
 @-o-keyframes popup_from_small{
@@ -59,7 +59,7 @@ figure.popup_small{
     }
 }
 figure.popup_from_small{
-    -o-animation: popup_from_small 0.15s ease-in-out 1;
+    -o-animation: popup_from_small 0.2s ease-in-out 1;
     -o-transform: scale( 1.00, 1.00 );
 }
 @-o-keyframes popup{
@@ -71,7 +71,7 @@ figure.popup_from_small{
     }
 }
 figure.popup{
-    -o-animation: popup 0.15s 1;
+    -o-animation: popup 0.25s 1;
     -o-transform: scale( 1.00, 1.00 );
 }
 @-o-keyframes remove{
@@ -82,5 +82,5 @@ figure.popup{
     }
 }
 figure.remove{
-    -o-animation: remove 0.1s 1 forwards;
+    -o-animation: remove 0.15s 1 forwards;
 }
