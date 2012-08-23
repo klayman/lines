@@ -1,8 +1,23 @@
 About
 -----
 
-This is a simple puzzle game on JavaScript (using popular library [jQuery](http://github.com/jquery/jquery))
-and html5.
+This is a simple puzzle browser game on JavaScript (using popular library [jQuery](http://github.com/jquery/jquery)),
+html5, PHP and MySQL (the last two were used for the online high scores table).
+
+Requirements
+------------
+
+Web server
+PHP 5.2.0+
+MySQL database
+
+Installation
+------------
+
+1. Import database tables using the `dump.sql` file, which is placed in project `build/` directory.
+2. Edit MySQL connect settings in `server.php` script (the same dir as above).
+3. Request `index.php` script from your browser.
+4. Enjoy!
 
 Game rules
 ----------
