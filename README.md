@@ -7,9 +7,9 @@ html5, PHP and MySQL (the last two were used for the online high scores table).
 Requirements
 ------------
 
-Web server
-PHP 5.2.0+
-MySQL database
+* Web server
+* PHP 5.2.0+
+* MySQL database
 
 Installation
 ------------
