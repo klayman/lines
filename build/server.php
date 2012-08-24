@@ -56,7 +56,16 @@ if( isset( $_POST[ "score" ] ) && isset( $_POST[ "game_hash" ] ) ){
     $row = mysql_fetch_row( $res );
     $prev_score = $row[ 0 ];
     $prev_time = $row[ 1 ];
-    $curt_score = ( int ) $_POST[ "score" ];
+    $curt_score = $_POST[ "score" ];
+    $n = $curt_score[ 0 ];
+    for( $i = 0; $i < $n; $i++ )
+        $curt_score .= "=";
+    $str = base64_decode( substr( $curt_score, 1 ), true );
+    if( $str == false )
+        die( "" );
+    for( $i = 0; $i < strlen( $str ); $i++ )
+        $str[ $i ] = ord( $str[ $i ] );
+    $curt_score = ( int ) $str;
     $curt_time = microtime( true ) * 10000;
     if( $curt_time - $prev_time >= 200000 )
         die( "" );  // Time interval is about 10 seconds. Too late.

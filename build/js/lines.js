@@ -129,7 +129,7 @@ with(Lines_game = function( settings, html ){
                                           type : "POST",
                                            url : "server.php",
                                           data : {
-                                                    "score" : self.score,
+                                                    "score" : self.encode_score( self.score ),
                                                    "result" : self.settings.mode,
                                                 "game_hash" : self.game_hash,
                                                      "name" : name
@@ -547,7 +547,7 @@ with(Lines_game = function( settings, html ){
      * Update current game score on the server.
      */
     prototype.update_online_score = function( self ){
-        var score = self.score;
+        var score = self.encode_score( self.score );
         var game_hash = self.game_hash;
         $.ajax(
             {
@@ -559,6 +559,42 @@ with(Lines_game = function( settings, html ){
                        }
             }
         );
+    };
+
+
+    prototype.encode_score = function( score ){
+        var arr = score.toString();
+        var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+        var score = "";
+        var input = "";
+        for( var i in arr )
+            input += String.fromCharCode( arr[ i ] );
+        var hex = "";
+        var chr1, chr2, chr3 = "";
+        var enc1, enc2, enc3, enc4 = "";
+        var i = 0;
+        do{
+            chr1 = input.charCodeAt( i++ );
+            chr2 = input.charCodeAt( i++ );
+            chr3 = input.charCodeAt( i++ );
+            enc1 = chr1 >> 2;
+            enc2 = ( ( chr1 & 3 ) << 4 ) | ( chr2 >> 4 );
+            enc3 = ( ( chr2 & 15 ) << 2 ) | ( chr3 >> 6 );
+            enc4 = chr3 & 63;
+            if( isNaN( chr2 ) )
+                enc3 = enc4 = 64;
+            else
+                if( isNaN( chr3 ) )
+                    enc4 = 64;
+            score = score + b64.charAt( enc1 ) + b64.charAt( enc2 ) + b64.charAt( enc3 ) + b64.charAt( enc4 );
+            chr1 = chr2 = chr3 = "";
+            enc1 = enc2 = enc3 = enc4 = "";
+        }while( i < input.length );
+        var n = 0;
+        for( var i in score )
+            if( score[ i ] == "=" )
+                n++;
+        return n + score.substr( 0, score.indexOf( "=" ) );
     };
 
 
