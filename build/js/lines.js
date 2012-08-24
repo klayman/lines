@@ -594,7 +594,10 @@ with(Lines_game = function( settings, html ){
         for( var i in score )
             if( score[ i ] == "=" )
                 n++;
-        return n + score.substr( 0, score.indexOf( "=" ) );
+        if( score.indexOf( "=" ) < 0 )
+            return n + score;
+        else
+            return n + score.substr( 0, score.indexOf( "=" ) );
     };
 
 
