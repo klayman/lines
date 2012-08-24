@@ -51,7 +51,7 @@ with(Lines_game = function( settings, html ){
             return;
         }
         this.field.deselect_ball();  // deselect active ball on the field
-        this.active_page.hide()
+        this.active_page.hide();
         this.active_page = page;
         page.show();
     };
@@ -304,12 +304,12 @@ with(Lines_game = function( settings, html ){
     /*
      * Save current game to html5 store or cookie.
      */
-     prototype.save_game = function(){
+    prototype.save_game = function(){
         if( ! this.game_started )
             return;
         var str = "[" + this.score + ",[";
         for( var i in this.field.map ){
-            str += "["
+            str += "[";
             for( var j in this.field.map[ i ] ){
                 str += this.field.map[ i ][ j ] ? this.field.map[ i ][ j ].num : 0;
                 if( parseInt( j ) != this.field.map[ i ].length - 1 )
@@ -329,7 +329,7 @@ with(Lines_game = function( settings, html ){
         }
         str += "]," + this.settings.mode + "]";
         this.store.save( "lines_game", str );
-     };
+    };
 
      /*
       * Load saved game from html5 store or cookie.
@@ -819,7 +819,7 @@ with(Field = function( game_obj ){
                     if( arr[ j ][ 0 ][ 0 ] == nx && arr[ j ][ 0 ][ 1 ] == ny )
                         unique = false;  // don't take empty place on the map twice
             } while( this.map[ ny ][ nx ] || ! unique );
-            var ball = new Ball( this.game.html.field_insert, color, this.game.settings.balls_type, this.game.animation_supported )
+            var ball = new Ball( this.game.html.field_insert, color, this.game.settings.balls_type, this.game.animation_supported );
             arr.push( [ [ nx, ny ], ball ] );
         }
         return arr;
@@ -965,7 +965,7 @@ with(Field = function( game_obj ){
         }
 
         return stack;
-    }
+    };
 
     prototype.move_ball = function( to_x, to_y, callback ) {
         if( ! this.selected_ball )
@@ -999,7 +999,7 @@ with(Field = function( game_obj ){
         }
         // Moving faild!
         return false;
-    }
+    };
 
     /*
      * Try to select ball on the field
@@ -1100,7 +1100,7 @@ with(Field = function( game_obj ){
             case 7: nx-=1; ny-=1; break;
         }
         return [ nx, ny ]; // return new coords
-    }
+    };
 
     /*
      * This method find and removes group of balls which is
@@ -1255,7 +1255,7 @@ with(Field = function( game_obj ){
                 if( this.map[ j ][ i ] )
                     cnt++;
         return cnt;
-    }
+    };
 
 
     /*
@@ -1389,7 +1389,7 @@ with(Ball = function( parent_obj, number, type, animation_supported ){
             this.obj.hide();
             this.obj.remove();  // remove html object
         }
-    }
+    };
 
     /*
      * Popup ball with animation at position ( nx, ny )
@@ -1427,7 +1427,7 @@ with(Ball = function( parent_obj, number, type, animation_supported ){
                 self.obj[ 0 ].removeEventListener( evts[ i ], listener, false );
             if( callback )
                 callback( clbk_param );
-        }
+        };
         if( callback || anim_type != "small" )
             for( var i in evts )
                 this.obj[ 0 ].addEventListener( evts[ i ], listener, false );
@@ -1446,7 +1446,7 @@ with(Ball = function( parent_obj, number, type, animation_supported ){
         var self = this;
         var listener = function( event ){
             self.erase();
-        }
+        };
         var evts = [ "animationend", "webkitAnimationEnd", "oanimationend", "MSAnimationEnd" ];
         for( var i in evts )
             this.obj[ 0 ].addEventListener( evts[ i ], listener, false );
