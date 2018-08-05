@@ -863,7 +863,7 @@ with(Field = function( game_obj ){
     };
 
     /*
-     * Draw balls on the field:
+     * Put new balls from array into the game field:
      * arr : array of positions & balls,
      *       i.e. [ [ [x,y], ball ], [ [x,y], ball ], ... ]
      */
@@ -874,13 +874,7 @@ with(Field = function( game_obj ){
             var nx = rec[ 0 ][ 0 ];
             var ny = rec[ 0 ][ 1 ];
             var ball = new Ball( this.game.html.field_insert, rec[ 1 ].num, this.game.settings.balls_type, this.game.animation_supported );
-            if( this.map[ ny ][ nx ] )     // user can send ball to this place
-            {
-                do {
-                    nx = this.rand( 0 + dl, 8 - dl );
-                    ny = this.rand( 0 + dl, 8 - dl );
-                } while( this.map[ ny ][ nx ] );   // find new place...
-            }
+
             // Popup at position which was stored earlier:
             if( this.game.game_started && this.game.settings.show_next )
                 ball.popup( nx, ny, "transition" );
@@ -979,6 +973,8 @@ with(Field = function( game_obj ){
         path = this.find_path( nx, ny, to_x, to_y );
 
         if( path.length > 0 ){
+            this.correct_next_balls(nx, ny, to_x, to_y);
+
             var old_ball = this.map[ ny ][ nx ];
             this.map[ ny ][ nx ] = null;
 
@@ -1002,6 +998,28 @@ with(Field = function( game_obj ){
         }
         // Moving faild!
         return false;
+    };
+
+    /*
+     * Corrects position of "next balls". If user send ball to spawn position
+     * of one of "next balls" then new position of such ball will be at old
+     * position of moved ball.
+     *
+     * from_x, from_y: old position of moved ball
+     * to_x, to_y:     user move ball to this position
+     */
+    prototype.correct_next_balls = function( from_x, from_y, to_x, to_y ) {
+        for( var i in this.next_balls ){
+            var arr = this.next_balls[ i ];
+            var x = arr[ 0 ][ 0 ];
+            var y = arr[ 0 ][ 1 ];
+
+            if( x == to_x && y == to_y ){
+                arr[ 0 ][ 0 ] = from_x;
+                arr[ 0 ][ 1 ] = from_y;
+                return;
+            }
+        }
     };
 
     /*
